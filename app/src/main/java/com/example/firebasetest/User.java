@@ -4,7 +4,7 @@ public class User {
     private String email;//add somewhere checks for existing firebase user, incorrect password.
     private int level;
     private String className;
-    private int order;
+    private String[] order = {"Knight", "Archer", "Mage"};
     private int enemyDifficulty;
     private int difficultyScaling;
     private int challengeDifficulty;
@@ -12,7 +12,7 @@ public class User {
     private int doomsdayClock;//int(?)
     private int suddenDeath;//sudden death type
     private int currentSection;
-    private int currentLevel;
+    private int currentFloor;
     private int currentRoom;
 
     //add all database values amd get set and initially set them in constructor
@@ -20,7 +20,6 @@ public class User {
         email = mail;
         level = 5;
         className = "";
-        order = 1;
         enemyDifficulty = 5;
         difficultyScaling = 3;
         challengeDifficulty = 0;//?
@@ -28,7 +27,7 @@ public class User {
         suddenDeath = 0;//0=off,1-3=type
         doomsdayClock = 0;//0=off, 1-10(actual slider maybe instead of 4 buttons)=hours
         currentSection = -1;//-1=starting area
-        currentLevel = 0;
+        currentFloor = 0;
         currentRoom = 0;
     }
 
@@ -49,11 +48,11 @@ public class User {
         this.className = className;
     }
 
-    public int getOrder() {
+    public String[] getOrder() {
         return order;
     }
 
-    public void setOrder(int order) {
+    public void setOrder(String[] order) {
         this.order = order;
     }
 
@@ -113,12 +112,12 @@ public class User {
         this.currentSection = currentSection;
     }
 
-    public int getCurrentLevel() {
-        return currentLevel;
+    public int getCurrentFloor() {
+        return currentFloor;
     }
 
-    public void setCurrentLevel(int currentLevel) {
-        this.currentLevel = currentLevel;
+    public void setCurrentFloor(int currentFloor) {
+        this.currentFloor = currentFloor;
     }
 
     public int getCurrentRoom() {
