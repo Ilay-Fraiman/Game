@@ -19,11 +19,13 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 
 public class GameActivity extends AppCompatActivity {
-
+    GameView gameView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        gameView = new GameView(this);
+        setContentView(gameView);
     }
 
     User playerUser;
@@ -54,5 +56,9 @@ public class GameActivity extends AppCompatActivity {
     //after(?) choise of tower
 
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        gameView.resume();
+    }
 }

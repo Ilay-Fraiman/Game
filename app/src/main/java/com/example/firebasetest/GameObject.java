@@ -13,9 +13,39 @@ public class GameObject {
 
     private float yPercentage;
 
-    protected float directionAngle;//replace with x and y
-
     protected int roomID;
 
-    public GameObject(Bitmap sprite, int ID){}//add location
+    public GameObject(Bitmap sprite, int ID, float xLocation, float yLocation, float width, float height){}//add location
+
+    public float getWidthPercentage() {
+        return widthPercentage;
+    }
+
+    public void setWidthPercentage(float widthPercentage) {
+        this.widthPercentage = widthPercentage;
+    }
+
+    public float getHeightPercentage() {
+        return heightPercentage;
+    }
+
+    public void setHeightPercentage(float heightPercentage) {
+        this.heightPercentage = heightPercentage;
+    }
+
+    public float getXPercentage() {
+        return xPercentage;
+    }
+
+    public void setXPercentage(float xPercentage) {
+        this.xPercentage = xPercentage;
+    }
+
+    public float getYPercentage() {
+        return yPercentage;
+    }
+
+    public void setYPercentage(float yPercentage) {
+        this.yPercentage = yPercentage;
+    }
 }

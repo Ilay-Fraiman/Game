@@ -24,6 +24,7 @@ import android.widget.Toast;
 public class GameView extends SurfaceView implements Runnable
 {
     Context context;
+    Thread gameThread;
     public GameView(Context context)
     {
         super(context);
@@ -32,6 +33,12 @@ public class GameView extends SurfaceView implements Runnable
 
     @Override
     public void run() {
-
+        //check if user started
+        //do the extra screens optional
+        //then start loop
+    }
+    public void resume(){
+        gameThread = new Thread(this);
+        gameThread.start();
     }
 }
