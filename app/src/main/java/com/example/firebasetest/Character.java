@@ -18,12 +18,14 @@ public class Character extends GameObject {
     private long resetY;
     private long resetB;
     private long resetA;
+    protected int movementSpeed;
     public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, float width, float height) //HPD, ACD, APD=2/3/5
     {
         super(sprite, ID, xLocation, yLocation, width, height);
         HP = HPD * 10 * level;
         attackCooldown-= (level*ACD);
         attackPower = level*APD;
+        //set movement speed
     }
 
     protected ArrayList<Projectile> getProjectiles()
@@ -111,6 +113,12 @@ public class Character extends GameObject {
                 resetY = start + time;
                 break;
         }
+    }
+    public boolean hit(Projectile p)
+    {
+        //make checks.
+        //return dead or alive
+        return true;
     }
 
 }
