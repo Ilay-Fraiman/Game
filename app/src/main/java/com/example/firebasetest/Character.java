@@ -26,6 +26,10 @@ public class Character extends GameObject {
         attackCooldown-= (level*ACD);
         attackPower = level*APD;
         //set movement speed
+        this.resetX = 0;
+        this.resetB = 0;
+        this.resetA = 0;
+        this.resetY = System.currentTimeMillis() + 30000L;
     }
 
     protected ArrayList<Projectile> getProjectiles()
@@ -116,9 +120,75 @@ public class Character extends GameObject {
     }
     public boolean hit(Projectile p)
     {
-        //make checks.
-        //return dead or alive
-        return true;
+        int power = (int)p.getPower();
+        this.HP-=power;
+        if (p instanceof Mist)
+        {
+            this.freeze();
+        }
+        if (p instanceof Arrow && ((Arrow) p).isPoison())
+            this.poisoned(power / 10);
+        return this.HP<=0;//is dead
     }
 
+    private void poisoned(int power)
+    {
+        class Poison extends TimerTask {
+            private Character chr;
+            private int repeats;
+            private int power;
+
+            Poison(Character c, int r, int p)
+            {
+                this.chr = c;
+                this.repeats = r;
+                this.power = p;
+            }
+
+            @Override
+            public void run() {
+                if(repeats>0)
+                {
+                    this.chr.poison(power);
+                    repeats--;
+                    Timer timer = new Timer();
+                    TimerTask task = new Poison(chr, repeats, power);
+                    timer.schedule(task, 1000L);
+                }
+            }
+        }
+        Timer timer = new Timer();
+        TimerTask task = new Poison(this, 10, power);
+        timer.schedule(task, 1000L);
+    }
+    private void poison(int power)
+    {
+        this.HP -= power;
+    }
+
+    public void freeze()
+    {
+        this.movementSpeed /= 2;
+        class UnFreeze extends TimerTask {
+            private Character chr;
+
+            UnFreeze(Character c)
+            {
+                this.chr = c;
+            }
+
+            @Override
+            public void run() {
+                chr.unFreeze();
+            }
+        }
+        Timer timer = new Timer();
+        TimerTask task = new UnFreeze(this);
+        timer.schedule(task, 5000L);
+    }
+
+    public void unFreeze()
+    {
+        this.movementSpeed *=2;
+    }
 }

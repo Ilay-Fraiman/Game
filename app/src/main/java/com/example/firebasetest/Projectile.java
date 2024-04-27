@@ -31,4 +31,12 @@ public class Projectile extends GameObject{
     public float getPower() {
         return power;
     }
+
+    public void setPower(float power) {
+        this.power = power;
+    }
+
+    public void setCreator(Character creator) {
+        this.creator = creator;
+    }
 }

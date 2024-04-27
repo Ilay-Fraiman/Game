@@ -12,11 +12,35 @@ public class Knight extends Character{
     private boolean parry = false;
     private int shieldHP;//half knight hp
     private int horseHP;//same hp as knight
+    private int maxShieldHP;
+    private int maxHorseHP;
     private boolean mounted = false;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height){
         super(level,5,2,3, knightSprite, ID, xLocation, yLocation, width, height);
         //change stats for character grade
         //is there thread for enemy?
+        this.maxShieldHP = this.HP / 2;
+        this.maxHorseHP = this.HP;
+        switch (characterGrade)//temporary. need to add sprites and threads
+        {
+            case 0:
+                break;
+            case 1:
+                this.itemHeight *= 3;
+                break;
+            case 2:
+                this.attackCooldown /= 2;
+                break;
+            case 3:
+                this.maxShieldHP *= 2;
+                this.itemHeight *= 2;
+                this.itemWidth *= 2;
+                this.attackPower *= 2;
+                this.attackCooldown *= 2;
+                break;//add one for the boss
+        }
+        this.shieldHP=this.maxShieldHP;
+        this.horseHP=this.maxHorseHP;
     }
     public void Attack()//maybe virtual
     {
@@ -115,9 +139,9 @@ public class Knight extends Character{
         this.attackPower /= 2;
     }
 
-    public void Mount(Bitmap horsedKnight)
+    public void mount(Bitmap horsedKnight)
     {
-        if(useAbility("Y"))//and ult charged?
+        if(useAbility("Y") && (!mounted && horseHP>0))//and ult charged?
         {
             this.mounted = true;
             //change sprite
@@ -134,11 +158,32 @@ public class Knight extends Character{
     public void dismount()
     {
         //ult ends
+        //change sprite back
+        this.mounted=false;
         this.setHeightPercentage(this.getHeightPercentage() / 3);
         this.setWidthPercentage(this.getWidthPercentage() / 2);
         this.movementSpeed /=4;
         this.itemHeight /= 2;
         this.itemWidth /= 2;
+        resetAbility("Y");
+        if(horseHP<=0)
+        {
+            class RestoreHorse extends TimerTask {
+                private Knight knight;
+                RestoreHorse(Knight k)
+                {
+                    this.knight = k;
+                }
+
+                @Override
+                public void run() {
+                    knight.horseRestore();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new RestoreHorse(this);
+            timer.schedule(task, 60000L);
+        }
     }
 
     @Override
@@ -152,7 +197,7 @@ public class Knight extends Character{
             if (horizontal < 0 && vertical < 0)
             {
                 shieldHP -=damageSustained;
-                if (shieldHP < 0)
+                if (shieldHP <= 0)
                 {
                     shieldBroke = true;
                     damageSustained = Math.abs(shieldHP);
@@ -162,72 +207,103 @@ public class Knight extends Character{
         if(parry)
         {
             p.setHorizontalSpeed((p.getHorizontalSpeed() * (-1)));
-            p.setHorizontalSpeed((p.getHorizontalSpeed() * (-1)));
+            p.setVerticalSpeed((p.getVerticalSpeed() * (-1)));
+            p.setCreator(this);
+            this.projectiles.add(p);
         }
         else if(shieldBroke || !shielded)
         {
-            if (p instanceof Mist)
+            p.setPower(damageSustained);
+            if(mounted)
             {
-                this.movementSpeed /= 2;
-                class UnFreeze extends TimerTask {
-                    private Knight knight;
-
-                    UnFreeze(Knight k)
-                    {
-                        this.knight = k;
-                    }
-
-                    @Override
-                    public void run() {
-                        knight.unFreeze();
-                    }
+                this.horseHP -= damageSustained;
+                if (p instanceof Arrow && ((Arrow) p).isPoison())
+                {
+                    this.poisonedHorse(damageSustained / 10);
                 }
-                Timer timer = new Timer();
-                TimerTask task = new UnFreeze(this);
-                timer.schedule(task, 5000L);
+                else if(p instanceof Mist)
+                    this.freeze();
+
+                if(this.horseHP<=0)
+                    dismount();
             }
-            if (p instanceof Arrow && ((Arrow) p).isPoison())
-                this.poisoned();
+            else
+            {
+                super.hit(p);
+            }
         }
-        if(mounted)
+        if(shieldBroke)
         {
-            //check if hit horse. if so:
-            horseHP -= damageSustained;
-            if(horseHP<0)
-                dismount();
-            return false;//alive
+            shieldReleased();
+            class RestoreShield extends TimerTask {
+                private Knight knight;
+                RestoreShield(Knight k)
+                {
+                    this.knight = k;
+                }
+
+                @Override
+                public void run() {
+                    knight.shieldRestore();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new RestoreShield(this);
+            timer.schedule(task, 10000L);
         }
-        else
-        {
-            this.HP-=damageSustained;
-            return this.HP<0;//is dead?
-        }
+        return this.HP<=0;//is dead
     }
 
-    private void poisoned()
+    private void poisonedHorse(int power)
     {
         class Poison extends TimerTask {
             private Knight knight;
             private int repeats;
+            private int power;
 
-            Poison(Knight k, int r)
+            Poison(Knight k, int r, int p)
             {
                 this.knight = k;
                 this.repeats = r;
+                this.power = p;
             }
 
             @Override
             public void run() {
-                //find a way to make it repeat a set number of times and stop
+                if(repeats>0)
+                {
+                    if(!this.knight.horsePoison(power))
+                        repeats = 0;
+                    repeats--;
+                    Timer timer = new Timer();
+                    TimerTask task = new Poison(knight, repeats, power);
+                    timer.schedule(task, 1000L);
+                }
             }
         }
         Timer timer = new Timer();
-        TimerTask task = new Poison(this, 10);
-        timer.schedule(task, 5000L);
+        TimerTask task = new Poison(this, 10, power);
+        timer.schedule(task, 1000L);
     }
 
-    public void unFreeze()
+    public boolean horsePoison(int power)
     {
-        this.movementSpeed *=2;
+        this.horseHP -= power;
+        if(horseHP<=0)
+        {
+            dismount();
+            return false;
+        }
+        return true;
+    }
+
+    public void shieldRestore()
+    {
+        this.shieldHP = this.maxShieldHP;
+    }
+
+    public void horseRestore()
+    {
+        this.horseHP=this.maxHorseHP;
     }
 }
