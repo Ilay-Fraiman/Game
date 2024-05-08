@@ -42,23 +42,11 @@ public class Knight extends Character{
         this.shieldHP=this.maxShieldHP;
         this.horseHP=this.maxHorseHP;
     }
-    public void Attack()//maybe virtual
+    public void Attack()
     {
         if(useAbility("X") && !shielded)
         {
-            if(Math.abs(verticalDirection)<Math.abs(horizontalDirection))//(?)
-                switchSizes();
-
-            float xAxis = horizontalDirection * itemWidth;
-            float yAxis = verticalDirection *  itemHeight;
-            float locationHor = this.getXPercentage() + xAxis;
-            float locationVert = this.getYPercentage() + yAxis;
-
-            BladeAttack bladeAttack = new BladeAttack(itemSprite, roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
-            this.projectiles.add(bladeAttack);
-
-            if(Math.abs(verticalDirection)>Math.abs(horizontalDirection))
-                switchSizes();
+            super.Attack();
 
             resetAbility("X");
         }
@@ -124,7 +112,6 @@ public class Knight extends Character{
                 @Override
                 public void run() {
                     knight.deBuff();
-                    knight.resetAbility("B");
                 }
             }
             Timer timer = new Timer();
@@ -137,6 +124,7 @@ public class Knight extends Character{
     public void deBuff()
     {
         this.attackPower /= 2;
+        resetAbility("B");
     }
 
     public void mount(Bitmap horsedKnight)
@@ -153,6 +141,8 @@ public class Knight extends Character{
             this.itemHeight *= 2;
             this.itemWidth *= 2;
         }
+        else if(mounted)
+            dismount();
     }
 
     public void dismount()

@@ -191,4 +191,22 @@ public class Character extends GameObject {
     {
         this.movementSpeed *=2;
     }
+
+    public void Attack()
+    {
+        if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(itemHeight<itemWidth))//(?)
+            switchSizes();
+
+        float xAxis = horizontalDirection * itemWidth;
+        float yAxis = verticalDirection *  itemHeight;
+        float locationHor = this.getXPercentage() + xAxis;
+        float locationVert = this.getYPercentage() + yAxis;
+        if (this.horizontalDirection > 0)
+            locationHor += this.getWidthPercentage();
+        if (this.verticalDirection > 0)
+            locationVert += this.getHeightPercentage();
+
+        BladeAttack bladeAttack = new BladeAttack(itemSprite, roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
+        this.projectiles.add(bladeAttack);
+    }
 }

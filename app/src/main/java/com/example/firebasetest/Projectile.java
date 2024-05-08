@@ -10,6 +10,7 @@ public class Projectile extends GameObject{
     public Projectile(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height){
         super(sprite, ID, xLocation, yLocation, width, height);
         this.power = power;
+        //switch sizes like in character
     }
 
     public float getHorizontalSpeed() {
