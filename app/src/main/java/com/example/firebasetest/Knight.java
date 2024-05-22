@@ -14,17 +14,16 @@ public class Knight extends Character{
     private int horseHP;//same hp as knight
     private int maxShieldHP;
     private int maxHorseHP;
+    private float horseDirection = -1;
     private boolean mounted = false;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height){
-        super(level,5,2,3, knightSprite, ID, xLocation, yLocation, width, height);
+        super(level,5,2,3, knightSprite, ID, xLocation, yLocation, width, height, characterGrade);
         //change stats for character grade
         //is there thread for enemy?
         this.maxShieldHP = this.HP / 2;
         this.maxHorseHP = this.HP;
         switch (characterGrade)//temporary. need to add sprites and threads
         {
-            case 0:
-                break;
             case 1:
                 this.itemHeight *= 3;
                 break;
@@ -37,10 +36,17 @@ public class Knight extends Character{
                 this.itemWidth *= 2;
                 this.attackPower *= 2;
                 this.attackCooldown *= 2;
-                break;//add one for the boss
+                break;
+            case 4:
+                mount(knightSprite);
+                mounted = false;
+                break;
         }
         this.shieldHP=this.maxShieldHP;
         this.horseHP=this.maxHorseHP;
+        this.running = true;
+        if (threadStart)
+            thread.start();
     }
     public void Attack()
     {
@@ -56,40 +62,52 @@ public class Knight extends Character{
         }
     }
 
+    public boolean shieldOrParry(int num)//1 shield 2 parry
+    {
+        if((useAbility("A") && shieldHP > 0) && (!shielded))
+        {
+            if(num == 1)
+                shieldHeld();
+            else
+                parry();
+            return true;
+        }
+        return false;
+    }
+
     public void shieldHeld()
     {
-        if(useAbility("A") && shieldHP > 0) {
-            shielded = true;
-        }
+        shielded = true;
     }
 
     public void shieldReleased()
     {
-        shielded = false;
-        resetAbility("A");
+        if(shielded)
+        {
+            shielded = false;
+            resetAbility("A");
+        }
     }
 
     public void parry()
     {
-        if(useAbility("A") && shieldHP > 0) {
-            parry = true;
-            class UnParry extends TimerTask {
-                private Knight knight;
+        parry = true;
+        class UnParry extends TimerTask {
+            private Knight knight;
 
-                UnParry(Knight k)
-                {
-                    this.knight = k;
-                }
-
-                @Override
-                public void run() {
-                    knight.unParry();
-                }
+            UnParry(Knight k)
+            {
+                this.knight = k;
             }
-            Timer timer = new Timer();
-            TimerTask task = new UnParry(this);
-            timer.schedule(task, 500L);
+
+            @Override
+            public void run() {
+                knight.unParry();
+            }
         }
+        Timer timer = new Timer();
+        TimerTask task = new UnParry(this);
+        timer.schedule(task, 500L);
     }
 
     public void unParry()
@@ -129,7 +147,7 @@ public class Knight extends Character{
 
     public void mount(Bitmap horsedKnight)
     {
-        if(useAbility("Y") && (!mounted && horseHP>0))//and ult charged?
+        if((characterGrade == 4) || (useAbility("Y") && (!mounted && horseHP>0)))//and ult charged?
         {
             this.mounted = true;
             //change sprite
@@ -295,5 +313,84 @@ public class Knight extends Character{
     public void horseRestore()
     {
         this.horseHP=this.maxHorseHP;
+    }
+
+    @Override
+    public void run() {
+        while (running)
+        {
+            float playerX = getPlayerX();
+            float playerY = getPlayerY();
+            float width = this.getWidthPercentage();//?
+            float height = this.getHeightPercentage();//?
+            float xLocation = this.getXPercentage();
+            float yLocation = this.getYPercentage();
+
+            //if locked = 0, reset sprite
+
+            if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
+                mount(knightSprite);//temp sprite
+
+            if(useAbility("B") && (locked <= 0))
+            {
+                buff();
+                locked = 10;
+            }
+
+            if(playerX < xLocation)
+                this.horizontalDirection = -1;
+            else
+                this.horizontalDirection = 1;
+            if(playerY < yLocation)
+                this.verticalDirection = -1;
+            else
+                this.verticalDirection = 1;
+
+            if((((playerX + width) >= (xLocation - itemWidth)) && (playerX <= (xLocation + width + itemWidth))) && (((playerY + height) >= (yLocation - itemHeight)) && (playerY <= (yLocation + height + itemHeight))))
+            {
+                if (locked <= 0)
+                {
+                    if (shielded)
+                        locked = 10;
+                    if(useAbility("X"))
+                    {
+                        shieldReleased();
+                        Attack();
+                        locked = 10;
+                    }
+                    else if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
+                    {
+                        locked = 10;
+                    }
+                }
+                this.horizontalMovement = this.horizontalDirection * (-1);
+                if(yLocation + height == GameView.height)
+                    this.verticalMovement = this.verticalDirection * (-1);
+            }
+            else if(useAbility("A"))
+            {
+                this.horizontalMovement = this.horizontalDirection;
+                if(yLocation + height == GameView.height)
+                    this.verticalMovement = this.verticalDirection;
+            }
+            if(characterGrade == 4)
+            {
+                if((xLocation <= 0) || (xLocation + width >= GameView.width))
+                    horseDirection *= -1;
+                horizontalMovement = horseDirection;
+            }
+            move(xLocation, yLocation, width, height);
+            locked--;
+            if(this.HP <= 0)
+                this.running = false;
+            try {
+                thread.sleep(30);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public int getRandomNumber(int min, int max) {
+        return (int) ((Math.random() * (max - min)) + min);
     }
 }

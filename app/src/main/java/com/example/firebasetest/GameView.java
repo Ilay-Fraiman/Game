@@ -24,11 +24,16 @@ import android.widget.Toast;
 public class GameView extends SurfaceView implements Runnable
 {
     Context context;
+
+    public static float width = 0;
+    public static float height = 0;
     Thread gameThread;
     public GameView(Context context)
     {
         super(context);
         this.context = context;
+        width = this.getResources().getDisplayMetrics().widthPixels;
+        height = this.getResources().getDisplayMetrics().heightPixels;
     }
 
     @Override

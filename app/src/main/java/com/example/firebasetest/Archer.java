@@ -11,7 +11,7 @@ public class Archer extends Character{
     private boolean homing;
     private boolean ricochet;
     public Archer(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height){
-        super(level,3,5,2, archerSprite, ID, xLocation, yLocation, width, height);
+        super(level,3,5,2, archerSprite, ID, xLocation, yLocation, width, height, characterGrade);
     }
     public void shoot(boolean isPoison)
     {

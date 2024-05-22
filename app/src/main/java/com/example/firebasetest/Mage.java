@@ -10,7 +10,7 @@ public class Mage extends Character{
     private int maxHealth;
     public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height)
     {
-        super(level,2,3,5, mageSprite, ID, xLocation, yLocation, width, height);
+        super(level,2,3,5, mageSprite, ID, xLocation, yLocation, width, height, characterGrade);
         this.maxHealth=this.HP;
     }
     public void lightLine()

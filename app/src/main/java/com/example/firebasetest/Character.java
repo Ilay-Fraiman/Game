@@ -3,7 +3,8 @@ package com.example.firebasetest;
 import android.graphics.Bitmap;
 import java.util.*;
 
-public class Character extends GameObject {
+public class Character extends GameObject implements Runnable {
+    private static Character player;
     protected int HP;
     protected long attackCooldown = 1150L;
     protected int attackPower;
@@ -19,7 +20,14 @@ public class Character extends GameObject {
     private long resetB;
     private long resetA;
     protected int movementSpeed;
-    public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, float width, float height) //HPD, ACD, APD=2/3/5
+    protected float horizontalMovement;
+    protected float verticalMovement;
+    protected Thread thread;
+    protected int characterGrade;
+    protected int locked;
+    protected boolean running;
+    protected boolean threadStart = true;
+    public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, float width, float height, int characterGrade) //HPD, ACD, APD=2/3/5
     {
         super(sprite, ID, xLocation, yLocation, width, height);
         HP = HPD * 10 * level;
@@ -30,6 +38,10 @@ public class Character extends GameObject {
         this.resetB = 0;
         this.resetA = 0;
         this.resetY = System.currentTimeMillis() + 30000L;
+        this.characterGrade = characterGrade;
+        if (characterGrade == 5)
+            threadStart = false;
+        thread = new Thread(this);
     }
 
     protected ArrayList<Projectile> getProjectiles()
@@ -128,6 +140,7 @@ public class Character extends GameObject {
         }
         if (p instanceof Arrow && ((Arrow) p).isPoison())
             this.poisoned(power / 10);
+
         return this.HP<=0;//is dead
     }
 
@@ -208,5 +221,50 @@ public class Character extends GameObject {
 
         BladeAttack bladeAttack = new BladeAttack(itemSprite, roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
         this.projectiles.add(bladeAttack);
+    }
+    public static void setPlayer(Character p)
+    {
+        Character.player = p;
+    }
+
+    protected static float getPlayerX()
+    {
+        return Character.player.getXPercentage();
+    }
+    protected static float getPlayerY()
+    {
+        return Character.player.getYPercentage();
+    }
+
+    protected void move(float x, float y, float tWidth, float tHeight)
+    {
+        float xLocation = x + (movementSpeed * horizontalMovement);
+        if(xLocation < 0)
+            xLocation = 0;
+        else if ((xLocation + tWidth) > GameView.width)
+            xLocation = GameView.width - tWidth;
+        setXPercentage(xLocation);
+        horizontalMovement = 0;
+
+        if(y + tHeight != GameView.height)
+        {
+            float yLocation = y + (movementSpeed * verticalMovement);
+            if(yLocation < 0) {
+                yLocation = 0;
+                verticalMovement = -0.1f;
+            }
+            else if ((yLocation + tHeight) > GameView.height)
+            {
+                yLocation = GameView.height - tHeight;
+                verticalMovement = -0.1f;
+            }
+            setYPercentage(yLocation);
+            verticalMovement += 0.1;
+        }
+    }
+
+    @Override
+    public void run() {
+
     }
 }
