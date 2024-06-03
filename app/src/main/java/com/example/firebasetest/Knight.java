@@ -16,8 +16,8 @@ public class Knight extends Character{
     private int maxHorseHP;
     private float horseDirection = -1;
     private boolean mounted = false;
-    public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height){
-        super(level,5,2,3, knightSprite, ID, xLocation, yLocation, width, height, characterGrade);
+    public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation){
+        super(level,5,2,3, knightSprite, ID, xLocation, yLocation, characterGrade);
         //change stats for character grade
         //is there thread for enemy?
         this.maxShieldHP = this.HP / 2;
@@ -319,12 +319,16 @@ public class Knight extends Character{
     public void run() {
         while (running)
         {
-            float playerX = getPlayerX();
-            float playerY = getPlayerY();
-            float width = this.getWidthPercentage();//?
-            float height = this.getHeightPercentage();//?
-            float xLocation = this.getXPercentage();
-            float yLocation = this.getYPercentage();
+            float[] values = aimAtPlayer();
+            float playerX = values[0];
+            float playerY = values[1];
+            float width = values[2];
+            float height = values[3];
+            float playerWidth = values[4];
+            float playerHeight = values[5];
+            float xLocation = values[6];
+            float yLocation = values[7];
+            moving = false;
 
             //if locked = 0, reset sprite
 
@@ -337,23 +341,16 @@ public class Knight extends Character{
                 locked = 10;
             }
 
-            if(playerX < xLocation)
-                this.horizontalDirection = -1;
-            else
-                this.horizontalDirection = 1;
-            if(playerY < yLocation)
-                this.verticalDirection = -1;
-            else
-                this.verticalDirection = 1;
-
-            if((((playerX + width) >= (xLocation - itemWidth)) && (playerX <= (xLocation + width + itemWidth))) && (((playerY + height) >= (yLocation - itemHeight)) && (playerY <= (yLocation + height + itemHeight))))
+            if(inRange())
             {
+                boolean moveBack = true;
                 if (locked <= 0)
                 {
                     if (shielded)
                         locked = 10;
                     if(useAbility("X"))
                     {
+                        moveBack = false;
                         shieldReleased();
                         Attack();
                         locked = 10;
@@ -363,21 +360,27 @@ public class Knight extends Character{
                         locked = 10;
                     }
                 }
-                this.horizontalMovement = this.horizontalDirection * (-1);
-                if(yLocation + height == GameView.height)
-                    this.verticalMovement = this.verticalDirection * (-1);
+                if(moveBack)
+                {
+                    this.horizontalMovement = this.horizontalDirection * (-1);
+                    if(yLocation + height == GameView.height)
+                        this.verticalMovement = this.verticalDirection * (-1) * this.movementSpeed;
+                    moving = true;
+                }
             }
-            else if(useAbility("A"))
+            else if(useAbility("X"))
             {
                 this.horizontalMovement = this.horizontalDirection;
                 if(yLocation + height == GameView.height)
-                    this.verticalMovement = this.verticalDirection;
+                    this.verticalMovement = this.verticalDirection * this.movementSpeed;
+                moving = true;
             }
             if(characterGrade == 4)
             {
                 if((xLocation <= 0) || (xLocation + width >= GameView.width))
                     horseDirection *= -1;
                 horizontalMovement = horseDirection;
+                moving = true;
             }
             move(xLocation, yLocation, width, height);
             locked--;

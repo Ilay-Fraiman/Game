@@ -17,6 +17,13 @@ public class GameObject {
 
     public GameObject(Bitmap sprite, int ID, float xLocation, float yLocation, float width, float height){}//add location
 
+    public GameObject(Bitmap sprite, int ID, float xLocation, float yLocation)//character
+    {
+        //rest of it
+        this.widthPercentage = (GameView.width / 15);
+        this.heightPercentage = this.widthPercentage;
+    }
+
     public float getWidthPercentage() {
         return widthPercentage;
     }

@@ -8,9 +8,9 @@ public class Mage extends Character{
     private Bitmap fireSprite;//temporary
     private Bitmap mistSprite;//temporary
     private int maxHealth;
-    public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height)
+    public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation)
     {
-        super(level,2,3,5, mageSprite, ID, xLocation, yLocation, width, height, characterGrade);
+        super(level,2,3,5, mageSprite, ID, xLocation, yLocation, characterGrade);
         this.maxHealth=this.HP;
     }
     public void lightLine()

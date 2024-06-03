@@ -27,13 +27,25 @@ public class GameView extends SurfaceView implements Runnable
 
     public static float width = 0;
     public static float height = 0;
+    public static float pixelWidth = 0;
+    public static float pixelHeight = 0;
+    public static float canvasPixelHeight = 0;//how many pixels high is the canvas
     Thread gameThread;
     public GameView(Context context)
     {
         super(context);
         this.context = context;
         width = this.getResources().getDisplayMetrics().widthPixels;
+        pixelWidth = 2106 / width;//in centimeters
+        float pixelRatio = pixelWidth / 16;
+        pixelHeight = pixelRatio * 8.2f;
         height = this.getResources().getDisplayMetrics().heightPixels;
+        float canvasRatio = width / 16;
+        canvasRatio *= 8.2;
+        if(height != canvasRatio)
+        {
+            canvasPixelHeight = 1080 / pixelHeight;
+        }
     }
 
     @Override

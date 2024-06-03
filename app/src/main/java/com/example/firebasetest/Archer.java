@@ -10,30 +10,58 @@ public class Archer extends Character{
     private static Bitmap arrowSprite;//temporary
     private boolean homing;
     private boolean ricochet;
-    public Archer(int level, int characterGrade, int ID, float xLocation, float yLocation, float width, float height){
-        super(level,3,5,2, archerSprite, ID, xLocation, yLocation, width, height, characterGrade);
+    private float arrowSpeed;
+    private boolean isPoison;
+    public Archer(int level, int characterGrade, int ID, float xLocation, float yLocation){
+        super(level,3,5,2, archerSprite, ID, xLocation, yLocation, characterGrade);
+        double geometricalArrowSpeed = Math.sqrt((10.53 * 10));
+        float geoFloat = (float) geometricalArrowSpeed;
+        float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
+        transitionNum *= 30;//transition from frames to seconds
+        arrowSpeed = geoFloat / transitionNum;//transition from meters per second to pixels per frame
+        //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
+        itemHeight /= 2;
+        itemWidth /= 3;
+        switch(characterGrade)
+        {
+            case 1:
+                movementSpeed /= 1.5;
+                attackCooldown *= 1.5;
+                attackPower *= 2;
+                arrowSpeed *= 1.5;
+                break;
+            case 3:
+                ricochet = true;
+                break;
+            case 4:
+                homing = true;
+                break;
+        }
     }
-    public void shoot(boolean isPoison)
+    public void shoot()
     {
-        String button = (isPoison) ? "B" : "X";
-
-        if(useAbility(button))
+        if(useAbility("X"))
         {
             float locationX = this.getXPercentage();
             float locationY = this.getYPercentage();
-            float xDiffrential = this.getWidthPercentage() * this.horizontalDirection;
-            float yDiffrential = this.getHeightPercentage() * this.verticalDirection;//these are false. the width, height sjould be of arrow
+            if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(itemHeight<itemWidth))
+                switchSizes();
+            float xDiffrential = this.itemWidth * this.horizontalDirection;
+            float yDiffrential = this.itemHeight * this.verticalDirection;
             if (this.horizontalDirection > 0)
                 locationX += this.getWidthPercentage();
             if (this.verticalDirection > 0)
                 locationY += this.getHeightPercentage();
 
             locationX += xDiffrential;
-            locationY += yDiffrential;
+            locationY += yDiffrential;//by arrow speed
+
+            if(isPoison && characterGrade!=2)
+                resetAbility("B");
 
             Arrow arrow = new Arrow(arrowSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, xDiffrential, yDiffrential, ricochet, homing, isPoison);
             this.projectiles.add(arrow);
-            resetAbility(button);
+            resetAbility("X");
         }
     }
 
@@ -46,9 +74,15 @@ public class Archer extends Character{
         }
     }
 
-    public void homing()
+    public void poison()
     {
-        if(useAbility("Y")) {
+        if(useAbility("B"))
+            isPoison = true;
+    }
+
+    public boolean homing()
+    {
+        if(useAbility("Y") && !homing) {
             this.homing = true;
             class NotHoming extends TimerTask {
                 private Archer archer;
@@ -68,11 +102,64 @@ public class Archer extends Character{
             timer.schedule(task, 10000L);
             resetAbility("Y");
         }
+        return homing;
     }
 
     public void notHoming()
     {
         this.homing = false;
         resetAbility("Y");
+    }
+
+    public boolean aim()//aims the arrow and returns if will hit
+    {
+        return true;
+    }
+
+    @Override
+    public void run() {
+        while (running)
+        {
+            float[] values = aimAtPlayer();
+            float playerX = values[0];
+            float playerY = values[1];
+            float width = values[2];
+            float height = values[3];
+            float playerWidth = values[4];
+            float playerHeight = values[5];
+            float xLocation = values[6];
+            float yLocation = values[7];
+            boolean moveBack = true;
+
+            if(inRange() && (useAbility("A") && locked<=0))
+            {
+                Attack();
+                locked = 10;
+            }
+            else if(useAbility("X"))
+            {
+                if(!homing() && (characterGrade != 3 && !aim()))
+                    moveBack = false;
+                else
+                {
+                    poison();
+                    shoot();
+                }
+            }
+            float side = (moveBack) ? -1 : 1;
+            this.horizontalMovement = this.horizontalDirection * side;
+            if(yLocation + height == GameView.height)
+                this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+            moving = true;
+            move(xLocation, yLocation, width, height);
+            locked--;
+            if(this.HP <= 0)
+                this.running = false;
+            try {
+                thread.sleep(30);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
