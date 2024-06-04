@@ -366,6 +366,97 @@ public class Character extends GameObject implements Runnable {
         return values;
     }
 
+    public boolean aim(float xDistance, float yDistance, float physicalSpeed)//aims the arrow and returns if will hit
+    {
+        double xDist = (double) xDistance;
+        yDistance *= (-1);//here up is negative, in geometry up is positive
+        double yDist = (double) yDistance;
+        //using physics based formulas(in documentation), we wrote a quadratic formula for tan(theta)
+        //and the following calculations are made according to and in order to fit said quadratic formula
+        double pSpeed = (double) physicalSpeed;
+        double speed = Math.pow(pSpeed, 2);//speed by meters per second, squared according to docs
+        double a = 5 * xDist;//a in quadratic formula
+        a /= speed;
+        double ratio = yDist / xDist;//in docs
+        double c = a + ratio;//c in quadratic formula
+        double disc = a * c;//discriminanta (value below the root)
+        disc *= 4;//in quadratic formula (b^2-4ac)
+        double toRoot = 1 - disc;//in documentation, b = -1
+        double bottom = 2 * a;//divider in quadratic formula
+        if(toRoot < 0)//no value under the root, no solution=too far
+            return false;
+        else if(toRoot == 0)
+        {
+            double[] angledTime = arcTan((1/bottom), xDist, pSpeed);
+            return faster(pSpeed, angledTime[0], angledTime[1], angledTime[0], angledTime[1]);
+        }
+        double rooted = Math.sqrt(toRoot);
+        double f = 1 + rooted;//quadratic formula has 2 solutions (+-)
+        f /= bottom;//division in quadratic formula
+        double g = 1 - rooted;
+        g /= bottom;
+        double[] angledTime1 = arcTan(f, xDist, pSpeed);
+        double[] angledTime2 = arcTan(g, xDist, pSpeed);
+        return faster(pSpeed, angledTime1[0], angledTime1[1], angledTime2[0], angledTime2[1]);
+    }
+
+    private boolean ceiling(double speed, double angle)//checks if projectile hits the ceiling (it shouldn't)
+    {
+        double direction = Math.sin(angle);
+        if (direction < 0)//meaning the vertical direction is down
+            return false;//thus, it cannot touch the ceiling
+        double vector = speed * direction;
+        double time = vector / 10;//speed as a function of acceleration, gravity, documentation
+        double vertMove = vector * time;//first half of function
+        double vertAcc = Math.pow(time, 2);//second half of function
+        vertAcc *= 5;//half acceleration
+        double maxHeight = vertMove - vertAcc;//height as function of speed and acceleration, docs
+        float location = this.getYPercentage();//current vertical position
+        float fHeight = (float) maxHeight;
+        float maxPixels = fHeight / GameView.pixelHeight;//convert meters to pixels
+        float finalPixel = location - maxPixels;//in canvas up is negative
+        return (finalPixel <= 0);//is it above or at the ceiling
+    }
+
+    private boolean faster(double speed, double angle1, double time1, double angle2, double time2)
+    {
+        boolean ceiling1 = ceiling(speed, angle1);
+        boolean ceiling2 = ceiling(speed, angle2);
+        double trueAngle = 0;
+        if(ceiling1 && ceiling2)
+            return false;
+        if(ceiling1 || angle1 == angle2)
+            trueAngle = angle2;
+        else if(ceiling2)
+            trueAngle = angle1;
+        else
+            trueAngle = (time1 < time2) ? angle1 : angle2;
+        double horAngle = Math.cos(trueAngle);
+        horizontalDirection = (float) horAngle;
+        double vertAngle = Math.sin(trueAngle);
+        verticalDirection = (float) vertAngle;
+        verticalDirection *= (-1);//up is negative
+        return true;
+    }
+
+    private double[] arcTan(double value, double xDist, double speed)
+    {
+        double[] angledTime = new double[2];
+        double angle = Math.atan(value);
+        if(xDist < 0)//if enemy is on the left
+        {
+            double deg = Math.toDegrees(angle);
+            deg += 180;//explained in docs
+            angle = Math.toRadians(deg);
+        }
+        angledTime[0] = angle;
+        double vector = Math.cos(angle);
+        vector *= speed;
+        double time = xDist / vector;
+        angledTime[1] = time;
+        return angledTime;
+    }
+
     @Override
     public void run() {
 

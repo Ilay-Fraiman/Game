@@ -12,13 +12,14 @@ public class Archer extends Character{
     private boolean ricochet;
     private float arrowSpeed;
     private boolean isPoison;
+    private float physicalArrowSpeed;
     public Archer(int level, int characterGrade, int ID, float xLocation, float yLocation){
         super(level,3,5,2, archerSprite, ID, xLocation, yLocation, characterGrade);
         double geometricalArrowSpeed = Math.sqrt((10.53 * 10));
-        float geoFloat = (float) geometricalArrowSpeed;
+        physicalArrowSpeed = (float) geometricalArrowSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
         transitionNum *= 30;//transition from frames to seconds
-        arrowSpeed = geoFloat / transitionNum;//transition from meters per second to pixels per frame
+        arrowSpeed = physicalArrowSpeed / transitionNum;//transition from meters per second to pixels per frame
         //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
         itemHeight /= 2;
         itemWidth /= 3;
@@ -29,6 +30,7 @@ public class Archer extends Character{
                 attackCooldown *= 1.5;
                 attackPower *= 2;
                 arrowSpeed *= 1.5;
+                physicalArrowSpeed *= 1.5;
                 break;
             case 3:
                 ricochet = true;
@@ -111,11 +113,6 @@ public class Archer extends Character{
         resetAbility("Y");
     }
 
-    public boolean aim()//aims the arrow and returns if will hit
-    {
-        return true;
-    }
-
     @Override
     public void run() {
         while (running)
@@ -129,21 +126,26 @@ public class Archer extends Character{
             float playerHeight = values[5];
             float xLocation = values[6];
             float yLocation = values[7];
+            float horizontalDistance = values[8];
+            float verticalDistance = values[9];
             boolean moveBack = true;
 
-            if(inRange() && (useAbility("A") && locked<=0))
+            if(locked<=0)
             {
-                Attack();
-                locked = 10;
-            }
-            else if(useAbility("X"))
-            {
-                if(!homing() && (characterGrade != 3 && !aim()))
-                    moveBack = false;
-                else
+                if(inRange() && useAbility("A"))
                 {
-                    poison();
-                    shoot();
+                    Attack();
+                    locked = 10;
+                }
+                else if(useAbility("X"))
+                {
+                    if(!homing() && (characterGrade != 3 && !aim(horizontalDistance, verticalDistance, physicalArrowSpeed)))
+                        moveBack = false;
+                    else
+                    {
+                        poison();
+                        shoot();
+                    }
                 }
             }
             float side = (moveBack) ? -1 : 1;
