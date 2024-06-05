@@ -1,17 +1,30 @@
 package com.example.firebasetest;
 
 import android.graphics.Bitmap;
+import android.widget.Switch;
 
 public class Mage extends Character{
     public static Bitmap mageSprite;
     private Bitmap lineSprite;//temporary
     private Bitmap fireSprite;//temporary
     private Bitmap mistSprite;//temporary
-    private int maxHealth;
+    private double maxHealth;
+    private float fireBallSpeed;
+    private float physicalFireBallSpeed;
+    private String effect;
+    private Mage clone;
     public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation)
     {
         super(level,2,3,5, mageSprite, ID, xLocation, yLocation, characterGrade);
         this.maxHealth=this.HP;
+        double multiplicationNum = 21.06 / 8;
+        multiplicationNum *= 5;//middle between 3/4(long arrow) and 1/2(arrow)
+        double geometricalFireBallSpeed = Math.sqrt((multiplicationNum * 10));
+        physicalFireBallSpeed = (float) geometricalFireBallSpeed;
+        float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
+        transitionNum *= 30;//transition from frames to seconds
+        fireBallSpeed = physicalFireBallSpeed / transitionNum;
+        this.effect = "none";
     }
     public void lightLine()
     {
@@ -29,14 +42,13 @@ public class Mage extends Character{
             locationX += xDiffrential;
             locationY += yDiffrential;
 
-            for (int i = 0; i<5;i++)
-            {
-                LightLine lightLine = new LightLine(lineSprite, roomID, false, this, attackPower, 0, 0, locationX, locationY, xDiffrential, yDiffrential);
-                locationX += xDiffrential;
-                locationY += yDiffrential;
-                this.projectiles.add(lightLine);
-            }
+            xDiffrential *= 5;
+            yDiffrential *= 5;
 
+            LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, 0, 0, locationX, locationY, xDiffrential, yDiffrential, this.effect, this.directionAngle);
+            this.projectiles.add(lightLine);
+
+            this.effect = "none";
             resetAbility("X");
         }
     }
@@ -75,7 +87,9 @@ public class Mage extends Character{
 
             locationX += xDiffrential;
             locationY += yDiffrential;
-            yDiffrential += (xDiffrential / 2);
+
+            xDiffrential = fireBallSpeed * horizontalDirection;
+            yDiffrential = fireBallSpeed * verticalDirection;
 
             FireBall fireBall = new FireBall(fireSprite, roomID, this, attackPower*2, xDiffrential, yDiffrential, locationX, locationY, xDiffrential, yDiffrential);
             this.projectiles.add(fireBall);
@@ -83,12 +97,103 @@ public class Mage extends Character{
         }
     }
 
-    public void heal()
+    public void heal()//overheal or nah?
     {
         if(useAbility("Y"))
         {
             this.HP += (this.maxHealth / 2);
             resetAbility("Y");
+        }
+    }
+
+    public void setClone(Mage c)
+    {
+        this.clone = c;
+    }
+
+    private void cloneHit()
+    {
+        if(this.HP < this.clone.HP)
+            this.clone.HP = this.HP;
+        else
+            this.HP = this.clone.HP;
+    }
+
+    private void ailment()
+    {
+        int ailmentNum = getRandomNumber(1, 3);
+        switch (ailmentNum)
+        {
+            case 1:
+                this.effect = "freeze";
+                break;
+            case 2:
+                this.effect = "poison";
+                break;
+            case 3:
+                this.effect = "shock";
+        }
+    }
+
+    @Override
+    public void run() {
+        while (running)
+        {
+            float[] values = aimAtPlayer();
+            float playerX = values[0];
+            float playerY = values[1];
+            float width = values[2];
+            float height = values[3];
+            float playerWidth = values[4];
+            float playerHeight = values[5];
+            float xLocation = values[6];
+            float yLocation = values[7];
+            float horizontalDistance = values[8];
+            float verticalDistance = values[9];
+            boolean moveBack = true;
+            if(characterGrade == 4)
+                this.HP += this.maxHealth / 900;
+
+            if(useAbility("Y"))
+                heal();
+
+            if(locked<=0)
+            {
+                if(inRange() && useAbility("A"))
+                {
+                    mist();
+                    locked = 10;
+                }
+                else if(useAbility("X") && ((horizontalDistance <= (this.getWidthPercentage() * this.horizontalDirection * 5)) && (verticalDistance <= (this.getHeightPercentage() * this.verticalDirection * 5))))
+                {
+                    if(characterGrade == 1)
+                        ailment();
+                    lightLine();
+                }
+                else if(useAbility("B"))
+                {
+                    if(!aim(horizontalDistance, verticalDistance, physicalFireBallSpeed))
+                        moveBack = false;
+                    else
+                    {
+                        fireball();
+                    }
+                }
+            }
+            float side = (moveBack) ? -1 : 1;
+            this.horizontalMovement = this.horizontalDirection * side;
+            if(yLocation + height == GameView.height)
+                this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+            moving = true;
+            move(xLocation, yLocation, width, height);
+            locked--;
+            if(this.HP <= 0)
+                this.running = false;
+            try {
+                thread.sleep(30);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

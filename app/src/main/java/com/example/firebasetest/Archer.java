@@ -23,14 +23,19 @@ public class Archer extends Character{
         //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
         itemHeight /= 2;
         itemWidth /= 3;
+        this.homing = false;
+        this.ricochet = false;
+        this.isPoison = false;
         switch(characterGrade)
         {
             case 1:
                 movementSpeed /= 1.5;
                 attackCooldown *= 1.5;
                 attackPower *= 2;
-                arrowSpeed *= 1.5;
-                physicalArrowSpeed *= 1.5;
+                double multiplication = Math.sqrt(1.5); //docs
+                float fMultiplication = (float) multiplication;
+                arrowSpeed *= fMultiplication;
+                physicalArrowSpeed *= fMultiplication;
                 break;
             case 3:
                 ricochet = true;
@@ -58,11 +63,15 @@ public class Archer extends Character{
             locationX += xDiffrential;
             locationY += yDiffrential;//by arrow speed
 
+            xDiffrential = arrowSpeed * horizontalDirection;
+            yDiffrential = arrowSpeed * verticalDirection;
+
+            Arrow arrow = new Arrow(arrowSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, ricochet, homing, isPoison, this.directionAngle);
+            this.projectiles.add(arrow);
+
             if(isPoison && characterGrade!=2)
                 resetAbility("B");
 
-            Arrow arrow = new Arrow(arrowSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, xDiffrential, yDiffrential, ricochet, homing, isPoison);
-            this.projectiles.add(arrow);
             resetAbility("X");
         }
     }
@@ -134,7 +143,7 @@ public class Archer extends Character{
             {
                 if(inRange() && useAbility("A"))
                 {
-                    Attack();
+                    stab();
                     locked = 10;
                 }
                 else if(useAbility("X"))

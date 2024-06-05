@@ -10,10 +10,10 @@ public class Knight extends Character{
     public static Bitmap knightSprite;//different sprites actually
     private boolean shielded = false;//parry reflects(?), not only shields. shield dosent take damage.
     private boolean parry = false;
-    private int shieldHP;//half knight hp
-    private int horseHP;//same hp as knight
-    private int maxShieldHP;
-    private int maxHorseHP;
+    private double shieldHP;//half knight hp
+    private double horseHP;//same hp as knight
+    private double maxShieldHP;
+    private double maxHorseHP;
     private float horseDirection = -1;
     private boolean mounted = false;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation){
@@ -48,7 +48,7 @@ public class Knight extends Character{
         if (threadStart)
             thread.start();
     }
-    public void Attack()
+    public void attack()
     {
         if(useAbility("X") && !shielded)
         {
@@ -198,7 +198,7 @@ public class Knight extends Character{
     public boolean hit(Projectile p) {//this and its continues should be in character
         //to block an attack both directions need to be opposite (only on shield, not parry)
         boolean shieldBroke = false;
-        int damageSustained=(int)p.getPower();
+        float damageSustained= p.getPower();
         if(shielded){
             float horizontal = p.getHorizontalSpeed() * horizontalDirection;
             float vertical = p.getVerticalSpeed() * verticalDirection;
@@ -208,7 +208,7 @@ public class Knight extends Character{
                 if (shieldHP <= 0)
                 {
                     shieldBroke = true;
-                    damageSustained = Math.abs(shieldHP);
+                    damageSustained = (float) Math.abs(shieldHP);
                 }
             }
         }
@@ -231,6 +231,7 @@ public class Knight extends Character{
                 }
                 else if(p instanceof Mist)
                     this.freeze();
+                //if shock then shock
 
                 if(this.horseHP<=0)
                     dismount();
@@ -262,14 +263,14 @@ public class Knight extends Character{
         return this.HP<=0;//is dead
     }
 
-    private void poisonedHorse(int power)
+    private void poisonedHorse(double power)
     {
         class Poison extends TimerTask {
             private Knight knight;
             private int repeats;
-            private int power;
+            private double power;
 
-            Poison(Knight k, int r, int p)
+            Poison(Knight k, int r, double p)
             {
                 this.knight = k;
                 this.repeats = r;
@@ -294,7 +295,7 @@ public class Knight extends Character{
         timer.schedule(task, 1000L);
     }
 
-    public boolean horsePoison(int power)
+    public boolean horsePoison(double power)
     {
         this.horseHP -= power;
         if(horseHP<=0)
@@ -352,7 +353,7 @@ public class Knight extends Character{
                     {
                         moveBack = false;
                         shieldReleased();
-                        Attack();
+                        attack();
                         locked = 10;
                     }
                     else if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
@@ -392,8 +393,5 @@ public class Knight extends Character{
                 e.printStackTrace();
             }
         }
-    }
-    public int getRandomNumber(int min, int max) {
-        return (int) ((Math.random() * (max - min)) + min);
     }
 }

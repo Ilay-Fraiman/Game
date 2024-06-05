@@ -5,7 +5,7 @@ import java.util.*;
 
 public class Character extends GameObject implements Runnable {
     private static Character player;
-    protected int HP;
+    protected double HP;
     protected long attackCooldown = 1150L;
     protected int attackPower;
     protected Bitmap itemSprite;//draw in gameobject draws the character, this class has override that adds the itemsprite on top with direction.
@@ -29,6 +29,9 @@ public class Character extends GameObject implements Runnable {
     protected boolean threadStart = true;
     protected boolean moving;
     protected int legsPos;
+    protected double directionAngle;
+    protected boolean shocked;
+    protected int toShock;
     public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
     {
         super(sprite, ID, xLocation, yLocation);
@@ -46,6 +49,8 @@ public class Character extends GameObject implements Runnable {
         this.resetA = System.currentTimeMillis() + 10000L;
         this.resetY = System.currentTimeMillis() + 30000L;
         this.characterGrade = characterGrade;
+        this.shocked = false;
+        this.toShock = 0;
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -147,6 +152,7 @@ public class Character extends GameObject implements Runnable {
         }
         if (p instanceof Arrow && ((Arrow) p).isPoison())
             this.poisoned(power / 10);
+        //check for clone hit and for electro and for fist
 
         return this.HP<=0;//is dead
     }
@@ -315,6 +321,7 @@ public class Character extends GameObject implements Runnable {
 
         double newVert = (double) verticalDirection * (-1);
         double angle = Math.atan2(newVert, (double) horizontalDirection);//converts as if radius is 1
+        this.directionAngle = Math.toDegrees(angle);
         horizontalDirection = (float) Math.cos(angle);
         verticalDirection = (float) Math.sin(angle) * (-1);//complex numbers are in the gauss plane.
         //the results work for positive right and up. in here, positive is right and down
@@ -431,6 +438,7 @@ public class Character extends GameObject implements Runnable {
             trueAngle = angle1;
         else
             trueAngle = (time1 < time2) ? angle1 : angle2;
+        this.directionAngle = Math.toDegrees(trueAngle);
         double horAngle = Math.cos(trueAngle);
         horizontalDirection = (float) horAngle;
         double vertAngle = Math.sin(trueAngle);
@@ -455,6 +463,56 @@ public class Character extends GameObject implements Runnable {
         double time = xDist / vector;
         angledTime[1] = time;
         return angledTime;
+    }
+
+    public int getRandomNumber(int min, int max) {
+        return (int) ((Math.random() * (max - min)) + min);
+    }
+
+    public void shock()
+    {
+        if(shocked)
+            this.toShock++;
+        else
+        {
+            this.shocked = true;
+
+            long now = System.currentTimeMillis();
+            if((resetA - now) <= 5000)
+                resetA += 5000L;
+            if((resetB - now) <= 5000)
+                resetB += 5000L;
+            if((resetY - now) <= 5000)
+                resetY += 5000L;
+
+
+            class UnShock extends TimerTask {
+                private Character character;
+
+                UnShock(Character c)
+                {
+                    this.character = c;
+                }
+
+                @Override
+                public void run() {
+                    character.unShock();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new UnShock(this);
+            timer.schedule(task, 5000L);
+        }
+    }
+
+    public void unShock()
+    {
+        this.shocked = false;
+        if(toShock > 0)
+        {
+            toShock--;
+            shock();
+        }
     }
 
     @Override
