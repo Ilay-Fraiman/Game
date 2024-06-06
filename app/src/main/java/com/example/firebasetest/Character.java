@@ -146,15 +146,26 @@ public class Character extends GameObject implements Runnable {
     {
         int power = (int)p.getPower();
         this.HP-=power;
-        if (p instanceof Mist)
-        {
-            this.freeze();
-        }
-        if (p instanceof Arrow && ((Arrow) p).isPoison())
-            this.poisoned(power / 10);
-        //check for clone hit and for electro and for fist
 
-        return this.HP<=0;//is dead
+        switch (p.getAilment())
+        {
+            case "poison":
+                this.poisoned(power / 10);
+                break;
+            case "freeze":
+                this.freeze();
+                break;
+            case "shock":
+                shock();
+                break;
+        }
+
+        if(this.HP <= 0)
+        {
+            this.running = false;
+            return true;//is dead
+        }
+        return false;
     }
 
     private void poisoned(int power)
@@ -175,7 +186,8 @@ public class Character extends GameObject implements Runnable {
             public void run() {
                 if(repeats>0)
                 {
-                    this.chr.poison(power);
+                    if(!this.chr.poison(power))
+                        repeats = 0;
                     repeats--;
                     Timer timer = new Timer();
                     TimerTask task = new Poison(chr, repeats, power);
@@ -187,9 +199,15 @@ public class Character extends GameObject implements Runnable {
         TimerTask task = new Poison(this, 10, power);
         timer.schedule(task, 1000L);
     }
-    private void poison(int power)
+    public boolean poison(int power)
     {
         this.HP -= power;
+        if(this.HP <= 0)
+        {
+            this.running = false;
+            return false;
+        }
+        return true;
     }
 
     public void freeze()
@@ -479,11 +497,11 @@ public class Character extends GameObject implements Runnable {
 
             long now = System.currentTimeMillis();
             if((resetA - now) <= 5000)
-                resetA += 5000L;
+                resetA = 5000L;
             if((resetB - now) <= 5000)
-                resetB += 5000L;
+                resetB = 5000L;
             if((resetY - now) <= 5000)
-                resetY += 5000L;
+                resetY = 5000L;
 
 
             class UnShock extends TimerTask {

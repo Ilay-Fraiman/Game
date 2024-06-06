@@ -126,50 +126,53 @@ public class Archer extends Character{
     public void run() {
         while (running)
         {
-            float[] values = aimAtPlayer();
-            float playerX = values[0];
-            float playerY = values[1];
-            float width = values[2];
-            float height = values[3];
-            float playerWidth = values[4];
-            float playerHeight = values[5];
-            float xLocation = values[6];
-            float yLocation = values[7];
-            float horizontalDistance = values[8];
-            float verticalDistance = values[9];
-            boolean moveBack = true;
-
-            if(locked<=0)
-            {
-                if(inRange() && useAbility("A"))
-                {
-                    stab();
-                    locked = 10;
-                }
-                else if(useAbility("X"))
-                {
-                    if(!homing() && (characterGrade != 3 && !aim(horizontalDistance, verticalDistance, physicalArrowSpeed)))
-                        moveBack = false;
-                    else
-                    {
-                        poison();
-                        shoot();
-                    }
-                }
-            }
-            float side = (moveBack) ? -1 : 1;
-            this.horizontalMovement = this.horizontalDirection * side;
-            if(yLocation + height == GameView.height)
-                this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
-            moving = true;
-            move(xLocation, yLocation, width, height);
-            locked--;
             if(this.HP <= 0)
                 this.running = false;
-            try {
-                thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            else
+            {
+                float[] values = aimAtPlayer();
+                float playerX = values[0];
+                float playerY = values[1];
+                float width = values[2];
+                float height = values[3];
+                float playerWidth = values[4];
+                float playerHeight = values[5];
+                float xLocation = values[6];
+                float yLocation = values[7];
+                float horizontalDistance = values[8];
+                float verticalDistance = values[9];
+                boolean moveBack = true;
+
+                if(locked<=0)
+                {
+                    if(inRange() && useAbility("A"))
+                    {
+                        stab();
+                        locked = 10;
+                    }
+                    else if(useAbility("X"))
+                    {
+                        if(!homing() && (characterGrade != 3 && !aim(horizontalDistance, verticalDistance, physicalArrowSpeed)))
+                            moveBack = false;
+                        else
+                        {
+                            poison();
+                            shoot();
+                        }
+                    }
+                }
+                float side = (moveBack) ? -1 : 1;
+                this.horizontalMovement = this.horizontalDirection * side;
+                if(yLocation + height == GameView.height)
+                    this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+                moving = true;
+                move(xLocation, yLocation, width, height);
+                locked--;
+                try {
+                    thread.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

@@ -45,7 +45,7 @@ public class Mage extends Character{
             xDiffrential *= 5;
             yDiffrential *= 5;
 
-            LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, 0, 0, locationX, locationY, xDiffrential, yDiffrential, this.effect, this.directionAngle);
+            LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, this.effect, this.directionAngle);
             this.projectiles.add(lightLine);
 
             this.effect = "none";
@@ -78,12 +78,16 @@ public class Mage extends Character{
         {
             float locationX = this.getXPercentage();
             float locationY = this.getYPercentage();
-            float xDiffrential = this.getWidthPercentage() * this.horizontalDirection;
-            float yDiffrential = this.getHeightPercentage() * this.verticalDirection;//false. width, height should be of fireball
+            float myWidth = this.getWidthPercentage();
+            float myHeight = this.getHeightPercentage();
+            float fireBallWidth = myWidth * 0.75f;
+            float fireBallHeight = myHeight * 0.75f;
+            float xDiffrential = fireBallWidth * this.horizontalDirection;
+            float yDiffrential = fireBallHeight * this.verticalDirection;//false. width, height should be of fireball
             if (this.horizontalDirection > 0)
-                locationX += this.getWidthPercentage();
+                locationX += myWidth;
             if (this.verticalDirection > 0)
-                locationY += this.getHeightPercentage();
+                locationY += myHeight;
 
             locationX += xDiffrential;
             locationY += yDiffrential;
@@ -91,17 +95,22 @@ public class Mage extends Character{
             xDiffrential = fireBallSpeed * horizontalDirection;
             yDiffrential = fireBallSpeed * verticalDirection;
 
-            FireBall fireBall = new FireBall(fireSprite, roomID, this, attackPower*2, xDiffrential, yDiffrential, locationX, locationY, xDiffrential, yDiffrential);
+            FireBall fireBall = new FireBall(fireSprite, roomID, this, attackPower*2, xDiffrential, yDiffrential, locationX, locationY, fireBallWidth, fireBallHeight, directionAngle);
             this.projectiles.add(fireBall);
             resetAbility("B");
         }
     }
 
-    public void heal()//overheal or nah?
+    public void heal()
     {
         if(useAbility("Y"))
         {
-            this.HP += (this.maxHealth / 2);
+            double healing = this.maxHealth / 2;
+            if((this.HP + healing) > maxHealth)
+                healing = maxHealth - this.HP;
+            this.HP += healing;
+            if(characterGrade == 2)
+                this.clone.HP += healing;
             resetAbility("Y");
         }
     }
@@ -111,12 +120,24 @@ public class Mage extends Character{
         this.clone = c;
     }
 
-    private void cloneHit()
-    {
-        if(this.HP < this.clone.HP)
-            this.clone.HP = this.HP;
-        else
-            this.HP = this.clone.HP;
+    @Override
+    public boolean hit(Projectile p) {
+        if(characterGrade == 2)
+        {
+            double power = (double) p.getPower();
+            this.clone.HP -= power;
+        }
+        return super.hit(p);
+    }
+
+    @Override
+    public boolean poison(int power) {
+        if(characterGrade == 2)
+        {
+            double damage = (double) power;
+            this.clone.HP -= damage;
+        }
+        return super.poison(power);
     }
 
     private void ailment()
@@ -139,60 +160,63 @@ public class Mage extends Character{
     public void run() {
         while (running)
         {
-            float[] values = aimAtPlayer();
-            float playerX = values[0];
-            float playerY = values[1];
-            float width = values[2];
-            float height = values[3];
-            float playerWidth = values[4];
-            float playerHeight = values[5];
-            float xLocation = values[6];
-            float yLocation = values[7];
-            float horizontalDistance = values[8];
-            float verticalDistance = values[9];
-            boolean moveBack = true;
-            if(characterGrade == 4)
-                this.HP += this.maxHealth / 900;
-
-            if(useAbility("Y"))
-                heal();
-
-            if(locked<=0)
-            {
-                if(inRange() && useAbility("A"))
-                {
-                    mist();
-                    locked = 10;
-                }
-                else if(useAbility("X") && ((horizontalDistance <= (this.getWidthPercentage() * this.horizontalDirection * 5)) && (verticalDistance <= (this.getHeightPercentage() * this.verticalDirection * 5))))
-                {
-                    if(characterGrade == 1)
-                        ailment();
-                    lightLine();
-                }
-                else if(useAbility("B"))
-                {
-                    if(!aim(horizontalDistance, verticalDistance, physicalFireBallSpeed))
-                        moveBack = false;
-                    else
-                    {
-                        fireball();
-                    }
-                }
-            }
-            float side = (moveBack) ? -1 : 1;
-            this.horizontalMovement = this.horizontalDirection * side;
-            if(yLocation + height == GameView.height)
-                this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
-            moving = true;
-            move(xLocation, yLocation, width, height);
-            locked--;
             if(this.HP <= 0)
                 this.running = false;
-            try {
-                thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            else
+            {
+                float[] values = aimAtPlayer();
+                float playerX = values[0];
+                float playerY = values[1];
+                float width = values[2];
+                float height = values[3];
+                float playerWidth = values[4];
+                float playerHeight = values[5];
+                float xLocation = values[6];
+                float yLocation = values[7];
+                float horizontalDistance = values[8];
+                float verticalDistance = values[9];
+                boolean moveBack = true;
+                if(characterGrade == 4)
+                    this.HP += this.maxHealth / 900;
+
+                if(useAbility("Y"))
+                    heal();
+
+                if(locked<=0)
+                {
+                    if(inRange() && useAbility("A"))
+                    {
+                        mist();
+                        locked = 10;
+                    }
+                    else if(useAbility("X") && ((horizontalDistance <= (this.getWidthPercentage() * this.horizontalDirection * 5)) && (verticalDistance <= (this.getHeightPercentage() * this.verticalDirection * 5))))
+                    {
+                        if(characterGrade == 1)
+                            ailment();
+                        lightLine();
+                    }
+                    else if(useAbility("B"))
+                    {
+                        if(!aim(horizontalDistance, verticalDistance, physicalFireBallSpeed))
+                            moveBack = false;
+                        else
+                        {
+                            fireball();
+                        }
+                    }
+                }
+                float side = (moveBack) ? -1 : 1;
+                this.horizontalMovement = this.horizontalDirection * side;
+                if(yLocation + height == GameView.height)
+                    this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+                moving = true;
+                move(xLocation, yLocation, width, height);
+                locked--;
+                try {
+                    thread.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

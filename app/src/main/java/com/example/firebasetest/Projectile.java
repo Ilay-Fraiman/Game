@@ -7,9 +7,13 @@ public class Projectile extends GameObject{
     protected float verticalSpeed;
     protected float power;
     protected Character creator; // is it protected?
-    public Projectile(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height){
+    protected double angle;
+    protected String ailment;//poison, freeze, shock, fire
+    public Projectile(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
         super(sprite, ID, xLocation, yLocation, width, height);
         this.power = power;
+        this.angle = direction;
+        this.ailment = effect;
         //switch sizes like in character
     }
 
@@ -39,5 +43,18 @@ public class Projectile extends GameObject{
 
     public void setCreator(Character creator) {
         this.creator = creator;
+    }
+
+    public double getAngle()
+    {
+        return angle;
+    }
+
+    public Character getCreator() {
+        return creator;
+    }
+
+    public String getAilment() {
+        return ailment;
     }
 }

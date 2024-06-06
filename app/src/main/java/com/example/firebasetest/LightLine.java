@@ -3,20 +3,16 @@ package com.example.firebasetest;
 import android.graphics.Bitmap;
 
 public class LightLine extends Projectile{
-    private String ailment;
-    private double angle;
-    public LightLine(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, String effect, double direction)
+    private long TTD;
+    public LightLine(Bitmap sprite, int ID, Character creator, float power, float xLocation, float yLocation, float width, float height, String effect, double direction)
     {
-        super(sprite, ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height);
+        super(sprite, ID, creator, power, 0, 0, xLocation, yLocation, width, height, direction, effect);
         this.ailment = effect;
-        this.angle = direction;
+        this.TTD = System.currentTimeMillis() + 500L;//currently half a second. maybe a full? maybe 0.75?
     }
 
-    public String getAilment() {
-        return ailment;
-    }
-
-    public double getAngle() {
-        return angle;
+    public long getTTD()
+    {
+        return TTD;
     }
 }

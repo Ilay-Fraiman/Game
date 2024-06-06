@@ -85,6 +85,21 @@ public class Knight extends Character{
         if(shielded)
         {
             shielded = false;
+            class RestoreShield extends TimerTask {
+                private Knight knight;
+                RestoreShield(Knight k)
+                {
+                    this.knight = k;
+                }
+
+                @Override
+                public void run() {
+                    knight.shieldRestore();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new RestoreShield(this);
+            timer.schedule(task, 10000L);
             resetAbility("A");
         }
     }
@@ -198,13 +213,17 @@ public class Knight extends Character{
     public boolean hit(Projectile p) {//this and its continues should be in character
         //to block an attack both directions need to be opposite (only on shield, not parry)
         boolean shieldBroke = false;
-        float damageSustained= p.getPower();
+        float damageSustained = p.getPower();
+        String ailment = p.getAilment();
+        boolean isDead = false;
         if(shielded){
             float horizontal = p.getHorizontalSpeed() * horizontalDirection;
             float vertical = p.getVerticalSpeed() * verticalDirection;
             if (horizontal < 0 && vertical < 0)
             {
-                shieldHP -=damageSustained;
+                shieldHP -= damageSustained;
+                if (ailment == "fire")
+                    burningShield(damageSustained / 10);
                 if (shieldHP <= 0)
                 {
                     shieldBroke = true;
@@ -225,42 +244,34 @@ public class Knight extends Character{
             if(mounted)
             {
                 this.horseHP -= damageSustained;
-                if (p instanceof Arrow && ((Arrow) p).isPoison())
+
+                switch (ailment)
                 {
-                    this.poisonedHorse(damageSustained / 10);
+                    case "poison":
+                        this.poisonedHorse(damageSustained / 10);
+                        break;
+                    case "freeze":
+                        this.freeze();
+                        break;
+                    case "shock":
+                        dismount();
+                        shock();
+                        break;
                 }
-                else if(p instanceof Mist)
-                    this.freeze();
-                //if shock then shock
 
                 if(this.horseHP<=0)
                     dismount();
             }
             else
             {
-                super.hit(p);
+                isDead = super.hit(p);
             }
         }
         if(shieldBroke)
         {
             shieldReleased();
-            class RestoreShield extends TimerTask {
-                private Knight knight;
-                RestoreShield(Knight k)
-                {
-                    this.knight = k;
-                }
-
-                @Override
-                public void run() {
-                    knight.shieldRestore();
-                }
-            }
-            Timer timer = new Timer();
-            TimerTask task = new RestoreShield(this);
-            timer.schedule(task, 10000L);
         }
-        return this.HP<=0;//is dead
+        return isDead;
     }
 
     private void poisonedHorse(double power)
@@ -306,6 +317,49 @@ public class Knight extends Character{
         return true;
     }
 
+    public boolean shieldBurn(double power)
+    {
+        this.shieldHP -= power;
+        if(shieldHP<=0)
+        {
+            shieldReleased();
+            return false;
+        }
+        return true;
+    }
+
+    private void burningShield(double power)
+    {
+        class Burn extends TimerTask {
+            private Knight knight;
+            private int repeats;
+            private double power;
+
+            Burn(Knight k, int r, double p)
+            {
+                this.knight = k;
+                this.repeats = r;
+                this.power = p;
+            }
+
+            @Override
+            public void run() {
+                if(repeats>0)
+                {
+                    if(!this.knight.shieldBurn(power))
+                        repeats = 0;
+                    repeats--;
+                    Timer timer = new Timer();
+                    TimerTask task = new Burn(knight, repeats, power);
+                    timer.schedule(task, 1000L);
+                }
+            }
+        }
+        Timer timer = new Timer();
+        TimerTask task = new Burn(this, 10, power);
+        timer.schedule(task, 1000L);
+    }
+
     public void shieldRestore()
     {
         this.shieldHP = this.maxShieldHP;
@@ -320,77 +374,80 @@ public class Knight extends Character{
     public void run() {
         while (running)
         {
-            float[] values = aimAtPlayer();
-            float playerX = values[0];
-            float playerY = values[1];
-            float width = values[2];
-            float height = values[3];
-            float playerWidth = values[4];
-            float playerHeight = values[5];
-            float xLocation = values[6];
-            float yLocation = values[7];
-            moving = false;
-
-            //if locked = 0, reset sprite
-
-            if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
-                mount(knightSprite);//temp sprite
-
-            if(useAbility("B") && (locked <= 0))
-            {
-                buff();
-                locked = 10;
-            }
-
-            if(inRange())
-            {
-                boolean moveBack = true;
-                if (locked <= 0)
-                {
-                    if (shielded)
-                        locked = 10;
-                    if(useAbility("X"))
-                    {
-                        moveBack = false;
-                        shieldReleased();
-                        attack();
-                        locked = 10;
-                    }
-                    else if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
-                    {
-                        locked = 10;
-                    }
-                }
-                if(moveBack)
-                {
-                    this.horizontalMovement = this.horizontalDirection * (-1);
-                    if(yLocation + height == GameView.height)
-                        this.verticalMovement = this.verticalDirection * (-1) * this.movementSpeed;
-                    moving = true;
-                }
-            }
-            else if(useAbility("X"))
-            {
-                this.horizontalMovement = this.horizontalDirection;
-                if(yLocation + height == GameView.height)
-                    this.verticalMovement = this.verticalDirection * this.movementSpeed;
-                moving = true;
-            }
-            if(characterGrade == 4)
-            {
-                if((xLocation <= 0) || (xLocation + width >= GameView.width))
-                    horseDirection *= -1;
-                horizontalMovement = horseDirection;
-                moving = true;
-            }
-            move(xLocation, yLocation, width, height);
-            locked--;
             if(this.HP <= 0)
                 this.running = false;
-            try {
-                thread.sleep(30);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            else
+            {
+                float[] values = aimAtPlayer();
+                float playerX = values[0];
+                float playerY = values[1];
+                float width = values[2];
+                float height = values[3];
+                float playerWidth = values[4];
+                float playerHeight = values[5];
+                float xLocation = values[6];
+                float yLocation = values[7];
+                moving = false;
+
+                //if locked = 0, reset sprite
+
+                if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
+                    mount(knightSprite);//temp sprite
+
+                if(useAbility("B") && (locked <= 0))
+                {
+                    buff();
+                    locked = 10;
+                }
+
+                if(inRange())
+                {
+                    boolean moveBack = true;
+                    if (locked <= 0)
+                    {
+                        if (shielded)
+                            locked = 10;
+                        if(useAbility("X"))
+                        {
+                            moveBack = false;
+                            shieldReleased();
+                            attack();
+                            locked = 10;
+                        }
+                        else if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
+                        {
+                            locked = 10;
+                        }
+                    }
+                    if(moveBack)
+                    {
+                        this.horizontalMovement = this.horizontalDirection * (-1);
+                        if(yLocation + height == GameView.height)
+                            this.verticalMovement = this.verticalDirection * (-1) * this.movementSpeed;
+                        moving = true;
+                    }
+                }
+                else if(useAbility("X"))
+                {
+                    this.horizontalMovement = this.horizontalDirection;
+                    if(yLocation + height == GameView.height)
+                        this.verticalMovement = this.verticalDirection * this.movementSpeed;
+                    moving = true;
+                }
+                if(characterGrade == 4)
+                {
+                    if((xLocation <= 0) || (xLocation + width >= GameView.width))
+                        horseDirection *= -1;
+                    horizontalMovement = horseDirection;
+                    moving = true;
+                }
+                move(xLocation, yLocation, width, height);
+                locked--;
+                try {
+                    thread.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
