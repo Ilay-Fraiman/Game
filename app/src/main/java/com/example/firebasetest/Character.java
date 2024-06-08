@@ -32,6 +32,8 @@ public class Character extends GameObject implements Runnable {
     protected double directionAngle;
     protected boolean shocked;
     protected int toShock;
+    protected boolean moveBack;
+    public double distanceVector;
     public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
     {
         super(sprite, ID, xLocation, yLocation);
@@ -51,6 +53,8 @@ public class Character extends GameObject implements Runnable {
         this.characterGrade = characterGrade;
         this.shocked = false;
         this.toShock = 0;
+        this. moveBack = true;
+        this.distanceVector = 0;
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -123,22 +127,18 @@ public class Character extends GameObject implements Runnable {
     public void resetAbility(String button)
     {
         long start = System.currentTimeMillis();
-        long time = attackCooldown;
         switch (button){
             case "A":
-                time *= 5;
-                resetA = start + time;
+                resetA = start + 5000L;
                 break;
             case "B":
-                time = 10000L;
-                resetB = start + time;
+                resetB = start + 10000L;
                 break;
             case "X":
-                resetX = start + time;
+                resetX = start + attackCooldown;
                 break;
             case "Y":
-                time = 30000L;
-                resetY = start + time;
+                resetY = start + 30000L;
                 break;
         }
     }
@@ -157,6 +157,9 @@ public class Character extends GameObject implements Runnable {
                 break;
             case "shock":
                 shock();
+                break;
+            case "life steal":
+                p.getCreator().HP += power;
                 break;
         }
 
@@ -251,6 +254,10 @@ public class Character extends GameObject implements Runnable {
             locationVert += this.getHeightPercentage();
 
         BladeAttack bladeAttack = new BladeAttack(itemSprite, roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
+        if(this instanceof Sage)
+            bladeAttack.SetAilment("life steal");
+        else if(this instanceof Archer)
+            bladeAttack.setPower(attackPower / 2);
         this.projectiles.add(bladeAttack);
     }
     public static void setPlayer(Character p)
@@ -334,6 +341,7 @@ public class Character extends GameObject implements Runnable {
     public boolean inRange()//is the player in range of attack
     {
         double radius = Math.sqrt(Math.pow((double) horizontalDirection, 2) + Math.pow((double) verticalDirection, 2));//is rad 1
+        this.distanceVector = radius;
         if (radius <= 1)
             return true;
 
@@ -362,12 +370,16 @@ public class Character extends GameObject implements Runnable {
 
         if(playerX < xLocation)
             this.horizontalDirection = (playerX + playerWidth) - xLocation;
-        else
+        else if(playerX > xLocation)
             this.horizontalDirection = playerX - (xLocation + width);
+        else
+            this.horizontalDirection = 0;
         if(playerY < yLocation)
             this.verticalDirection = (playerY + playerHeight) - yLocation;
-        else
+        else if(playerY > yLocation)
             this.verticalDirection = playerY - (yLocation + height);
+        else
+            this.verticalDirection = 0;
 
         horizontalDistance = horizontalDirection;
         verticalDistance = verticalDirection;
@@ -496,13 +508,7 @@ public class Character extends GameObject implements Runnable {
             this.shocked = true;
 
             long now = System.currentTimeMillis();
-            if((resetA - now) <= 5000)
-                resetA = 5000L;
-            if((resetB - now) <= 5000)
-                resetB = 5000L;
-            if((resetY - now) <= 5000)
-                resetY = 5000L;
-
+            resetX = now + 5000L;
 
             class UnShock extends TimerTask {
                 private Character character;
@@ -531,6 +537,68 @@ public class Character extends GameObject implements Runnable {
             toShock--;
             shock();
         }
+    }
+
+    public void backedIntoWall(float x, float y, float width, float height, float otherX)
+    {
+        if (y + height <= GameView.canvasPixelHeight)
+        {
+            if (otherX < x)
+            {
+                if ((x + (width * 2)) >= GameView.width)
+                {
+                    horizontalMovement = -1;
+                    this.verticalMovement = (-1) * this.movementSpeed;
+                }
+            }
+            else
+            {
+                if ((x - width) <= 0)
+                {
+                    horizontalMovement = 1;
+                    this.verticalMovement = (-1) * this.movementSpeed;
+                }
+            }
+        }
+    }
+
+    public void magicLine(String effect, Bitmap lineSprite)//sprite is temporary
+    {
+        float locationX = this.getXPercentage();
+        float locationY = this.getYPercentage();
+        float xDiffrential = this.getWidthPercentage() * this.horizontalDirection * 5;
+        float yDiffrential = this.getHeightPercentage() * this.verticalDirection / 5;
+        if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(yDiffrential<xDiffrential))
+        {
+            xDiffrential /= 25;
+            yDiffrential *= 25;
+        }
+
+        if(effect == "laser")
+        {
+            if (xDiffrential > yDiffrential)
+            {
+                xDiffrential *= 2;
+                yDiffrential *= 5;
+            }
+            else
+            {
+                xDiffrential *= 5;
+                yDiffrential *= 2;
+            }
+        }
+
+        if(this.horizontalDirection>0)
+            locationX += this.getWidthPercentage();
+        else
+            locationX += xDiffrential;
+        if(this.verticalDirection>0)
+            locationY += this.getHeightPercentage();
+        else
+            locationY += yDiffrential;
+
+        LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
+        this.projectiles.add(lightLine);
     }
 
     @Override

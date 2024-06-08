@@ -8,20 +8,28 @@ import java.util.TimerTask;
 
 public class Knight extends Character{
     public static Bitmap knightSprite;//different sprites actually
-    private boolean shielded = false;//parry reflects(?), not only shields. shield dosent take damage.
-    private boolean parry = false;
+    private boolean shielded;//parry reflects(?), not only shields. shield dosent take damage.
+    private boolean parry;
     private double shieldHP;//half knight hp
     private double horseHP;//same hp as knight
     private double maxShieldHP;
     private double maxHorseHP;
-    private float horseDirection = -1;
-    private boolean mounted = false;
+    private float horseDirection;
+    private boolean mounted;
+    private boolean shieldHealing;
+    private boolean horseHealing;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation){
         super(level,5,2,3, knightSprite, ID, xLocation, yLocation, characterGrade);
         //change stats for character grade
         //is there thread for enemy?
         this.maxShieldHP = this.HP / 2;
         this.maxHorseHP = this.HP;
+        this.shielded = false;
+        this.parry = false;
+        this.horseDirection = -1;
+        this.mounted = false;
+        this.shieldHealing = false;
+        this.horseHealing = false;
         switch (characterGrade)//temporary. need to add sprites and threads
         {
             case 1:
@@ -52,7 +60,7 @@ public class Knight extends Character{
     {
         if(useAbility("X") && !shielded)
         {
-            super.Attack();
+            Attack();
 
             resetAbility("X");
         }
@@ -85,6 +93,11 @@ public class Knight extends Character{
         if(shielded)
         {
             shielded = false;
+            resetAbility("A");
+        }
+        if (shieldHP <= 0 && !shieldHealing)
+        {
+            shieldHealing = true;
             class RestoreShield extends TimerTask {
                 private Knight knight;
                 RestoreShield(Knight k)
@@ -100,7 +113,6 @@ public class Knight extends Character{
             Timer timer = new Timer();
             TimerTask task = new RestoreShield(this);
             timer.schedule(task, 10000L);
-            resetAbility("A");
         }
     }
 
@@ -189,8 +201,9 @@ public class Knight extends Character{
         this.itemHeight /= 2;
         this.itemWidth /= 2;
         resetAbility("Y");
-        if(horseHP<=0)
+        if(horseHP<=0 && !horseHealing)
         {
+            horseHealing = true;
             class RestoreHorse extends TimerTask {
                 private Knight knight;
                 RestoreHorse(Knight k)
@@ -388,52 +401,65 @@ public class Knight extends Character{
                 float xLocation = values[6];
                 float yLocation = values[7];
                 moving = false;
+                moveBack = false;
 
                 //if locked = 0, reset sprite
 
                 if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
                     mount(knightSprite);//temp sprite
 
-                if(useAbility("B") && (locked <= 0))
+                if((useAbility("B") && (locked <= 0)) && (!shocked))
                 {
+                    shieldReleased();
                     buff();
                     locked = 10;
                 }
 
                 if(inRange())
                 {
-                    boolean moveBack = true;
                     if (locked <= 0)
                     {
-                        if (shielded)
-                            locked = 10;
                         if(useAbility("X"))
                         {
                             moveBack = false;
                             shieldReleased();
                             attack();
-                            locked = 10;
+                            locked = 15;
                         }
-                        else if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
+                        else
                         {
-                            locked = 10;
+                            moving = true;
+                            moveBack = true;
+
+                            if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
+                                locked = 15;
                         }
                     }
-                    if(moveBack)
-                    {
-                        this.horizontalMovement = this.horizontalDirection * (-1);
-                        if(yLocation + height == GameView.height)
-                            this.verticalMovement = this.verticalDirection * (-1) * this.movementSpeed;
+                    else {
+                        moveBack = true;
                         moving = true;
                     }
                 }
-                else if(useAbility("X"))
+                else
                 {
-                    this.horizontalMovement = this.horizontalDirection;
-                    if(yLocation + height == GameView.height)
-                        this.verticalMovement = this.verticalDirection * this.movementSpeed;
-                    moving = true;
+                    if(this.characterGrade != 2)
+                    {
+                        shieldOrParry(1);
+                        locked = 15;
+                    }
+
+                    if(useAbility("X"))
+                        moving = true;
                 }
+
+                if(moving)
+                {
+                    float side = (moveBack) ? -1 : 1;
+                    this.horizontalMovement = this.horizontalDirection * side;
+                    if(yLocation + height == GameView.height)
+                        this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+                }
+
                 if(characterGrade == 4)
                 {
                     if((xLocation <= 0) || (xLocation + width >= GameView.width))

@@ -30,24 +30,7 @@ public class Mage extends Character{
     {
         if(useAbility("X"))
         {
-            float locationX = this.getXPercentage();
-            float locationY = this.getYPercentage();
-            float xDiffrential = this.getWidthPercentage() * this.horizontalDirection;
-            float yDiffrential = this.getHeightPercentage() * this.verticalDirection;
-            if(this.horizontalDirection>0)
-                locationX += this.getWidthPercentage();
-            if(this.verticalDirection>0)
-                locationY += this.getHeightPercentage();
-
-            locationX += xDiffrential;
-            locationY += yDiffrential;
-
-            xDiffrential *= 5;
-            yDiffrential *= 5;
-
-            LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, this.effect, this.directionAngle);
-            this.projectiles.add(lightLine);
-
+            magicLine(this.effect, lineSprite);
             this.effect = "none";
             resetAbility("X");
         }
@@ -175,25 +158,32 @@ public class Mage extends Character{
                 float yLocation = values[7];
                 float horizontalDistance = values[8];
                 float verticalDistance = values[9];
-                boolean moveBack = true;
+                moveBack = true;
+                boolean backed = false;
                 if(characterGrade == 4)
                     this.HP += this.maxHealth / 900;
 
                 if(useAbility("Y"))
                     heal();
 
+                boolean range = inRange();
+                if(range)
+                    backed = true;
+
+
                 if(locked<=0)
                 {
-                    if(inRange() && useAbility("A"))
+                    if (useAbility("A") && range)
                     {
                         mist();
                         locked = 10;
                     }
-                    else if(useAbility("X") && ((horizontalDistance <= (this.getWidthPercentage() * this.horizontalDirection * 5)) && (verticalDistance <= (this.getHeightPercentage() * this.verticalDirection * 5))))
+                    else if(useAbility("X") && (this.distanceVector < width * 5))
                     {
                         if(characterGrade == 1)
                             ailment();
                         lightLine();
+                        locked = 10;
                     }
                     else if(useAbility("B"))
                     {
@@ -202,6 +192,7 @@ public class Mage extends Character{
                         else
                         {
                             fireball();
+                            locked = 10;
                         }
                     }
                 }
@@ -209,6 +200,8 @@ public class Mage extends Character{
                 this.horizontalMovement = this.horizontalDirection * side;
                 if(yLocation + height == GameView.height)
                     this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+                if(backed)
+                    backedIntoWall(xLocation, yLocation, width, height, playerX);
                 moving = true;
                 move(xLocation, yLocation, width, height);
                 locked--;

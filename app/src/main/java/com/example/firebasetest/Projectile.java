@@ -57,4 +57,9 @@ public class Projectile extends GameObject{
     public String getAilment() {
         return ailment;
     }
+
+    public void SetAilment(String effect)
+    {
+        this.ailment = effect;
+    }
 }

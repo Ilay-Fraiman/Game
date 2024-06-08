@@ -80,7 +80,7 @@ public class Archer extends Character{
     {
         if(useAbility("A"))
         {
-            super.Attack();
+            Attack();
             resetAbility("A");
         }
     }
@@ -141,14 +141,19 @@ public class Archer extends Character{
                 float yLocation = values[7];
                 float horizontalDistance = values[8];
                 float verticalDistance = values[9];
-                boolean moveBack = true;
+                moveBack = true;
+                boolean backed = false;
+
+                boolean range = inRange();
+                if (range)
+                    backed = true;
 
                 if(locked<=0)
                 {
-                    if(inRange() && useAbility("A"))
+                    if(useAbility("A") && range)
                     {
                         stab();
-                        locked = 10;
+                        locked = 15;
                     }
                     else if(useAbility("X"))
                     {
@@ -165,6 +170,8 @@ public class Archer extends Character{
                 this.horizontalMovement = this.horizontalDirection * side;
                 if(yLocation + height == GameView.height)
                     this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+                if(backed)
+                    backedIntoWall(xLocation, yLocation, width, height, playerX);
                 moving = true;
                 move(xLocation, yLocation, width, height);
                 locked--;
