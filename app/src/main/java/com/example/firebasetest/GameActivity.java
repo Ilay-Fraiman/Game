@@ -45,7 +45,7 @@ public class GameActivity extends AppCompatActivity {
                     }
                     for (User user: users)
                     {
-                        if(FirebaseAuth.getInstance().getCurrentUser().getEmail() == user.getEmail())
+                        if(FirebaseAuth.getInstance().getCurrentUser().getEmail().equals(user.getEmail()))
                             playerUser = user;
                     }
                 }
