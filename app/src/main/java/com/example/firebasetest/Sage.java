@@ -10,48 +10,51 @@ public class Sage extends Character {
     public static Bitmap knightSprite;//temporary
     private float pebbleSpeed;
     private float physicalPebbleSpeed;
-    private float pebbleWidth;
-    private float pebbleHeight;
-    public Sage(int level, int ID, float xLocation, float yLocation)
+    private boolean laser;
+    public Sage(int level, int ID, float xLocation, float yLocation)//both pebble and flying fist aren't affected by gravity
     {
-        super(level,3,3,3, knightSprite, ID, xLocation, yLocation, 4);
-        double geometricalArrowSpeed = Math.sqrt((10.53 * 10));
-        physicalPebbleSpeed = (float) geometricalArrowSpeed;
+        super(level,3,3,3, knightSprite, ID, xLocation, yLocation, 6);
+        double geometricalPebbleSpeed = Math.sqrt((10.53 * 10));
+        physicalPebbleSpeed = (float) geometricalPebbleSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
         transitionNum *= 30;//transition from frames to seconds
         pebbleSpeed = physicalPebbleSpeed / transitionNum;//transition from meters per second to pixels per frame
         //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
+        this.laser = false;
     }
 
     public void pebble()
     {
-        float locationX = this.getXPercentage();
-        float locationY = this.getYPercentage();
-        float myWidth = this.getWidthPercentage();
-        float myHeight = this.getHeightPercentage();
-        float pebbleWidth = myWidth / 5;
-        float pebbleHeight = myHeight / 5;
-        float xDiffrential = pebbleWidth * this.horizontalDirection;
-        float yDiffrential = pebbleHeight * this.verticalDirection;//false. width, height should be of fireball
-        if (this.horizontalDirection > 0)
-            locationX += myWidth;
-        if (this.verticalDirection > 0)
-            locationY += myHeight;
+        if(useAbility("X") && !laser)
+        {
+            float locationX = this.getXPercentage();
+            float locationY = this.getYPercentage();
+            float myWidth = this.getWidthPercentage();
+            float myHeight = this.getHeightPercentage();
+            float pebbleWidth = myWidth / 5;
+            float pebbleHeight = myHeight / 5;
+            float xDiffrential = pebbleWidth * this.horizontalDirection;
+            float yDiffrential = pebbleHeight * this.verticalDirection;//false. width, height should be of fireball
+            if (this.horizontalDirection > 0)
+                locationX += myWidth;
+            if (this.verticalDirection > 0)
+                locationY += myHeight;
 
-        locationX += xDiffrential;
-        locationY += yDiffrential;
+            locationX += xDiffrential;
+            locationY += yDiffrential;
 
-        xDiffrential = pebbleSpeed * horizontalDirection;
-        yDiffrential = pebbleSpeed * verticalDirection;
+            xDiffrential = pebbleSpeed * horizontalDirection;
+            yDiffrential = pebbleSpeed * verticalDirection;
 
-        Pebble pebble = new Pebble(knightSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, pebbleWidth, pebbleHeight, directionAngle);
-        this.projectiles.add(pebble);
-        resetAbility("X");
+            Pebble pebble = new Pebble(knightSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, pebbleWidth, pebbleHeight, directionAngle);
+            this.projectiles.add(pebble);
+            resetAbility("X");
+        }
     }
 
     public void scepterBash()
     {
-        if(useAbility("A"))
+        if(useAbility("A") && !laser)
         {
             Attack();
             resetAbility("A");
@@ -60,7 +63,7 @@ public class Sage extends Character {
 
     public void teleport()
     {
-        if(useAbility("B"))
+        if(useAbility("B") && !laser)
         {
             float values[] = aimAtPlayer();//this works in both boss mode and pvp mode because we use
             //character.setPlayer() when initializing the room in both cases
@@ -86,9 +89,48 @@ public class Sage extends Character {
         {
             magicLine("laser", knightSprite);//sprite is temporary
             resetAbility("Y");
+            class Release extends TimerTask {
+                private Sage sage;
+
+                Release(Sage s)
+                {
+                    this.sage = s;
+                }
+
+                @Override
+                public void run() {
+                    sage.release();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new Release(this);
+            timer.schedule(task, 5000L);
         }
     }
 
+    public void release()
+    {
+        this.laser = false;
+        resetAbility("Y");
+    }
+
+    @Override
+    protected void move(float x, float y, float tWidth, float tHeight) {
+        if(!laser)
+            super.move(x, y, tWidth, tHeight);
+    }
+
+    @Override
+    public void setUpDirection(float x, float y) {
+        if(!laser)
+            super.setUpDirection(x, y);
+    }
+
+    @Override
+    public void setUpMovement(float x, float y) {
+        if(!laser)
+            super.setUpMovement(x, y);
+    }
 
     @Override
     public void run() {
@@ -97,6 +139,14 @@ public class Sage extends Character {
             {
                 this.running = false;
                 //show transformation to berserker king animation
+            }
+            else if(laser)
+            {
+                try {
+                    thread.sleep(30);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             else {
                 float[] values = aimAtPlayer();
@@ -129,12 +179,11 @@ public class Sage extends Character {
                 }
                 if (locked <= 0)
                 {
-                    if(useAbility("X") && (this.distanceVector < width * 10))
+                    if(useAbility("Y") && (this.distanceVector < width * 10))
                     {
                         laser();
-                        locked = 150;
                     }
-                    else
+                    else if(useAbility("X"))
                         pebble();
                 }
 

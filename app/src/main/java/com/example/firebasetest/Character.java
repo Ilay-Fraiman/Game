@@ -43,7 +43,7 @@ public class Character extends GameObject implements Runnable {
         itemWidth = myWidth;
         itemHeight = myWidth;
         movementSpeed = myWidth / 10;//speed is screen within 5 seconds. this is the speed for every frame (1/30 of a second)
-        HP = HPD * 10 * level;
+        HP = HPD * 15 * level;
         attackCooldown-= (level*ACD);
         attackPower = level*APD;
         this.resetX = 0;
@@ -599,6 +599,16 @@ public class Character extends GameObject implements Runnable {
 
         LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
+    }
+
+    public void setUpMovement(float x, float y)
+    {
+        //stand in for controller input
+    }
+
+    public void setUpDirection(float x, float y)
+    {
+        //stand in for controller input
     }
 
     @Override
