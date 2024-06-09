@@ -123,22 +123,6 @@ public class Mage extends Character{
         return super.poison(power);
     }
 
-    private void ailment()
-    {
-        int ailmentNum = getRandomNumber(1, 3);
-        switch (ailmentNum)
-        {
-            case 1:
-                this.effect = "freeze";
-                break;
-            case 2:
-                this.effect = "poison";
-                break;
-            case 3:
-                this.effect = "shock";
-        }
-    }
-
     @Override
     public void run() {
         while (running)
@@ -181,7 +165,7 @@ public class Mage extends Character{
                     else if(useAbility("X") && (this.distanceVector < width * 5))
                     {
                         if(characterGrade == 1)
-                            ailment();
+                            this.effect = ailment();
                         lightLine();
                         locked = 10;
                     }
@@ -206,7 +190,7 @@ public class Mage extends Character{
                 move(xLocation, yLocation, width, height);
                 locked--;
                 try {
-                    thread.sleep(30);
+                    thread.sleep(33);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

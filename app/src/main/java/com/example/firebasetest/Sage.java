@@ -85,9 +85,10 @@ public class Sage extends Character {
 
     public void laser()
     {
-        if(useAbility("Y"))
+        if(useAbility("Y") && (getYPercentage() + getHeightPercentage() == GameView.height))
         {
             magicLine("laser", knightSprite);//sprite is temporary
+            laser = true;
             resetAbility("Y");
             class Release extends TimerTask {
                 private Sage sage;
@@ -143,7 +144,7 @@ public class Sage extends Character {
             else if(laser)
             {
                 try {
-                    thread.sleep(30);
+                    thread.sleep(33);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -157,6 +158,7 @@ public class Sage extends Character {
                 float yLocation = values[7];
                 moveBack = true;
                 boolean backed = false;
+                boolean grounded = (yLocation + height == GameView.height);
 
                 boolean range = inRange();
                 if(range)
@@ -179,7 +181,7 @@ public class Sage extends Character {
                 }
                 if (locked <= 0)
                 {
-                    if(useAbility("Y") && (this.distanceVector < width * 10))
+                    if(useAbility("Y") && ((this.distanceVector < width * 10) && grounded))
                     {
                         laser();
                     }
@@ -189,7 +191,7 @@ public class Sage extends Character {
 
                 float side = (moveBack) ? -1 : 1;
                 this.horizontalMovement = this.horizontalDirection * side;
-                if(yLocation + height == GameView.height)
+                if(grounded)
                     this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
                 if(backed)
                     backedIntoWall(xLocation, yLocation, width, height, playerX);
@@ -197,7 +199,7 @@ public class Sage extends Character {
                 move(xLocation, yLocation, width, height);
                 locked--;
                 try {
-                    thread.sleep(30);
+                    thread.sleep(33);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

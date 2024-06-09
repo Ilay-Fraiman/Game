@@ -611,6 +611,28 @@ public class Character extends GameObject implements Runnable {
         //stand in for controller input
     }
 
+    public String ailment()
+    {
+        int endNum = (this instanceof Berserker)? 3 : 4;
+        int ailmentNum = getRandomNumber(1, endNum);
+        String ailment = "none";
+        switch (ailmentNum)
+        {
+            case 1:
+                ailment = "freeze";
+                break;
+            case 2:
+                ailment = "poison";
+                break;
+            case 3:
+                ailment = "shock";
+                break;
+            case 4:
+                ailment = "fire";
+        }
+        return ailment;
+    }
+
     @Override
     public void run() {
 

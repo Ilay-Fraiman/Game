@@ -176,7 +176,7 @@ public class Archer extends Character{
                 move(xLocation, yLocation, width, height);
                 locked--;
                 try {
-                    thread.sleep(30);
+                    thread.sleep(33);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
