@@ -33,7 +33,7 @@ public class GameActivity extends AppCompatActivity {
     int difficultyScaling;
     int challengeDifficulty;
     int challengeDifficultyScaling;
-    User playerUser;
+    private User playerUser;
     //private int doomsdayClock;int(?) (i dont know if i'm doing this after all)
     // private int suddenDeath;sudden death type (i dont know if i'm doing this after all)
     @Override
@@ -57,13 +57,13 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         });
-        difficultyScreen();
+        //difficultyScreen();
     }
 
     public void difficultyScreen()//may need more functions, or to do more stuff in the function
     {
         //this should probably do more things. like stop threads and stuff
-        Intent intent = new Intent(GameActivity.this, DifficultyActivity.class);
+        Intent intent = new Intent(this, DifficultyActivity.class);
         intent.putExtra("difficulty", difficulty);
         intent.putExtra("enemyDifficulty", enemyDifficulty);
         intent.putExtra("difficultyScaling", difficultyScaling);
@@ -109,8 +109,9 @@ public class GameActivity extends AppCompatActivity {
                     }
                     for (User user: users)
                     {
-                        if(FirebaseAuth.getInstance().getCurrentUser().getEmail().equals(user.getEmail()))
-                            playerUser = user;
+                        if(FirebaseAuth.getInstance().getCurrentUser().getEmail().equals(user.getEmail())) {
+                            setPlayerUser(user);
+                        }
                     }
                 }
             }
@@ -119,7 +120,10 @@ public class GameActivity extends AppCompatActivity {
 
     //after(?) choise of tower
 
-
+    public void setPlayerUser(User user)
+    {
+        this.playerUser = user;
+    }
     @Override
     protected void onResume() {
         super.onResume();

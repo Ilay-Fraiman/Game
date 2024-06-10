@@ -30,7 +30,10 @@ public class GameView extends SurfaceView implements Runnable
     public static float pixelWidth = 0;
     public static float pixelHeight = 0;
     public static float canvasPixelHeight = 0;//how many pixels high is the canvas
-    Thread gameThread;
+    private Thread gameThread;
+    private Canvas canvas;
+    private Bitmap background;
+    private Paint p;
     public GameView(Context context)
     {
         super(context);
@@ -50,9 +53,17 @@ public class GameView extends SurfaceView implements Runnable
 
     @Override
     public void run() {
-        //check if user started
-        //do the extra screens optional
-        //then start loop
+        //these are all still pictures
+        //flip your phone
+        //this game uses a bluetooth enabled controller
+        //controls
+        //show eyes opening(black back ground, then white in the middle, then full white, then see
+        //player character at one end half naked
+        //man starts talking
+        //shows picture of classes
+        //changes value of button presses for a and d pad to choose
+        //send to difficulty activity
+        //start the game
     }
     public void resume(){
         gameThread = new Thread(this);

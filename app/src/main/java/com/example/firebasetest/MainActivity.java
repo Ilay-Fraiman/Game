@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
                 {
                     Toast.makeText(MainActivity.this,"register success",Toast.LENGTH_SHORT).show();
                     // can be done only register SUCCESS!!!
-                    MainActivity.success = true;
+                    MainActivity.this.success = true;
                     MainActivity.this.moveToNextActivity();
                 }
                 else // register fail
