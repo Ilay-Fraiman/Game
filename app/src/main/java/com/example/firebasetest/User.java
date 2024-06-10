@@ -5,6 +5,7 @@ public class User {
     private int level;
     private String className;
     private String[] order = {"Knight", "Archer", "Mage"};
+    private int difficulty;
     private int enemyDifficulty;
     private int difficultyScaling;
     private int challengeDifficulty;
@@ -20,10 +21,11 @@ public class User {
         email = mail;
         level = 5;
         className = "";
-        enemyDifficulty = 5;
+        difficulty = 3;
+        enemyDifficulty = 3;
         difficultyScaling = 3;
-        challengeDifficulty = 0;//?
-        challengeDifficultyScaling = 0;//?
+        challengeDifficulty = 3;
+        challengeDifficultyScaling = 3;
         suddenDeath = 0;//0=off,1-3=type
         doomsdayClock = 0;//0=off, 1-10(actual slider maybe instead of 4 buttons)=hours
         currentSection = -1;//-1=starting area
@@ -31,6 +33,13 @@ public class User {
         currentRoom = 0;
     }
 
+    public int getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(int difficulty) {
+        this.difficulty = difficulty;
+    }
 
     public int getLevel() {
         return level;

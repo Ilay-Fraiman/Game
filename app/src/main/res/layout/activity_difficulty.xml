@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="4110"
+    tools:context=".DifficultyActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="685"
+        android:orientation="horizontal"
+        android:weightSum="7380">
+
+        <TextView
+            android:id="@+id/textview_0"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1230"
+            android:text="Difficulty"
+            android:textSize="50sp" />
+
+        <ImageView
+            android:id="@+id/difficultyImg0"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6150"
+            app:srcCompat="@drawable/difficulty3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="685"
+        android:orientation="horizontal"
+        android:weightSum="7380">
+
+        <TextView
+            android:id="@+id/textview_1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1230"
+            android:text="Enemy Difficulty"
+            android:textSize="50sp" />
+
+        <ImageView
+            android:id="@+id/difficultyImg1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6150"
+            app:srcCompat="@drawable/difficulty3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="685"
+        android:orientation="horizontal"
+        android:weightSum="7380">
+
+        <TextView
+            android:id="@+id/textview_2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1230"
+            android:text="Difficulty Scaling"
+            android:textSize="50sp" />
+
+        <ImageView
+            android:id="@+id/difficultyImg2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6150"
+            app:srcCompat="@drawable/difficulty3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="685"
+        android:orientation="horizontal"
+        android:weightSum="7380">
+
+        <TextView
+            android:id="@+id/textview_3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1230"
+            android:text="Challenge Difficulty"
+            android:textSize="50sp" />
+
+        <ImageView
+            android:id="@+id/difficultyImg3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6150"
+            app:srcCompat="@drawable/difficulty3" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="685"
+        android:orientation="horizontal"
+        android:weightSum="7380">
+
+        <TextView
+            android:id="@+id/textview_4"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1230"
+            android:text="Challenge Difficulty Scaling"
+            android:textSize="50sp" />
+
+        <ImageView
+            android:id="@+id/difficultyImg4"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="6150"
+            app:srcCompat="@drawable/difficulty3" />
+    </LinearLayout>
+
+</LinearLayout>
