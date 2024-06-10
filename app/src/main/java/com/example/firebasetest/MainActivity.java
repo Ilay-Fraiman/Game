@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -33,12 +34,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveToNextActivity() {
-        if((!MainActivity.signIn)&&(MainActivity.success))
-        {
-            addUser();
-        }
-        Intent intent  = new Intent(MainActivity.this,GameActivity.class);
+        Intent intent = new Intent(MainActivity.this, GameActivity.class);
         startActivity(intent);
+
     }
 
     public void signUp(View view)
@@ -59,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         String email = etMail.getText().toString();
         String password = etPassword.getText().toString();
 
+
         OnCompleteListener<AuthResult> authResultOnCompleteListener = new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -67,7 +66,11 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this,"register success",Toast.LENGTH_SHORT).show();
                     // can be done only register SUCCESS!!!
                     MainActivity.this.success = true;
-                    MainActivity.this.moveToNextActivity();
+                  //  MainActivity.this.moveToNextActivity();
+                    if(!MainActivity.signIn)
+                        addUser();
+                    else
+                        moveToNextActivity();
                 }
                 else // register fail
                 {
@@ -97,7 +100,22 @@ public class MainActivity extends AppCompatActivity {
         User user = new User(email);
         FirebaseFirestore fb = FirebaseFirestore.getInstance();
         String uid = mAuth.getCurrentUser().getUid();
-        DocumentReference ref = fb.collection("Users").document(uid);
-        ref.set(user);
+       fb.collection("Users").document(uid).set(user)
+       .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if(task.isSuccessful())
+                {
+                    Log.d("USERS", "onComplete: succeess");
+                    moveToNextActivity();
+                }
+                else
+                {
+                    Log.d("USERS", "onComplete: fail " + task.getException().getMessage());
+
+                }
+
+            }
+        });
     }
 }

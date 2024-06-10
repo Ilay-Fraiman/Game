@@ -1,10 +1,12 @@
 package com.example.firebasetest;
 
+import java.util.ArrayList;
+
 public class User {
     private String email;//add somewhere checks for existing firebase user, incorrect password.
     private int level;
     private String className;
-    private String[] order = {"Knight", "Archer", "Mage"};
+    private ArrayList<String> order;
     private int difficulty;
     private int enemyDifficulty;
     private int difficultyScaling;
@@ -31,7 +33,14 @@ public class User {
         currentSection = -1;//-1=starting area
         currentFloor = 0;
         currentRoom = 0;
+        order = new ArrayList<String>();//give them class
+        order.add("Knight");
     }
+
+    public User() {
+    }
+
+
 
     public int getDifficulty() {
         return difficulty;
@@ -57,11 +66,11 @@ public class User {
         this.className = className;
     }
 
-    public String[] getOrder() {
+    public ArrayList<String> getOrder() {
         return order;
     }
 
-    public void setOrder(String[] order) {
+    public void setOrder(ArrayList<String> order) {
         this.order = order;
     }
 

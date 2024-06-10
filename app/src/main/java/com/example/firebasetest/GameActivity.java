@@ -43,11 +43,6 @@ public class GameActivity extends AppCompatActivity {
         gameView = new GameView(this);
         setContentView(gameView);
         ReadDataFromFB();
-        difficulty = playerUser.getDifficulty();
-        enemyDifficulty = playerUser.getEnemyDifficulty();
-        difficultyScaling = playerUser.getDifficultyScaling();
-        challengeDifficulty = playerUser.getChallengeDifficulty();
-        challengeDifficultyScaling = playerUser.getChallengeDifficultyScaling();
         //everything else
         mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>(){
             public void onActivityResult(ActivityResult result) {
@@ -57,7 +52,6 @@ public class GameActivity extends AppCompatActivity {
                 }
             }
         });
-        //difficultyScreen();
     }
 
     public void difficultyScreen()//may need more functions, or to do more stuff in the function
@@ -113,9 +107,19 @@ public class GameActivity extends AppCompatActivity {
                             setPlayerUser(user);
                         }
                     }
+                    continueFromAsyncRead();
                 }
             }
         });
+    }
+
+    private void continueFromAsyncRead() {
+        difficulty = playerUser.getDifficulty();
+        enemyDifficulty = playerUser.getEnemyDifficulty();
+        difficultyScaling = playerUser.getDifficultyScaling();
+        challengeDifficulty = playerUser.getChallengeDifficulty();
+        challengeDifficultyScaling = playerUser.getChallengeDifficultyScaling();
+        difficultyScreen();
     }
 
     //after(?) choise of tower

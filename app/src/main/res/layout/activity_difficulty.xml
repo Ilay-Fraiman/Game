@@ -28,7 +28,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="6150"
-            app:srcCompat="@drawable/difficulty3" />
+            android:src= "@drawable/difficulty1"/>
     </LinearLayout>
 
     <LinearLayout
@@ -51,7 +51,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="6150"
-            app:srcCompat="@drawable/difficulty3" />
+            android:src="@drawable/difficulty3" />
     </LinearLayout>
 
     <LinearLayout
@@ -74,7 +74,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="6150"
-            app:srcCompat="@drawable/difficulty3" />
+            android:src="@drawable/difficulty3" />
     </LinearLayout>
 
     <LinearLayout
@@ -97,7 +97,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="6150"
-            app:srcCompat="@drawable/difficulty3" />
+            android:src="@drawable/difficulty3" />
     </LinearLayout>
 
     <LinearLayout
@@ -120,7 +120,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="6150"
-            app:srcCompat="@drawable/difficulty3" />
+            android:src="@drawable/difficulty3" />
     </LinearLayout>
 
 </LinearLayout>
