@@ -229,6 +229,27 @@ public class Knight extends Character{
         float damageSustained = p.getPower();
         String ailment = p.getAilment();
         boolean isDead = false;
+        if(ailment.equals("shatter"))
+        {
+            if(mounted)
+            {
+                this.horseHP -= damageSustained;
+                if (horseHP <= 0)
+                {
+                    damageSustained = (float) horseHP * (-1);
+                    dismount();
+                    p.setPower(damageSustained);
+                    return super.hit(p);
+                }
+                else
+                {
+                    this.shatter();
+                    return false;
+                }
+            }
+            else
+                return super.hit(p);
+        }
         if(shielded){
             float horizontal = p.getHorizontalSpeed() * horizontalDirection;
             float vertical = p.getVerticalSpeed() * verticalDirection;

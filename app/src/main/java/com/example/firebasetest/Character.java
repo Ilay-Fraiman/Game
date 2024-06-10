@@ -34,6 +34,7 @@ public class Character extends GameObject implements Runnable {
     protected int toShock;
     protected boolean moveBack;
     public double distanceVector;
+    protected boolean shatter;
     public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
     {
         super(sprite, ID, xLocation, yLocation);
@@ -53,8 +54,9 @@ public class Character extends GameObject implements Runnable {
         this.characterGrade = characterGrade;
         this.shocked = false;
         this.toShock = 0;
-        this. moveBack = true;
+        this.moveBack = true;
         this.distanceVector = 0;
+        this.shatter = false;
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -160,6 +162,9 @@ public class Character extends GameObject implements Runnable {
                 break;
             case "life steal":
                 p.getCreator().HP += power;
+                break;
+            case "shatter":
+                shatter();
                 break;
         }
 
@@ -284,58 +289,61 @@ public class Character extends GameObject implements Runnable {
 
     protected void move(float x, float y, float tWidth, float tHeight)//height should fit canvas
     {
-        float accelerationNum = GameView.pixelHeight / 100;//transition from centimeters to meters
-        accelerationNum *= 30;//transition from frames to seconds
-        float accelerationDiff = 10 / 30;//acceleration in one frame
-        float speedToZero = accelerationDiff / accelerationNum;//speed that after acceleration becomes 0
-        speedToZero *= (-1);//it has to be negative
-
-        if(moving)
+        if(!shatter)
         {
-            float xLocation = x + (movementSpeed * horizontalMovement);
-            if(xLocation < 0)
+            float accelerationNum = GameView.pixelHeight / 100;//transition from centimeters to meters
+            accelerationNum *= 30;//transition from frames to seconds
+            float accelerationDiff = 10 / 30;//acceleration in one frame
+            float speedToZero = accelerationDiff / accelerationNum;//speed that after acceleration becomes 0
+            speedToZero *= (-1);//it has to be negative
+
+            if(moving)
             {
-                xLocation = 0;
-                moving = false;
-                legsPos = 1;
-            }
-            else if ((xLocation + tWidth) > GameView.width)
-            {
-                xLocation = GameView.width - tWidth;
-                moving = false;
-                legsPos = 1;
+                float xLocation = x + (movementSpeed * horizontalMovement);
+                if(xLocation < 0)
+                {
+                    xLocation = 0;
+                    moving = false;
+                    legsPos = 1;
+                }
+                else if ((xLocation + tWidth) > GameView.width)
+                {
+                    xLocation = GameView.width - tWidth;
+                    moving = false;
+                    legsPos = 1;
+                }
+                else
+                {
+                    legsPos++;
+                    if (legsPos > 4)
+                        legsPos = 1;
+                }
+                setXPercentage(xLocation);
             }
             else
             {
-                legsPos++;
-                if (legsPos > 4)
-                    legsPos = 1;
+                legsPos = 1;
             }
-            setXPercentage(xLocation);
-        }
-        else
-        {
-            legsPos = 1;
-        }
 
-        float yLocation = y + verticalMovement;
-        if ((yLocation + tHeight) >= GameView.height)
-        {
-            yLocation = GameView.height - tHeight;
-            verticalMovement = speedToZero;
-        }
-        else
-        {
-            legsPos = 5;
-            if(yLocation < 0) {
-                yLocation = 0;
+            float yLocation = y + verticalMovement;
+            if ((yLocation + tHeight) >= GameView.height)
+            {
+                yLocation = GameView.height - tHeight;
                 verticalMovement = speedToZero;
             }
+            else
+            {
+                legsPos = 5;
+                if(yLocation < 0) {
+                    yLocation = 0;
+                    verticalMovement = speedToZero;
+                }
+            }
+            setYPercentage(yLocation);
+            verticalMovement *= accelerationNum;//transition from pixels per frame to meters per second
+            verticalMovement += accelerationDiff;//down is positive, up is negative
+            verticalMovement /= accelerationNum;//transition from meters per second to pixels per frame
         }
-        setYPercentage(yLocation);
-        verticalMovement *= accelerationNum;//transition from pixels per frame to meters per second
-        verticalMovement += accelerationDiff;//down is positive, up is negative
-        verticalMovement /= accelerationNum;//transition from meters per second to pixels per frame
     }
 
     public boolean inRange()//is the player in range of attack
@@ -541,25 +549,25 @@ public class Character extends GameObject implements Runnable {
 
     public void backedIntoWall(float x, float y, float width, float height, float otherX)
     {
-        if (y + height <= GameView.canvasPixelHeight)
+        boolean jump = false;
+        if (otherX < x)
         {
-            if (otherX < x)
+            if ((x + (width * 2)) >= GameView.width)
             {
-                if ((x + (width * 2)) >= GameView.width)
-                {
-                    horizontalMovement = -1;
-                    this.verticalMovement = (-1) * this.movementSpeed;
-                }
-            }
-            else
-            {
-                if ((x - width) <= 0)
-                {
-                    horizontalMovement = 1;
-                    this.verticalMovement = (-1) * this.movementSpeed;
-                }
+                horizontalMovement = -1;
+                jump = true;
             }
         }
+        else
+        {
+            if ((x - width) <= 0)
+            {
+                horizontalMovement = 1;
+                jump = true;
+            }
+        }
+        if ((y + height == GameView.canvasPixelHeight) && jump)
+            this.verticalMovement = (-1) * this.movementSpeed;
     }
 
     public void magicLine(String effect, Bitmap lineSprite)//sprite is temporary
@@ -631,6 +639,32 @@ public class Character extends GameObject implements Runnable {
                 ailment = "fire";
         }
         return ailment;
+    }
+
+    public void shatter()
+    {
+        this.shatter = true;
+        class UnShatter extends TimerTask {
+            private Character character;
+
+            UnShatter(Character c)
+            {
+                this.character = c;
+            }
+
+            @Override
+            public void run() {
+                character.unShatter();
+            }
+        }
+        Timer timer = new Timer();
+        TimerTask task = new UnShatter(this);
+        timer.schedule(task, 5000L);
+    }
+
+    public void unShatter()
+    {
+        this.shatter = false;
     }
 
     @Override

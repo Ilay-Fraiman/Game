@@ -2,6 +2,8 @@ package com.example.firebasetest;
 
 import android.graphics.Bitmap;
 
+import java.util.ArrayList;
+
 public class Projectile extends GameObject{
     protected float horizontalSpeed;
     protected float verticalSpeed;
@@ -9,11 +11,19 @@ public class Projectile extends GameObject{
     protected Character creator; // is it protected?
     protected double angle;
     protected String ailment;//poison, freeze, shock, fire
+    protected boolean isTimed;
+    protected long TTD;
+    private ArrayList<Character> alreadyHit;
+    protected boolean oneTimeHit;
     public Projectile(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
         super(sprite, ID, xLocation, yLocation, width, height);
         this.power = power;
         this.angle = direction;
         this.ailment = effect;
+        this.isTimed = false;
+        this.TTD = 0;
+        alreadyHit = new ArrayList<Character>();
+        oneTimeHit = false;
         //switch sizes like in character
     }
 
@@ -61,5 +71,20 @@ public class Projectile extends GameObject{
     public void SetAilment(String effect)
     {
         this.ailment = effect;
+    }
+    public boolean isTimeUp()
+    {
+        return ((this.isTimed) && (System.currentTimeMillis() >= this.TTD));
+    }
+
+    public boolean canHit(Character chr)
+    {
+        return alreadyHit.contains(chr);
+    }
+
+    public void hasHit(Character chr)
+    {
+        if(this.oneTimeHit)
+            this.alreadyHit.add(chr);
     }
 }

@@ -16,7 +16,7 @@ public class Berserker extends Character{
     private boolean block;
     public Berserker(int level, int ID, float xLocation, float yLocation)//both fist and flying fist aren't affected by gravity
     {
-        super(level,3,3,3, knightSprite, ID, xLocation, yLocation, 6);//final boss
+        super(level,5,5,5, knightSprite, ID, xLocation, yLocation, 6);//final boss
         double geometricalFistSpeed = Math.sqrt((10.53 * 10));
         physicalFistSpeed = (float) geometricalFistSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
@@ -26,6 +26,7 @@ public class Berserker extends Character{
         setYPercentage(this.getYPercentage() - this.getHeightPercentage());
         setWidthPercentage(getWidthPercentage() * 2);
         setHeightPercentage(getHeightPercentage() * 2);
+        this.movementSpeed /= 2;
         this.block = false;
         //this.itemSprite = fistSprite
     }
@@ -71,6 +72,7 @@ public class Berserker extends Character{
         if(useAbility("B"))
         {
             block = true;
+            movementSpeed /= 2;
             resetAbility("B");
             class UnBlock extends TimerTask {
                 private Berserker berserker;
@@ -93,7 +95,7 @@ public class Berserker extends Character{
 
     @Override
     public boolean hit(Projectile p) {
-        if(!block)
+        if(!block || p.getAilment().equals("shatter"))
             return super.hit(p);
         return false;
     }
@@ -103,10 +105,77 @@ public class Berserker extends Character{
         this.block = false;
         resetAbility("B");
     }
-    //add earth shatter and run
+
+    public void earthShatter()
+    {
+        if(useAbility("Y") && (!block && (getYPercentage() + getHeightPercentage() == GameView.height)))
+        {
+            double direction = (this.horizontalDirection > 0)? 1 : -1;//only on the x axis
+            float height = this.getHeightPercentage() / 4;//this height is double normal, shatter is half normal
+            float yLocation = GameView.canvasPixelHeight - height;//only on the floor
+            float width = GameView.width * (3/40);//max width is 3/8 canvas width, starting with is 1/5 of that
+            float xLocation = this.getXPercentage();
+            EarthShatter earthShatter = new EarthShatter(knightSprite, roomID, this, attackPower * 2, xLocation, yLocation, width, height, direction);//knight sprite is temporary
+            this.projectiles.add(earthShatter);
+        }
+    }
 
     @Override
     public void run() {
-        super.run();
+        while (running)
+        {
+            if (this.HP <= 0)
+            {
+                this.running = false;
+            }
+            else
+            {
+                float[] values = aimAtPlayer();
+                float width = values[2];
+                float height = values[3];
+                float yLocation = values[7];
+                float xLocation = values[6];
+                float horizontalDistance = values[8];
+                float verticalDistance = values[9];
+                moveBack = false;
+                boolean grounded = (yLocation + height == GameView.height);
+                float range = GameView.width * (3/8);
+
+                if(locked <= 0)
+                {
+                    if((useAbility("Y") && !block) && (grounded && ((horizontalDistance <= range) && (verticalDistance == 0))))
+                    {
+                        earthShatter();
+                        locked = 15;
+                    }
+                    else if(useAbility("X") && inRange())
+                    {
+                        if(useAbility("B"))
+                            block();
+                        melee();
+                        locked = 15;
+                    }
+                    else if(useAbility("A"))
+                    {
+                        flyingFist();
+                        locked = 15;
+                    }
+                }
+
+                this.horizontalMovement = this.horizontalDirection;
+                if(grounded)
+                    this.verticalMovement = this.verticalDirection * this.movementSpeed;
+
+                moving = true;
+                move(xLocation, yLocation, width, height);
+                locked--;
+
+                try {
+                    thread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

@@ -61,7 +61,7 @@ public class Sage extends Character {
         }
     }
 
-    public void teleport()
+    public boolean teleport()//for ending confirmation
     {
         if(useAbility("B") && !laser)
         {
@@ -72,15 +72,22 @@ public class Sage extends Character {
             float width = values[2];
             float enemyWidth = values[4];
             float x = values[6];
-            this.setHeightPercentage(enemyY);
+            this.setYPercentage(enemyY);
 
-            if(x < getPlayerX())
-                this.setXPercentage(x + enemyWidth);
+            float addition = 0;
+            float addition1 = enemyWidth;
+            float addition2 = width * (-1);
+
+            if(x < enemyX)
+                addition = ((enemyX + enemyWidth + width) < GameView.width)? addition1 : addition2;
             else
-                this.setXPercentage(enemyX - width);
+                addition = ((enemyX - width) > 0)? addition2 : addition1;
 
+            this.setXPercentage(enemyX + addition);
             resetAbility("B");
+            return true;
         }
+        return false;
     }
 
     public void laser()
@@ -159,6 +166,7 @@ public class Sage extends Character {
                 moveBack = true;
                 boolean backed = false;
                 boolean grounded = (yLocation + height == GameView.height);
+                boolean laserStart = false;
 
                 boolean range = inRange();
                 if(range)
@@ -166,38 +174,54 @@ public class Sage extends Character {
 
                 if(useAbility("A") && locked <= 0)
                 {
-                    if(range)
+                    boolean bash = false;
+                    if(!range)
+                    {
+                        if(teleport())
+                        {
+                            bash = true;
+                            float[] values2 = aimAtPlayer();
+                            xLocation = values2[6];
+                            yLocation = values2[7];
+                            laserStart = true;//stops movement
+                            inRange();
+                        }
+                        else
+                            moveBack = false;
+                    }
+                    else
+                        bash = true;
+
+                    if (bash)
                     {
                         scepterBash();
                         locked = 15;
                     }
-                    else
-                    {
-                        if(useAbility("B"))
-                            teleport();
-                        else
-                            moveBack = false;
-                    }
                 }
+
                 if (locked <= 0)
                 {
                     if(useAbility("Y") && ((this.distanceVector < width * 10) && grounded))
                     {
                         laser();
+                        laserStart = true;
                     }
                     else if(useAbility("X"))
                         pebble();
                 }
 
-                float side = (moveBack) ? -1 : 1;
-                this.horizontalMovement = this.horizontalDirection * side;
-                if(grounded)
-                    this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
-                if(backed)
-                    backedIntoWall(xLocation, yLocation, width, height, playerX);
-                moving = true;
-                move(xLocation, yLocation, width, height);
-                locked--;
+                if (!laserStart)
+                {
+                    float side = (moveBack) ? -1 : 1;
+                    this.horizontalMovement = this.horizontalDirection * side;
+                    if(grounded)
+                        this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
+                    if(backed)
+                        backedIntoWall(xLocation, yLocation, width, height, playerX);
+                    moving = true;
+                    move(xLocation, yLocation, width, height);
+                    locked--;
+                }
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {
