@@ -1,5 +1,10 @@
 package com.example.firebasetest;
 
+import static com.example.firebasetest.Dpad.DOWN;
+import static com.example.firebasetest.Dpad.LEFT;
+import static com.example.firebasetest.Dpad.RIGHT;
+import static com.example.firebasetest.Dpad.UP;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -9,6 +14,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.InputDevice;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -28,6 +34,7 @@ public class DifficultyActivity extends AppCompatActivity {
     int line;
     boolean selected;
     Intent returnIntent;
+    Dpad dpad;
     @Override
     protected void onCreate(Bundle savedInstanceState) {//need to set pictures and background as well
         super.onCreate(savedInstanceState);
@@ -37,6 +44,7 @@ public class DifficultyActivity extends AppCompatActivity {
         temporaryDifficulties = new int[5];
         Intent intent = getIntent();
         returnIntent = intent;
+        dpad = new Dpad();
         loadValues();
     }
     public void loadValues()
@@ -174,18 +182,6 @@ public class DifficultyActivity extends AppCompatActivity {
                     case KeyEvent.KEYCODE_BUTTON_Y:
                         pressedY();
                         break;
-                    case KeyEvent.KEYCODE_DPAD_UP:
-                        pressedUpOrDown("up");
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_DOWN:
-                        pressedUpOrDown("down");
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_LEFT:
-                        pressedLeftOrRight("left");
-                        break;
-                    case KeyEvent.KEYCODE_DPAD_RIGHT:
-                        pressedLeftOrRight("right");
-                        break;
                 }
                 handled = true;//needs to be for each key code.
             }
@@ -194,6 +190,30 @@ public class DifficultyActivity extends AppCompatActivity {
             }
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    public boolean onGenericMotionEvent(MotionEvent event) {
+
+        // Check that the event came from a game controller
+        if (Dpad.isDpadDevice(event)) {
+
+            int press = dpad.getDirectionPressed(event);
+            switch (press) {
+                case LEFT:
+                    pressedLeftOrRight("left");
+                    return true;
+                case RIGHT:
+                    pressedLeftOrRight("right");
+                    return true;
+                case UP:
+                    pressedUpOrDown("up");
+                    return true;
+                case DOWN:
+                    pressedUpOrDown("down");
+                    return true;
+            }
+        }
+        return super.onGenericMotionEvent(event);
     }
 
 }
