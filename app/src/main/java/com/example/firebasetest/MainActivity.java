@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     private void moveToNextActivity() {
         Intent intent = new Intent(MainActivity.this, GameActivity.class);
         startActivity(intent);
-
     }
 
     public void signUp(View view)

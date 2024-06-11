@@ -46,10 +46,13 @@ public class DifficultyActivity extends AppCompatActivity {
         temporaryDifficulties[2] = returnIntent.getIntExtra("difficultyScaling", 3);
         temporaryDifficulties[3] = returnIntent.getIntExtra("challengeDifficulty", 3);
         temporaryDifficulties[4] = returnIntent.getIntExtra("challengeDifficultyScaling", 3);
+        updateDifficulty(line);
     }
 
     public void pressedA(){
         selected = !selected;
+        int color = selected? 3: 2;//selected is 3(white), unselected but looking is 2(light gray)
+        updateImage(0, line, color);
     }
 
     public void pressedBOrX(String button){
@@ -77,6 +80,8 @@ public class DifficultyActivity extends AppCompatActivity {
     public void pressedY(){
         for(int i = 0; i < 5; i++)
             temporaryDifficulties[i] = 3;
+        int temporaryLine = line;
+        updateDifficulty(temporaryLine);
     }
 
     public void pressedLeftOrRight(String direction){
@@ -85,7 +90,15 @@ public class DifficultyActivity extends AppCompatActivity {
             int multiplication = (direction.equals("right"))? 1 : -1;
             int num = temporaryDifficulties[line] + multiplication;
             if((0 < num) && (num < 6))
+            {
                 temporaryDifficulties[line] = num;
+                if(line == 0)
+                {
+                    for(int i = 1; i < 5; i++)
+                        temporaryDifficulties[i] = num;
+                }
+                updateDifficulty(line);
+            }
         }
     }
 
@@ -95,8 +108,51 @@ public class DifficultyActivity extends AppCompatActivity {
             int multiplication = (direction.equals("down"))? 1 : -1;
             int num = line + multiplication;
             if((-1 < num) && (num < 5))
+            {
+                updateImage(0, line, 1);//dark gray, not at this line
                 line = num;
+                updateImage(0, num, 2);//light gray, looking (num to make sure no mistakes)
+            }
         }
+    }
+    public void updateDifficulty(int temp)
+    {
+        if(line == 0)
+        {
+            for(int i = 0; i < 5; i++)
+            {
+                updateImage(1, i, 0);
+            }
+        }
+        else
+        {
+            updateImage(1, line, 0);
+        }
+        line = temp;
+    }
+
+    public void updateImage(int type, int index, int color)
+    {
+        String imgID = "difficultyImg";
+        String newIMG = "difficulty";
+
+        if(type == 0)
+        {
+            imgID = "imgDifficulty";
+            newIMG += index;
+            newIMG += color;
+        }
+        else
+        {
+            newIMG += temporaryDifficulties[index];
+        }
+        imgID += index;
+
+        int imageID = getResources().getIdentifier(imgID, "id", getPackageName());
+        ImageView imageView = (ImageView) findViewById(imageID);
+        //String imageFilename = String.format("%s%s%s", newIMG, ".", "png");
+        int newImgID = getResources().getIdentifier(newIMG, "drawable", getPackageName());
+        imageView.setImageResource(newImgID);
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {

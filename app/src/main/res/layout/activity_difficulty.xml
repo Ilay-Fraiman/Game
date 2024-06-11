@@ -12,45 +12,41 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="685"
-        android:orientation="horizontal"
-        android:weightSum="7380">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textview_0"
+        <ImageView
+            android:id="@+id/imgDifficulty0"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1230"
-            android:text="Difficulty"
-            android:textSize="50sp" />
+            android:layout_weight="1" android:scaleType="fitXY"
+            android:src="@drawable/difficulty02" />
 
         <ImageView
             android:id="@+id/difficultyImg0"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="6150"
-            android:src= "@drawable/difficulty1"/>
+            android:layout_weight="5" android:scaleType="fitXY"
+            android:src="@drawable/difficulty3"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="685"
-        android:orientation="horizontal"
-        android:weightSum="7380">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textview_1"
+        <ImageView
+            android:id="@+id/imgDifficulty1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1230"
-            android:text="Enemy Difficulty"
-            android:textSize="50sp" />
+            android:layout_weight="1" android:scaleType="fitXY"
+            android:src="@drawable/difficulty11" />
 
         <ImageView
             android:id="@+id/difficultyImg1"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="6150"
+            android:layout_weight="5" android:scaleType="fitXY"
             android:src="@drawable/difficulty3" />
     </LinearLayout>
 
@@ -58,22 +54,20 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="685"
-        android:orientation="horizontal"
-        android:weightSum="7380">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textview_2"
+        <ImageView
+            android:id="@+id/imgDifficulty2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1230"
-            android:text="Difficulty Scaling"
-            android:textSize="50sp" />
+            android:layout_weight="1" android:scaleType="fitXY"
+            android:src="@drawable/difficulty21" />
 
         <ImageView
             android:id="@+id/difficultyImg2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="6150"
+            android:layout_weight="5" android:scaleType="fitXY"
             android:src="@drawable/difficulty3" />
     </LinearLayout>
 
@@ -81,22 +75,20 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="685"
-        android:orientation="horizontal"
-        android:weightSum="7380">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textview_3"
+        <ImageView
+            android:id="@+id/imgDifficulty3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1230"
-            android:text="Challenge Difficulty"
-            android:textSize="50sp" />
+            android:layout_weight="1" android:scaleType="fitXY"
+            android:src="@drawable/difficulty31" />
 
         <ImageView
             android:id="@+id/difficultyImg3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="6150"
+            android:layout_weight="5" android:scaleType="fitXY"
             android:src="@drawable/difficulty3" />
     </LinearLayout>
 
@@ -104,23 +96,29 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="685"
-        android:orientation="horizontal"
-        android:weightSum="7380">
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textview_4"
+        <ImageView
+            android:id="@+id/imgDifficulty4"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1230"
-            android:text="Challenge Difficulty Scaling"
-            android:textSize="50sp" />
+            android:layout_weight="1" android:scaleType="fitXY"
+            android:src="@drawable/difficulty41" />
 
         <ImageView
             android:id="@+id/difficultyImg4"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="6150"
+            android:layout_weight="5" android:scaleType="fitXY"
             android:src="@drawable/difficulty3" />
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/difficultyControlsImg"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="685"
+        android:scaleType="fitXY"
+        android:src="@drawable/difficulty_controls" />
 
 </LinearLayout>
