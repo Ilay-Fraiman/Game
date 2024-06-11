@@ -57,13 +57,13 @@ public class DifficultyActivity extends AppCompatActivity {
         updateDifficulty(line);
     }
 
-    public void pressedA(){
+    private void pressedA(){
         selected = !selected;
         int color = selected? 3: 2;//selected is 3(white), unselected but looking is 2(light gray)
         updateImage(0, line, color);
     }
 
-    public void pressedBOrX(String button){
+    private void pressedBOrX(String button){
         returnIntent.removeExtra("difficulty");
         returnIntent.removeExtra("enemyDifficulty");
         returnIntent.removeExtra("difficultyScaling");
@@ -85,14 +85,14 @@ public class DifficultyActivity extends AppCompatActivity {
         finish();
     }
 
-    public void pressedY(){
+    private void pressedY(){
         for(int i = 0; i < 5; i++)
             temporaryDifficulties[i] = 3;
         int temporaryLine = line;
         updateDifficulty(temporaryLine);
     }
 
-    public void pressedLeftOrRight(String direction){
+    private void pressedLeftOrRight(String direction){
         if(selected)
         {
             int multiplication = (direction.equals("right"))? 1 : -1;
@@ -110,7 +110,7 @@ public class DifficultyActivity extends AppCompatActivity {
         }
     }
 
-    public void pressedUpOrDown(String direction){
+    private void pressedUpOrDown(String direction){
         if(!selected)
         {
             int multiplication = (direction.equals("down"))? 1 : -1;
@@ -171,16 +171,16 @@ public class DifficultyActivity extends AppCompatActivity {
                 switch (keyCode)
                 {
                     case KeyEvent.KEYCODE_BUTTON_A:
-                        pressedA();
+                        this.pressedA();
                         break;
                     case KeyEvent.KEYCODE_BUTTON_B:
-                        pressedBOrX("B");
+                        this.pressedBOrX("B");
                         break;
                     case KeyEvent.KEYCODE_BUTTON_X:
-                        pressedBOrX("X");
+                        this.pressedBOrX("X");
                         break;
                     case KeyEvent.KEYCODE_BUTTON_Y:
-                        pressedY();
+                        this.pressedY();
                         break;
                 }
                 handled = true;//needs to be for each key code.
@@ -200,16 +200,16 @@ public class DifficultyActivity extends AppCompatActivity {
             int press = dpad.getDirectionPressed(event);
             switch (press) {
                 case LEFT:
-                    pressedLeftOrRight("left");
+                    this.pressedLeftOrRight("left");
                     return true;
                 case RIGHT:
-                    pressedLeftOrRight("right");
+                    this.pressedLeftOrRight("right");
                     return true;
                 case UP:
-                    pressedUpOrDown("up");
+                    this.pressedUpOrDown("up");
                     return true;
                 case DOWN:
-                    pressedUpOrDown("down");
+                    this.pressedUpOrDown("down");
                     return true;
             }
         }

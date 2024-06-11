@@ -25,6 +25,8 @@ public class Mage extends Character{
         transitionNum *= 30;//transition from frames to seconds
         fireBallSpeed = physicalFireBallSpeed / transitionNum;
         this.effect = "none";
+        if (threadStart)
+            thread.start();
     }
     public void lightLine()
     {

@@ -1,5 +1,10 @@
 package com.example.firebasetest;
 
+import static com.example.firebasetest.Dpad.DOWN;
+import static com.example.firebasetest.Dpad.LEFT;
+import static com.example.firebasetest.Dpad.RIGHT;
+import static com.example.firebasetest.Dpad.UP;
+
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -11,6 +16,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.InputDevice;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
 
@@ -34,12 +42,18 @@ public class GameActivity extends AppCompatActivity {
     int challengeDifficulty;
     int challengeDifficultyScaling;
     private User playerUser;
+    private boolean initializingComplete;
+    private boolean resumed;
+    Dpad dpad;
     //private int doomsdayClock;int(?) (i dont know if i'm doing this after all)
     // private int suddenDeath;sudden death type (i dont know if i'm doing this after all)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        dpad = new Dpad();
+        initializingComplete = false;
+        resumed = false;
         gameView = new GameView(this);
         setContentView(gameView);
         ReadDataFromFB();
@@ -79,16 +93,19 @@ public class GameActivity extends AppCompatActivity {
         playerUser.setDifficultyScaling(difficultyScaling);
         playerUser.setChallengeDifficulty(challengeDifficulty);
         playerUser.setChallengeDifficultyScaling(challengeDifficultyScaling);
+        updateUser();
+        //probably more things to reset
+    }
 
+    public void updateUser()
+    {
         FirebaseFirestore fb = FirebaseFirestore.getInstance();
         String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DocumentReference ref = fb.collection("Users").document(id);
         ref.set(playerUser);
-        //probably more things to reset
     }
 
-
-    public void ReadDataFromFB()//originally this recieved a view, idk why
+    public void ReadDataFromFB()
     {
         FirebaseFirestore fb = FirebaseFirestore.getInstance();
         fb.collection("Users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -119,18 +136,100 @@ public class GameActivity extends AppCompatActivity {
         difficultyScaling = playerUser.getDifficultyScaling();
         challengeDifficulty = playerUser.getChallengeDifficulty();
         challengeDifficultyScaling = playerUser.getChallengeDifficultyScaling();
-        difficultyScreen();
+        //difficultyScreen();
+        this.initializingComplete = true;
+        if(resumed)
+            this.onResume();
     }
-
-    //after(?) choise of tower
 
     public void setPlayerUser(User user)
     {
         this.playerUser = user;
     }
+
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        boolean handled = false;
+        if ((event.getSource() & InputDevice.SOURCE_GAMEPAD)
+                == InputDevice.SOURCE_GAMEPAD) {
+            if (event.getRepeatCount() == 0) {//stops the run into here if still pressed
+                switch (keyCode)
+                {
+                    case KeyEvent.KEYCODE_BUTTON_A:
+                        pressedA();
+                        break;
+                    case KeyEvent.KEYCODE_BUTTON_B:
+                        pressedB();
+                        break;
+                    case KeyEvent.KEYCODE_BUTTON_X:
+                        pressedX();
+                        break;
+                    case KeyEvent.KEYCODE_BUTTON_Y:
+                        pressedY();
+                        break;
+                }
+                handled = true;//needs to be for each key code.
+            }
+            if (handled) {
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    public void pressedA() {
+
+    }
+
+    public void pressedB() {
+
+    }
+
+    public void pressedX() {
+
+    }
+
+    public void pressedY() {
+    }
+
+    public void pressedLeftOrRight(String direction)
+    {
+
+    }
+
+    public void pressedUpOrDown(String direction)
+    {
+
+    }
+
+    public boolean onGenericMotionEvent(MotionEvent event) {
+
+        // Check that the event came from a game controller
+        if (Dpad.isDpadDevice(event)) {
+
+            int press = dpad.getDirectionPressed(event);
+            switch (press) {
+                case LEFT:
+                    pressedLeftOrRight("left");
+                    return true;
+                case RIGHT:
+                    pressedLeftOrRight("right");
+                    return true;
+                case UP:
+                    pressedUpOrDown("up");
+                    return true;
+                case DOWN:
+                    pressedUpOrDown("down");
+                    return true;
+            }
+        }
+        return super.onGenericMotionEvent(event);
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        gameView.resume();
+        resumed = true;
+        if(initializingComplete)
+            gameView.resume(playerUser, dpad);
     }
 }

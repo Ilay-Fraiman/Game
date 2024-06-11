@@ -29,6 +29,8 @@ public class Berserker extends Character{
         this.movementSpeed /= 2;
         this.block = false;
         //this.itemSprite = fistSprite
+        if (threadStart)
+            thread.start();
     }
 
     public void melee()

@@ -44,6 +44,8 @@ public class Archer extends Character{
                 homing = true;
                 break;
         }
+        if (threadStart)
+            thread.start();
     }
     public void shoot()
     {

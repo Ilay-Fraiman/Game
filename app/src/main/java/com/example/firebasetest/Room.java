@@ -25,7 +25,7 @@ public class Room implements Runnable {
     public Room(User user)
     {
         sectionNum = user.getCurrentSection();
-        roomClass = user.getOrder().get(sectionNum);
+        roomClass = user.getOrder().get(sectionNum - 1);
         floorNum = user.getCurrentFloor();
         roomNum = user.getCurrentRoom();
         roomThread = new Thread(this);

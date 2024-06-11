@@ -19,9 +19,11 @@ public class User {
     private int currentRoom;
 
     //add all database values amd get set and initially set them in constructor
+    //note: while both suddenDeath and doomsdayClock exist here, we ignore their existance
+    //in the project until further notice
     public User(String mail) {
         email = mail;
-        level = 5;
+        level = 6;
         className = "";
         difficulty = 3;
         enemyDifficulty = 3;
@@ -33,8 +35,10 @@ public class User {
         currentSection = -1;//-1=starting area
         currentFloor = 0;
         currentRoom = 0;
-        order = new ArrayList<String>();//give them class
+        order = new ArrayList<String>();
         order.add("Knight");
+        order.add("Archer");
+        order.add("Mage");
     }
 
     public User() {
@@ -70,8 +74,26 @@ public class User {
         return order;
     }
 
-    public void setOrder(ArrayList<String> order) {
-        this.order = order;
+    public void setOrder(String firstTower) {
+        this.order.clear();
+        switch (firstTower)
+        {
+            case "Knight":
+                order.add("Knight");
+                order.add("Archer");
+                order.add("Mage");
+                break;
+            case "Archer":
+                order.add("Archer");
+                order.add("Mage");
+                order.add("Knight");
+                break;
+            case "Mage":
+                order.add("Mage");
+                order.add("Knight");
+                order.add("Archer");
+                break;
+        }
     }
 
     public int getEnemyDifficulty() {
@@ -88,6 +110,7 @@ public class User {
 
     public void setDifficultyScaling(int difficultyScaling) {
         this.difficultyScaling = difficultyScaling;
+        setLevel(difficultyScaling + 3);
     }
 
     public int getChallengeDifficulty() {

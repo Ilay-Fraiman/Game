@@ -21,6 +21,8 @@ public class Sage extends Character {
         pebbleSpeed = physicalPebbleSpeed / transitionNum;//transition from meters per second to pixels per frame
         //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
         this.laser = false;
+        if (threadStart)
+            thread.start();
     }
 
     public void pebble()

@@ -21,6 +21,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class GameView extends SurfaceView implements Runnable
 {
     Context context;
@@ -34,6 +36,10 @@ public class GameView extends SurfaceView implements Runnable
     private Canvas canvas;
     private Bitmap background;
     private Paint p;
+    private Room currentRoom;
+    private User playerUser;
+    private boolean running;
+    Dpad dpad;
     public GameView(Context context)
     {
         super(context);
@@ -49,24 +55,43 @@ public class GameView extends SurfaceView implements Runnable
         {
             canvasPixelHeight = 1080 / pixelHeight;
         }
+        currentRoom = null;
     }
 
     @Override
     public void run() {
-        //these are all still pictures
-        //flip your phone
-        //this game uses a bluetooth enabled controller
-        //controls
-        //show eyes opening(black back ground, then white in the middle, then full white, then see
-        //player character at one end half naked
-        //man starts talking
-        //shows picture of classes
-        //changes value of button presses for a and d pad to choose
-        //send to difficulty activity
-        //start the game
+        if(playerUser.getCurrentSection() == -1)
+        {
+            //these are all still pictures
+            //flip your phone
+            //this game uses a bluetooth enabled controller
+            //controls
+            //show eyes opening(black back ground, then white in the middle, then full white, then see
+            //player character at one end half naked
+            //man starts talking
+            //shows picture of classes
+            //changes value of button presses for a and d pad to choose
+            //send to difficulty activity
+            //choose tower(needs an activity)
+            //start the game
+        }
+        this.currentRoom = new Room(playerUser);
+        //seperate function for last room(after)
+        while (running)
+        {
+            ArrayList<GameObject> gameObjectArrayList = this.currentRoom.getObjects();
+            //intersections can be done with rectangles. ask gemini
+        }
     }
-    public void resume(){
+    public void resume(User user, Dpad dPad){
+        playerUser = user;
+        dpad = dPad;
         gameThread = new Thread(this);
         gameThread.start();
+    }
+    public void nextRoom()
+    {
+        Room nextRoom = new Room(playerUser);
+        this.currentRoom = nextRoom;
     }
 }
