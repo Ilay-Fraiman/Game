@@ -2,7 +2,7 @@ package com.example.firebasetest;
 
 import java.util.ArrayList;
 
-public class Room implements Runnable {
+public class Room implements Runnable {//fill this logic
     /*an object of this class is sent 3 parameters in its constructor/has access to them in User:
         1.current section
         2.current level
@@ -43,6 +43,34 @@ public class Room implements Runnable {
 
     @Override
     public void run() {
+        if(roomNum == 2)
+        {
+            if(roomClass.equals("Knight"))
+                knightChallenge();
+            else if (roomClass.equals("Archer"))
+                archerChallenge();
+            else
+                mageChallenge();
+        }
+    }
+
+    public void enemyRoom()//1, 3, 4
+    {
+
+    }
+
+    public void knightChallenge()
+    {
+
+    }
+
+    public void archerChallenge()
+    {
+
+    }
+
+    public void mageChallenge()
+    {
 
     }
 

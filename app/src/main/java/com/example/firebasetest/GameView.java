@@ -1,4 +1,6 @@
 package com.example.firebasetest;
+import static android.graphics.Bitmap.createScaledBitmap;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,6 +22,8 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
+import android.app.Activity;
+import android.content.Intent;
 
 import java.util.ArrayList;
 
@@ -39,11 +43,13 @@ public class GameView extends SurfaceView implements Runnable
     private Room currentRoom;
     private User playerUser;
     private boolean running;
+    private SurfaceHolder ourHolder;
     Dpad dpad;
     public GameView(Context context)
     {
         super(context);
         this.context = context;
+        ourHolder = getHolder();
         width = this.getResources().getDisplayMetrics().widthPixels;
         pixelWidth = 2106 / width;//in centimeters
         float pixelRatio = pixelWidth / 16;
@@ -80,7 +86,27 @@ public class GameView extends SurfaceView implements Runnable
         while (running)
         {
             ArrayList<GameObject> gameObjectArrayList = this.currentRoom.getObjects();
+            canvas = ourHolder.lockCanvas();
+            //draw background
+            for (GameObject gameObject: gameObjectArrayList)
+            {
+                String sprite = gameObject.getSpriteName();
+                float x = gameObject.getXPercentage();
+                float y = gameObject.getYPercentage();
+                float width = gameObject.getWidthPercentage();
+                float height = gameObject.getHeightPercentage();
+                int desiredWidth = (int) width;
+                int desiredHeight = (int) height;
+                float angle = gameObject.getDirection();
+                draw(sprite, x, y, desiredWidth, desiredHeight, angle);
+            }
+            ourHolder.unlockCanvasAndPost(canvas);
             //intersections can be done with rectangles. ask gemini
+            try {
+                gameThread.sleep(33);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
     public void resume(User user, Dpad dPad){
@@ -93,5 +119,36 @@ public class GameView extends SurfaceView implements Runnable
     {
         Room nextRoom = new Room(playerUser);
         this.currentRoom = nextRoom;
+    }
+
+    public void draw(String spriteName, float xLocation, float yLocation, int width, int height, float rotationAngle)
+    {
+        canvas.drawColor(Color.TRANSPARENT);
+        int bitmapID = getResources().getIdentifier(spriteName, "drawable", this.context.getPackageName());
+        Bitmap bitmapObject = BitmapFactory.decodeResource(getResources(), bitmapID);
+        int bitmapWidth = bitmapObject.getWidth();
+        int bitmapHeight = bitmapObject.getHeight();
+        bitmapObject = createScaledBitmap(bitmapObject, width, height, false);
+
+        // Calculate scaling factors to fit the arrow within the desired area
+        float scaleX = (float) width / bitmapWidth;
+        float scaleY = (float) height / bitmapHeight;
+
+        // Create a new Bitmap with the scaled dimensions
+        Bitmap rotatedObject = Bitmap.createBitmap((int) (width * scaleX), (int) (height * scaleY), Bitmap.Config.ARGB_8888);
+        Canvas rotatedCanvas = new Canvas(rotatedObject);
+
+        // Rotate the Canvas with pivot point at top-left corner (0, 0)
+        rotatedCanvas.rotate(rotationAngle, 0, 0);
+
+        // Calculate offset based on scaling
+        int offsetX = (int) ((bitmapWidth - width) / 2 * scaleX);
+        int offsetY = (int) ((bitmapHeight - height) / 2 * scaleY);
+
+        // Draw the original arrow bitmap onto the rotated Canvas with negative offsets
+        rotatedCanvas.drawBitmap(bitmapObject, -offsetX, -offsetY, p);
+
+        // Draw the rotated Bitmap onto the main Canvas at the desired position
+        canvas.drawBitmap(rotatedObject, xLocation, yLocation, p);
     }
 }

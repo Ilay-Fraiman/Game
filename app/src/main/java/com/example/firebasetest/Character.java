@@ -35,9 +35,9 @@ public class Character extends GameObject implements Runnable {
     protected boolean moveBack;
     public double distanceVector;
     protected boolean shatter;
-    public Character(int level, int HPD, int ACD, int APD, Bitmap sprite, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
-    {
-        super(sprite, ID, xLocation, yLocation);
+    public Character(int level, int HPD, int ACD, int APD, String spriteName, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
+    {//obviously change all sprites
+        super(spriteName, ID, xLocation, yLocation);
         this.moving = false;
         this.legsPos = 1;
         float myWidth = this.getWidthPercentage();
@@ -667,6 +667,10 @@ public class Character extends GameObject implements Runnable {
         this.shatter = false;
     }
 
+    public double getDirectionAngle()
+    {
+        return this.directionAngle;
+    }
     @Override
     public void run() {
 
