@@ -111,7 +111,7 @@ public class Room implements Runnable {//fill this logic
             if(timeToHit < System.currentTimeMillis())
             {
                 timeToHit = System.currentTimeMillis() + 2000L;
-                rePositionArcher(a);
+                rePositionArcher(a, player);
             }
             try {
                 roomThread.sleep(33);
@@ -140,6 +140,7 @@ public class Room implements Runnable {//fill this logic
             if(floorNum == 2)
                 hitting[1] = c.IsParrying();
         }
+        return hitting;
     }
 
     public void rePositionArcher(Archer a, Character character)
@@ -150,9 +151,12 @@ public class Room implements Runnable {//fill this logic
         float newX = right? (character.getXPercentage() + character.getWidthPercentage() + (a.getWidthPercentage() * 2)): (character.getXPercentage() - (a.getWidthPercentage() * 2));
         a.setXPercentage(newX);
         a.setYPercentage(newY);
-        a.aimAtPlayer();
+        float[] values = a.aimAtPlayer();
+        float horizontalDistance = values[8];
+        float verticalDistance = values[9];
+        float speed = a.getPhysicalSpeed();
         a.inRange();
-        a.aim();
+        a.aim(horizontalDistance, verticalDistance, speed);
         a.shoot();
     }
 

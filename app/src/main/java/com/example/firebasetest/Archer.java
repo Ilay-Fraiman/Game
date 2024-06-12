@@ -124,6 +124,11 @@ public class Archer extends Character{
         resetAbility("Y");
     }
 
+    public float getPhysicalSpeed()
+    {
+        return this.physicalArrowSpeed;
+    }
+
     @Override
     public void run() {
         while (running)

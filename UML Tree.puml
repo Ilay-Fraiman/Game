@@ -1,0 +1,573 @@
+@startuml
+class com.example.firebasetest.EarthShatter {
+- float add
+- void widen()
++ boolean strech()
+}
+
+
+class com.example.firebasetest.Extend {
+- EarthShatter earthShatter
+- int repeats
++ void run()
+}
+
+
+class com.example.firebasetest.GameView {
+~ Context context
++ {static} float width
++ {static} float height
++ {static} float pixelWidth
++ {static} float pixelHeight
++ {static} float canvasPixelHeight
+- Thread gameThread
+- Canvas canvas
+- Bitmap background
+- Paint p
+- Room currentRoom
+- User playerUser
+- boolean running
+- SurfaceHolder ourHolder
+~ Dpad dpad
++ void run()
++ void resume(User,Dpad)
++ void nextRoom()
++ void draw(String,float,float,int,int,float)
+}
+
+
+class com.example.firebasetest.Pebble {
+}
+class com.example.firebasetest.Archer {
++ {static} String archerSprite
+- {static} Bitmap arrowSprite
+- boolean homing
+- boolean ricochet
+- float arrowSpeed
+- boolean isPoison
+- float physicalArrowSpeed
++ void shoot()
++ void stab()
++ void poison()
++ boolean homing()
++ void notHoming()
++ float getPhysicalSpeed()
++ void run()
+}
+
+
+class com.example.firebasetest.NotHoming {
+- Archer archer
++ void run()
+}
+
+
+class com.example.firebasetest.BladeAttack {
+}
+class com.example.firebasetest.LightLine {
+}
+class com.example.firebasetest.Mist {
+}
+class com.example.firebasetest.Arrow {
+- boolean ricochet
+- boolean homing
++ boolean isRicochet()
++ boolean isHoming()
+}
+
+
+class com.example.firebasetest.DifficultyActivity {
+~ int[] temporaryDifficulties
+~ int line
+~ boolean selected
+~ Intent returnIntent
+~ Dpad dpad
+# void onCreate(Bundle)
++ void loadValues()
+- void pressedA()
+- void pressedBOrX(String)
+- void pressedY()
+- void pressedLeftOrRight(String)
+- void pressedUpOrDown(String)
++ void updateDifficulty(int)
++ void updateImage(int,int,int)
++ boolean onKeyDown(int,KeyEvent)
++ boolean onGenericMotionEvent(MotionEvent)
+}
+
+
+class com.example.firebasetest.Mage {
++ {static} Bitmap mageSprite
+- Bitmap lineSprite
+- Bitmap fireSprite
+- Bitmap mistSprite
+- double maxHealth
+- float fireBallSpeed
+- float physicalFireBallSpeed
+- String effect
+- Mage clone
++ void lightLine()
++ void mist()
++ void fireball()
++ void heal()
++ void setClone(Mage)
++ boolean hit(Projectile)
++ boolean poison(int)
++ void run()
+}
+
+
+class com.example.firebasetest.Knight {
++ String knightSprite
+- boolean shielded
+- boolean parry
+- double shieldHP
+- double horseHP
+- double maxShieldHP
+- double maxHorseHP
+- float horseDirection
+- boolean mounted
+- boolean shieldHealing
+- boolean horseHealing
++ void attack()
++ boolean shieldOrParry(int)
++ void shieldHeld()
++ void shieldReleased()
++ void parry()
++ void unParry()
++ void buff()
++ void deBuff()
++ void mount()
++ void dismount()
++ boolean hit(Projectile)
+- void poisonedHorse(double)
++ boolean horsePoison(double)
++ boolean shieldBurn(double)
+- void burningShield(double)
++ void shieldRestore()
++ void horseRestore()
++ void run()
+}
+
+
+class com.example.firebasetest.RestoreShield {
+- Knight knight
++ void run()
+}
+
+
+class com.example.firebasetest.UnParry {
+- Knight knight
++ void run()
+}
+
+
+class com.example.firebasetest.DeBuff {
+- Knight knight
++ void run()
+}
+
+
+class com.example.firebasetest.RestoreHorse {
+- Knight knight
++ void run()
+}
+
+
+class com.example.firebasetest.Poison {
+- Knight knight
+- int repeats
+- double power
++ void run()
+}
+
+
+class com.example.firebasetest.Burn {
+- Knight knight
+- int repeats
+- double power
++ void run()
+}
+
+
+class com.example.firebasetest.Fist {
+}
+class com.example.firebasetest.Berserker {
++ {static} Bitmap knightSprite
+- float fistSpeed
+- float physicalFistSpeed
+- boolean block
++ void melee()
++ void flyingFist()
++ void block()
++ boolean hit(Projectile)
++ void unBlock()
++ void earthShatter()
++ void run()
+}
+
+
+class com.example.firebasetest.UnBlock {
+- Berserker berserker
++ void run()
+}
+
+
+class com.example.firebasetest.Room {
+- int sectionNum
+- int floorNum
+- int roomNum
+- String roomClass
+- Thread roomThread
+- ArrayList<Character> characters
+- ArrayList<Projectile> projectiles
+- ArrayList<GameObject> objects
+- int misses
+- int enemiesPerWave
+- int currentWave
+- int ID
+- int blocksLeft
+- int enemyDifficulty
+- int difficultyScaling
+- int challengeDifficulty
+- int challengeDifficultyScaling
+- int[][] missesArray
+- int length
++ ArrayList<GameObject> getObjects()
++ void run()
++ void enemyRoom()
++ void knightChallenge()
++ void archerChallenge()
++ void mageChallenge()
++ boolean[] hit(Character,Projectile)
++ void rePositionArcher(Archer,Character)
++ int getRandomNumber(int,int)
+}
+
+
+class com.example.firebasetest.Dpad {
+~ {static} int UP
+~ {static} int LEFT
+~ {static} int RIGHT
+~ {static} int DOWN
+~ {static} int CENTER
+~ int directionPressed
++ int getDirectionPressed(InputEvent)
++ {static} boolean isDpadDevice(InputEvent)
+}
+
+
+class com.example.firebasetest.MainActivity {
++ {static} boolean signIn
++ {static} boolean success
+- FirebaseAuth mAuth
+# void onCreate(Bundle)
+- void moveToNextActivity()
++ void signUp(View)
++ void signIn(View)
+- void signUpOrIn(View)
+- void addUser()
+}
+
+
+class com.example.firebasetest.GroundFire {
+}
+class com.example.firebasetest.Sage {
++ {static} Bitmap knightSprite
+- float pebbleSpeed
+- float physicalPebbleSpeed
+- boolean laser
++ void pebble()
++ void scepterBash()
++ boolean teleport()
++ void laser()
++ void release()
+# void move(float,float,float,float)
++ void setUpDirection(float,float)
++ void setUpMovement(float,float)
++ void run()
+}
+
+
+class com.example.firebasetest.Release {
+- Sage sage
++ void run()
+}
+
+
+class com.example.firebasetest.GameObject {
+- String spriteName
+- float widthPercentage
+- float heightPercentage
+- float xPercentage
+- float yPercentage
+# int roomID
++ String getSpriteName()
++ void setSpriteName(String)
++ float getWidthPercentage()
++ void setWidthPercentage(float)
++ float getHeightPercentage()
++ void setHeightPercentage(float)
++ float getXPercentage()
++ void setXPercentage(float)
++ float getYPercentage()
++ void setYPercentage(float)
++ float getDirection()
+}
+
+
+class com.example.firebasetest.Projectile {
+# float horizontalSpeed
+# float verticalSpeed
+# float power
+# Character creator
+# double angle
+# String ailment
+# boolean isTimed
+# long TTD
+- ArrayList<Character> alreadyHit
+# boolean oneTimeHit
++ float getHorizontalSpeed()
++ void setHorizontalSpeed(float)
++ float getVerticalSpeed()
++ void setVerticalSpeed(float)
++ float getPower()
++ void setPower(float)
++ void setCreator(Character)
++ double getAngle()
++ Character getCreator()
++ String getAilment()
++ void SetAilment(String)
++ boolean isTimeUp()
++ boolean canHit(Character)
++ void hasHit(Character)
+}
+
+
+class com.example.firebasetest.User {
+- String email
+- int level
+- String className
+- ArrayList<String> order
+- int difficulty
+- int enemyDifficulty
+- int difficultyScaling
+- int challengeDifficulty
+- int challengeDifficultyScaling
+- int doomsdayClock
+- int suddenDeath
+- int currentSection
+- int currentFloor
+- int currentRoom
++ int getDifficulty()
++ void setDifficulty(int)
++ int getLevel()
++ void setLevel(int)
++ String getClassName()
++ void setClassName(String)
++ ArrayList<String> getOrder()
++ void setOrder(String)
++ int getEnemyDifficulty()
++ void setEnemyDifficulty(int)
++ int getDifficultyScaling()
++ void setDifficultyScaling(int)
++ int getChallengeDifficulty()
++ void setChallengeDifficulty(int)
++ int getChallengeDifficultyScaling()
++ void setChallengeDifficultyScaling(int)
++ int getDoomsdayClock()
++ void setDoomsdayClock(int)
++ int getSuddenDeath()
++ void setSuddenDeath(int)
++ int getCurrentSection()
++ void setCurrentSection(int)
++ int getCurrentFloor()
++ void setCurrentFloor(int)
++ int getCurrentRoom()
++ void setCurrentRoom(int)
++ String getEmail()
+}
+
+
+class com.example.firebasetest.Character {
+- {static} Character player
+# double HP
+# long attackCooldown
+# int attackPower
+# Bitmap itemSprite
+# float itemWidth
+# float itemHeight
+# ArrayList<Projectile> projectiles
+- boolean listSent
+# float horizontalDirection
+# float verticalDirection
+- long resetX
+- long resetY
+- long resetB
+- long resetA
+# float movementSpeed
+# float horizontalMovement
+# float verticalMovement
+# Thread thread
+# int characterGrade
+# int locked
+# boolean running
+# boolean threadStart
+# boolean moving
+# int legsPos
+# double directionAngle
+# boolean shocked
+# int toShock
+# boolean moveBack
++ double distanceVector
+# boolean shatter
+- long parryCountdown
+- boolean isParrying
+# ArrayList<Projectile> getProjectiles()
+# void emptyList()
++ ArrayList<Projectile> getProjectileList(int,ArrayList<Character>)
++ void switchSizes()
++ boolean useAbility(String)
++ void resetAbility(String)
++ boolean hit(Projectile)
+- void poisoned(int)
++ boolean poison(int)
++ void freeze()
++ void unFreeze()
++ void Attack()
++ {static} void setPlayer(Character)
+# {static} float getPlayerX()
+# {static} float getPlayerY()
+# {static} float getPlayerWidth()
+# {static} float getPlayerHeight()
+# void move(float,float,float,float)
++ boolean inRange()
++ float[] aimAtPlayer()
++ boolean aim(float,float,float)
+- boolean ceiling(double,double)
+- boolean faster(double,double,double,double,double)
+- double[] arcTan(double,double,double)
++ int getRandomNumber(int,int)
++ void shock()
++ void unShock()
++ void backedIntoWall(float,float,float,float,float)
++ void magicLine(String,Bitmap)
++ void setUpMovement(float,float)
++ void setUpDirection(float,float)
++ String ailment()
++ void shatter()
++ void unShatter()
++ double getDirectionAngle()
++ void parryChallenge()
++ void unparry()
++ boolean IsParrying()
++ void run()
+}
+
+
+class com.example.firebasetest.Poison {
+- Character chr
+- int repeats
+- int power
++ void run()
+}
+
+
+class com.example.firebasetest.UnFreeze {
+- Character chr
++ void run()
+}
+
+
+class com.example.firebasetest.UnShock {
+- Character character
++ void run()
+}
+
+
+class com.example.firebasetest.UnShatter {
+- Character character
++ void run()
+}
+
+
+class com.example.firebasetest.Unparry {
+- Character character
++ void run()
+}
+
+
+class com.example.firebasetest.FireBall {
+}
+class com.example.firebasetest.GameActivity {
+~ GameView gameView
+~ ActivityResultLauncher<Intent> mStartForResult
+~ int difficulty
+~ int enemyDifficulty
+~ int difficultyScaling
+~ int challengeDifficulty
+~ int challengeDifficultyScaling
+- User playerUser
+- boolean initializingComplete
+- boolean resumed
+~ Dpad dpad
+# void onCreate(Bundle)
++ void difficultyScreen()
++ void difficultyActivityDone(Intent)
++ void updateUser()
++ void ReadDataFromFB()
+- void continueFromAsyncRead()
++ void setPlayerUser(User)
++ boolean onKeyDown(int,KeyEvent)
++ void pressedA()
++ void pressedB()
++ void pressedX()
++ void pressedY()
++ void pressedLeftOrRight(String)
++ void pressedUpOrDown(String)
++ boolean onGenericMotionEvent(MotionEvent)
+# void onResume()
+}
+
+
+
+
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.EarthShatter
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.Extend
+com.example.firebasetest.Runnable <|.. com.example.firebasetest.GameView
+android.view.SurfaceView <|-- com.example.firebasetest.GameView
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.Pebble
+com.example.firebasetest.Character <|-- com.example.firebasetest.Archer
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.NotHoming
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.BladeAttack
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.LightLine
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.Mist
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.Arrow
+androidx.appcompat.app.AppCompatActivity <|-- com.example.firebasetest.DifficultyActivity
+com.example.firebasetest.Character <|-- com.example.firebasetest.Mage
+com.example.firebasetest.Character <|-- com.example.firebasetest.Knight
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.RestoreShield
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.UnParry
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.DeBuff
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.RestoreHorse
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.Poison
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.Burn
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.Fist
+com.example.firebasetest.Character <|-- com.example.firebasetest.Berserker
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.UnBlock
+com.example.firebasetest.Runnable <|.. com.example.firebasetest.Room
+androidx.appcompat.app.AppCompatActivity <|-- com.example.firebasetest.MainActivity
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.GroundFire
+com.example.firebasetest.Character <|-- com.example.firebasetest.Sage
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.Release
+com.example.firebasetest.GameObject <|-- com.example.firebasetest.Projectile
+com.example.firebasetest.Runnable <|.. com.example.firebasetest.Character
+com.example.firebasetest.GameObject <|-- com.example.firebasetest.Character
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.Poison
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.UnFreeze
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.UnShock
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.UnShatter
+com.example.firebasetest.TimerTask <|-- com.example.firebasetest.Unparry
+com.example.firebasetest.Projectile <|-- com.example.firebasetest.FireBall
+androidx.appcompat.app.AppCompatActivity <|-- com.example.firebasetest.GameActivity
+@enduml
