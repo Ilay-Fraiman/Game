@@ -7,7 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Knight extends Character{
-    public static Bitmap knightSprite;//different sprites actually
+    public String knightSprite;//different sprites actually
     private boolean shielded;//parry reflects(?), not only shields. shield dosent take damage.
     private boolean parry;
     private double shieldHP;//half knight hp
@@ -19,7 +19,7 @@ public class Knight extends Character{
     private boolean shieldHealing;
     private boolean horseHealing;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation){
-        super(level,5,2,3, knightSprite, ID, xLocation, yLocation, characterGrade);
+        super(level,5,2,3, "knight", ID, xLocation, yLocation, characterGrade);
         //change stats for character grade
         //is there thread for enemy?
         this.maxShieldHP = this.HP / 2;
@@ -46,7 +46,7 @@ public class Knight extends Character{
                 this.attackCooldown *= 2;
                 break;
             case 4:
-                mount(knightSprite);
+                mount();
                 mounted = false;
                 break;
         }
@@ -172,7 +172,7 @@ public class Knight extends Character{
         resetAbility("B");
     }
 
-    public void mount(Bitmap horsedKnight)
+    public void mount()
     {
         if((characterGrade == 4) || (useAbility("Y") && (!mounted && horseHP>0)))//and ult charged?
         {
@@ -427,7 +427,7 @@ public class Knight extends Character{
                 //if locked = 0, reset sprite
 
                 if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
-                    mount(knightSprite);//temp sprite
+                    mount();//temp sprite
 
                 if((useAbility("B") && (locked <= 0)) && (!shocked))
                 {

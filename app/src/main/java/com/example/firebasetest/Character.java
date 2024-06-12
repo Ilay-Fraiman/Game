@@ -35,6 +35,8 @@ public class Character extends GameObject implements Runnable {
     protected boolean moveBack;
     public double distanceVector;
     protected boolean shatter;
+    private long parryCountdown;
+    private boolean isParrying;
     public Character(int level, int HPD, int ACD, int APD, String spriteName, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
     {//obviously change all sprites
         super(spriteName, ID, xLocation, yLocation);
@@ -57,6 +59,8 @@ public class Character extends GameObject implements Runnable {
         this.moveBack = true;
         this.distanceVector = 0;
         this.shatter = false;
+        this.parryCountdown = System.currentTimeMillis() + 500L;
+        this.isParrying = false;
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -670,6 +674,39 @@ public class Character extends GameObject implements Runnable {
     public double getDirectionAngle()
     {
         return this.directionAngle;
+    }
+
+    public void parryChallenge()
+    {
+        if(parryCountdown <= System.currentTimeMillis())
+        {
+            isParrying = true;
+            class Unparry extends TimerTask {
+                private Character character;
+
+                Unparry(Character c)
+                {
+                    this.character = c;
+                }
+
+                @Override
+                public void run() {
+                    character.unparry();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new Unparry(this);
+            timer.schedule(task, 500L);
+        }
+    }
+    public void unparry()
+    {
+        this.isParrying = false;
+        this.parryCountdown = System.currentTimeMillis() + 1000L;
+    }
+    public boolean IsParrying()
+    {
+        return this.isParrying;
     }
     @Override
     public void run() {

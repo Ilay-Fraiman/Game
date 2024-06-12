@@ -6,7 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Archer extends Character{
-    public static Bitmap archerSprite;
+    public static String archerSprite;
     private static Bitmap arrowSprite;//temporary
     private boolean homing;
     private boolean ricochet;
