@@ -9,14 +9,13 @@ import java.util.TimerTask;
 //block lasts for 5 seconds, negates all damage and lets berserker still use his x, not his a tho
 //should it work like that? what combination of allowing and not allowing movement, aiming and specific moves
 //should we use for block, how similar will it be to laser?
-public class Berserker extends Character{
-    public static Bitmap knightSprite;//temporary
+public class Berserker extends Character{ ;//temporary
     private float fistSpeed;
     private float physicalFistSpeed;
     private boolean block;
-    public Berserker(int level, int ID, float xLocation, float yLocation)//both fist and flying fist aren't affected by gravity
+    public Berserker(int level, int ID, float xLocation, float yLocation, String sprite)//both fist and flying fist aren't affected by gravity
     {
-        super(level,5,5,5, knightSprite, ID, xLocation, yLocation, 6);//final boss
+        super(level,5,5,5, sprite, ID, xLocation, yLocation, 6);//final boss
         double geometricalFistSpeed = Math.sqrt((10.53 * 10));
         physicalFistSpeed = (float) geometricalFistSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
@@ -63,7 +62,7 @@ public class Berserker extends Character{
             xDiffrential = fistSpeed * horizontalDirection;
             yDiffrential = fistSpeed * verticalDirection;
 
-            Fist fist = new Fist(knightSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, effect, directionAngle);
+            Fist fist = new Fist(this.itemSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, effect, directionAngle);
             this.projectiles.add(fist);
             resetAbility("A");
         }
@@ -117,7 +116,7 @@ public class Berserker extends Character{
             float yLocation = GameView.canvasPixelHeight - height;//only on the floor
             float width = GameView.width * (3/40);//max width is 3/8 canvas width, starting with is 1/5 of that
             float xLocation = this.getXPercentage();
-            EarthShatter earthShatter = new EarthShatter(knightSprite, roomID, this, attackPower * 2, xLocation, yLocation, width, height, direction);//knight sprite is temporary
+            EarthShatter earthShatter = new EarthShatter(this.itemSprite, roomID, this, attackPower * 2, xLocation, yLocation, width, height, direction);//knight sprite is temporary
             this.projectiles.add(earthShatter);
         }
     }

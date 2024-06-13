@@ -13,9 +13,9 @@ public class Mage extends Character{
     private float physicalFireBallSpeed;
     private String effect;
     private Mage clone;
-    public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation)
+    public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation, String sprite)
     {
-        super(level,2,3,5, mageSprite, ID, xLocation, yLocation, characterGrade);
+        super(level,2,3,5, sprite, ID, xLocation, yLocation, characterGrade);
         this.maxHealth=this.HP;
         double multiplicationNum = 21.06 / 8;
         multiplicationNum *= 5;//middle between 3/4(long arrow) and 1/2(arrow)

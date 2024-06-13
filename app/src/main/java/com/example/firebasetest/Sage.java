@@ -7,13 +7,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Sage extends Character {
-    public static Bitmap knightSprite;//temporary
     private float pebbleSpeed;
     private float physicalPebbleSpeed;
     private boolean laser;
-    public Sage(int level, int ID, float xLocation, float yLocation)//both pebble and flying fist aren't affected by gravity
+    public Sage(int level, int ID, float xLocation, float yLocation, String sprite)//both pebble and flying fist aren't affected by gravity
     {
-        super(level,3,3,3, knightSprite, ID, xLocation, yLocation, 6);
+        super(level,3,3,3, sprite, ID, xLocation, yLocation, 6);
         double geometricalPebbleSpeed = Math.sqrt((10.53 * 10));
         physicalPebbleSpeed = (float) geometricalPebbleSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
@@ -48,7 +47,7 @@ public class Sage extends Character {
             xDiffrential = pebbleSpeed * horizontalDirection;
             yDiffrential = pebbleSpeed * verticalDirection;
 
-            Pebble pebble = new Pebble(knightSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, pebbleWidth, pebbleHeight, directionAngle);
+            Pebble pebble = new Pebble(this.itemSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, pebbleWidth, pebbleHeight, directionAngle);
             this.projectiles.add(pebble);
             resetAbility("X");
         }

@@ -99,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
         User user = new User(email);
         FirebaseFirestore fb = FirebaseFirestore.getInstance();
         String uid = mAuth.getCurrentUser().getUid();
-       fb.collection("Users").document(uid).set(user)
-       .addOnCompleteListener(new OnCompleteListener<Void>() {
+        fb.collection("Users").document(uid).set(user)
+        .addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful())

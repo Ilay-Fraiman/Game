@@ -134,7 +134,7 @@ public class Room implements Runnable {//fill this logic
     public boolean[] hit(Character c, Projectile p)
     {
         boolean[] hitting = new boolean[2];
-        //first one is collision, second one is actual hit baby
+        //first one is collision, second one is actual hit
         if(hitting[0])
         {
             if(floorNum == 2)
