@@ -15,7 +15,8 @@ public class Projectile extends GameObject{
     protected long TTD;
     private ArrayList<Character> alreadyHit;
     protected boolean oneTimeHit;
-    public Projectile(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
+    protected boolean moving;
+    public Projectile(String sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
         super(sprite, ID, xLocation, yLocation, width, height);
         this.power = power;
         this.angle = direction;
@@ -24,6 +25,7 @@ public class Projectile extends GameObject{
         this.TTD = 0;
         alreadyHit = new ArrayList<Character>();
         oneTimeHit = false;
+        moving = false;
         //switch sizes like in character
     }
 
@@ -79,12 +81,17 @@ public class Projectile extends GameObject{
 
     public boolean canHit(Character chr)
     {
-        return alreadyHit.contains(chr);
+        return !alreadyHit.contains(chr);
     }
 
     public void hasHit(Character chr)
     {
         if(this.oneTimeHit)
             this.alreadyHit.add(chr);
+    }
+
+    public boolean isMoving()
+    {
+        return this.moving;
     }
 }

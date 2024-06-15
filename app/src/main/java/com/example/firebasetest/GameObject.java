@@ -89,4 +89,9 @@ public class GameObject {
         }
         return directionAngle;
     }
+
+    public int getRoomID()
+    {
+        return this.roomID;
+    }
 }

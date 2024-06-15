@@ -295,7 +295,7 @@ public class Character extends GameObject implements Runnable {
     {
         if(!shatter)
         {
-            float accelerationNum = GameView.pixelHeight / 100;//transition from centimeters to meters
+            float accelerationNum = GameView.canvasPixelHeight / 100;//transition from centimeters to meters
             accelerationNum *= 30;//transition from frames to seconds
             float accelerationDiff = 10 / 30;//acceleration in one frame
             float speedToZero = accelerationDiff / accelerationNum;//speed that after acceleration becomes 0

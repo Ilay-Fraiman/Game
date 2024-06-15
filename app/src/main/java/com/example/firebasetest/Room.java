@@ -88,20 +88,24 @@ public class Room implements Runnable {//fill this logic
 
     public void knightChallenge()
     {
-        Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.canvasPixelHeight - (GameView.width / 15));
         Character player = new Character(1, 3, 3, 3, "Character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
+        Character.setPlayer(player);
+        Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.canvasPixelHeight - (GameView.width / 15));
         characters.add(player);
         blocksLeft = challengeDifficulty * floorNum;
         long timeToHit = 0;
         a.shoot();
         while (misses > 0 && length > 0)
         {
-            ArrayList<Projectile> archerProjectiles = a.getProjectiles();
+            ArrayList<Projectile> currentProjectiles = null;
+            currentProjectiles = a.getProjectileList(this.ID, characters);//wrong. archer isn't in that list
+            projectiles.addAll(currentProjectiles);
             for (Projectile p:
                  projectiles) {
                 boolean[] hit = hit(player, p);
                 if (hit[0])
                 {
+                    projectiles.remove(p);
                     if(hit[1])
                         misses--;
                     else
@@ -162,6 +166,59 @@ public class Room implements Runnable {//fill this logic
 
     public int getRandomNumber(int min, int max) {
         return (int) ((Math.random() * (max - min)) + min);
+    }
+
+    public void moveProjectile(Projectile projectile)
+    {
+        if(projectile.isMoving())
+        {
+            //homing guide:
+            //if projectile instance of arrow and (Arrow) projectile needsToHome.
+            //search for characters. if projectile's creator's character Grade is 5, use the first enemy in the list.
+            //if grade isn't 5, use the player in character.
+            //if it is homing and has a target, use the aiming methods you have
+            float x = projectile.getXPercentage();
+            float y = projectile.getYPercentage();
+            float horizontalSpeed = projectile.getHorizontalSpeed();
+            float verticalSpeed = projectile.getVerticalSpeed();
+            x += horizontalSpeed;
+            y += verticalSpeed;
+            //now vertical acceleration
+            if(!(projectile instanceof Fist) && !(projectile instanceof Pebble))
+            {
+                float accelerationNum = GameView.canvasPixelHeight / 100;//transition from centimeters to meters
+                accelerationNum *= 30;//transition from frames to seconds
+                float accelerationDiff = 10 / 30;//acceleration in one frame
+                verticalSpeed *= accelerationNum;//transition from pixels per frame to meters per second
+                verticalSpeed += accelerationDiff;//down is positive, up is negative
+                verticalSpeed /= accelerationNum;//transition from meters per second to pixels per frame
+            }
+            if(x < 0 || x >= GameView.width)
+                hitWall(projectile, true);
+            if(y < 0 || y >= GameView.canvasPixelHeight)
+                hitWall(projectile, false);
+            //also need homing for arrow
+            //angle change
+        }
+
+    }
+
+    public void hitWall(Projectile projectile, boolean horizontalWall)
+    {
+        if(projectile.getAilment().equals("fire"))
+        {
+            GroundFire gF = new GroundFire(projectile);
+            projectiles.add(gF);
+        }
+        else if((projectile instanceof Arrow) && (((Arrow) projectile).isRicochet()))
+        {
+            if(horizontalWall)
+                projectile.setHorizontalSpeed(projectile.getHorizontalSpeed() * (-1));
+            else
+                projectile.setVerticalSpeed(projectile.getVerticalSpeed() * (-1));
+        }
+        else
+            projectiles.remove(projectile);
     }
 
 
