@@ -124,20 +124,14 @@ public class Character extends GameObject implements Runnable {
     public boolean useAbility(String button)
     {
         long resetTime = 0;
-        switch (button){
-            case "A":
-                resetTime = resetA;
-                break;
-            case "B":
-                resetTime = resetB;
-                break;
-            case "X":
-                resetTime = resetX;
-                break;
-            case "Y":
-                resetTime = resetY;
-                break;
-        }
+        if(button.equals("A"))
+            resetTime = resetA;
+        else if(button.equals("B"))
+            resetTime = resetB;
+        else if(button.equals("X"))
+            resetTime = resetX;
+        else if(button.equals("Y"))
+            resetTime = resetY;
         return System.currentTimeMillis() >= resetTime;
     }
 
@@ -730,6 +724,13 @@ public class Character extends GameObject implements Runnable {
     public boolean isAlive()
     {
         return (this.HP > 0);
+    }
+
+    public String getLegs()
+    {
+        String legs = "walking";
+        legs += legsPos;
+        return legs;
     }
     @Override
     public void run() {

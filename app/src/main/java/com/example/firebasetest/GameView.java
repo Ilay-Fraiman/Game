@@ -98,6 +98,14 @@ public class GameView extends SurfaceView implements Runnable
                 int desiredWidth = (int) width;
                 int desiredHeight = (int) height;
                 float angle = gameObject.getDirection();
+                if(gameObject instanceof Character)
+                {
+                    Character object = (Character) gameObject;
+                    String legSprite = object.getLegs();
+                    draw(legSprite, x, y + (desiredHeight / 2), desiredWidth, desiredHeight /2, 0);
+                    desiredHeight /= 2;
+                    angle = 0;
+                }
                 draw(sprite, x, y, desiredWidth, desiredHeight, angle);
             }
             ourHolder.unlockCanvasAndPost(canvas);

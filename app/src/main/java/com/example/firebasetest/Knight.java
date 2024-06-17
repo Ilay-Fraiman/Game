@@ -405,6 +405,14 @@ public class Knight extends Character{
     }
 
     @Override
+    public String getLegs() {
+        String legs = super.getLegs();
+        if(mounted || characterGrade == 4)
+            legs.replace("walking", "riding");
+        return legs;
+    }
+
+    @Override
     public void run() {
         while (running)
         {

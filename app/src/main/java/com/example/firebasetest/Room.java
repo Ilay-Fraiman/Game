@@ -34,6 +34,12 @@ public class Room implements Runnable {//fill this logic
     private int parryWindow;//send it when pressed (knight challenge)
     private int[][] missesArray = {{10, 7, 5}, {7, 5, 4}, {6, 4, 3}, {5, 3, 2}, {3, 2, 1}};//missesArray[scaling][section]
     private int length;
+    private boolean nextSimon;
+    private int nextSimonNum;
+    private ArrayList<Integer> boxPresses;
+    private ArrayList<Integer> buttonPresses;
+    private ArrayList<Box> boxes;
+    private int currentSimonLength;
 
     public Room(User user)
     {
@@ -43,6 +49,12 @@ public class Room implements Runnable {//fill this logic
         roomNum = user.getCurrentRoom();
         this.misses = 0;
         this.length = 0;
+        this.nextSimon = false;
+        this.nextSimonNum = 0;
+        boxPresses = null;
+        buttonPresses = null;
+        boxes = null;
+        currentSimonLength = 0;
         ID = (sectionNum * 100) + (floorNum * 10) + roomNum;
         characters = new ArrayList<>();
         projectiles = new ArrayList<>();
@@ -141,7 +153,49 @@ public class Room implements Runnable {//fill this logic
 
     public void mageChallenge()
     {
-
+        Character player = new Character(1, 3, 3, 3, "Character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
+        Character.setPlayer(player);
+        characters.add(player);
+        boxPresses = new ArrayList<>();
+        buttonPresses = new ArrayList<>();
+        boxes = new ArrayList<>();
+        float boxDistance = GameView.width / 5;
+        for(int i = 1; i < 5; i++)
+        {
+            float width = GameView.width / 10;
+            float x = boxDistance * i;
+            float y = GameView.canvasPixelHeight - width;
+            Box box = new Box(ID, x, y, width, width, i);
+            boxes.add(box);
+        }
+        objects.addAll(boxes);
+        currentSimonLength = 4;
+        for(int i = 0; i < 3; i++)
+        {
+            int boxPressed = getRandomNumber(1, 4);
+            int buttonPressed = getRandomNumber(1, 4);
+            boxPresses.add(boxPressed);
+            buttonPresses.add(buttonPressed);
+        }
+        nextSimon = true;
+        while (misses > 0 && length > 0)
+        {
+            if(nextSimon)
+            {
+                nextSimonCycle();
+                currentSimonLength++;
+                nextSimon = false;
+            }
+            try {
+                roomThread.sleep(33);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(misses <= 0)
+            failure();
+        else
+            roomEnd();
     }
 
     public boolean[] hit(Character c, Projectile p)
@@ -177,6 +231,73 @@ public class Room implements Runnable {//fill this logic
         }
         a.shoot();
     }
+
+    public void nextSimonCycle()
+    {
+        int boxPressed = getRandomNumber(1, 4);
+        int buttonPressed = getRandomNumber(1, 4);
+        boxPresses.add(boxPressed);
+        buttonPresses.add(buttonPressed);
+        nextSimonNum = 0;
+        for(int i = 0; i < currentSimonLength; i++)
+        {
+            int boxNum = boxPresses.get(i).intValue();
+            int buttonNum = buttonPresses.get(i).intValue();
+            Box toPress = boxes.get(boxNum);
+            toPress.shineResult("button", buttonNum);
+            try {
+                roomThread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void pressedBox(String button)
+    {
+        Character player = Character.getPlayer();
+        if (player.getYPercentage() == (GameView.canvasPixelHeight - player.getHeightPercentage()))
+        {
+            float x = player.getXPercentage();
+            float width = player.getWidthPercentage();
+            Box toPress = null;
+            int boxNum = 0;
+            for(int i = 0; i < 4; i++)
+            {
+                Box box = boxes.get(i);
+                float boxX = box.getXPercentage();
+                float boxWidth = box.getWidthPercentage();
+                if((boxX <= (x + width)) && ((boxX +boxWidth) >= x))
+                {
+                    toPress = box;
+                    boxNum = i + 1;
+                }
+            }
+            if(boxNum != 0)
+            {
+                int pressNum = toPress.shineResult(button, 0);
+                int pressedButton = pressNum % 10;
+                int pressedBox = pressNum - pressedButton;
+                pressedBox /= 10;
+                if((boxPresses.get(nextSimonNum).intValue() == pressedBox) && (buttonPresses.get(nextSimonNum).intValue() == pressedButton))
+                {
+                    nextSimonNum++;
+                    if(nextSimonNum == currentSimonLength)
+                    {
+                        length--;
+                        nextSimon = true;
+                    }
+                }
+                else
+                {
+                    misses--;
+                    currentSimonLength--;
+                    nextSimon = true;
+                }
+            }
+        }
+    }
+
 
     public int getRandomNumber(int min, int max) {
         return (int) ((Math.random() * (max - min)) + min);
