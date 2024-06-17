@@ -47,7 +47,7 @@ public class Character extends GameObject implements Runnable {
         itemHeight = myWidth;
         movementSpeed = myWidth / 10;//speed is screen within 5 seconds. this is the speed for every frame (1/30 of a second)
         HP = HPD * 15 * level;
-        attackCooldown-= (level*ACD);
+        attackCooldown -= (level *ACD * 10);
         attackPower = level*APD;
         this.resetX = 0;
         this.resetB = 0;
@@ -64,6 +64,14 @@ public class Character extends GameObject implements Runnable {
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
+    }
+
+    public int getCharacterGrade() {
+        return characterGrade;
+    }
+
+    public void setCharacterGrade(int characterGrade) {
+        this.characterGrade = characterGrade;
     }
 
     protected ArrayList<Projectile> getProjectiles()
@@ -88,16 +96,19 @@ public class Character extends GameObject implements Runnable {
 
     public ArrayList<Projectile> getProjectileList(int ID, ArrayList<Character> characters)
     {
-        if(characters.contains(this) && ID == this.roomID)
+        if((characters.contains(this) && ID == this.roomID) || (this.characterGrade == 5))
         {
+            //character grade 5 is player. sometimes granted special access.
+            //character grade 5 is also characters that summon projectiles but shouldn't be drawn.
+            //in order to not draw, you leave them out of the characters array of the room
             ArrayList<Projectile> projectilesList = this.getProjectiles();
             this.emptyList();
             return projectilesList;
         }
-        else
+        else//accessed by a room that doesn't contain this
         {
             boolean sentValue = listSent;
-            listSent = false;
+            listSent = true;
             ArrayList<Projectile> emptiedList = this.getProjectiles();
             listSent = sentValue;
             return emptiedList;
@@ -348,6 +359,10 @@ public class Character extends GameObject implements Runnable {
             verticalMovement += accelerationDiff;//down is positive, up is negative
             verticalMovement /= accelerationNum;//transition from meters per second to pixels per frame
         }
+    }
+
+    public static Character getPlayer() {
+        return player;
     }
 
     public boolean inRange()//is the player in range of attack
@@ -676,11 +691,15 @@ public class Character extends GameObject implements Runnable {
         return this.directionAngle;
     }
 
-    public void parryChallenge()
+    public void parryChallenge(int parryStage)
     {
         if(parryCountdown <= System.currentTimeMillis())
         {
             isParrying = true;
+            this.parryCountdown = System.currentTimeMillis() + 1000L;
+            long scheduleDelay = 500L;
+            long parryWindow = 20L * parryStage;
+            scheduleDelay -= parryWindow;
             class Unparry extends TimerTask {
                 private Character character;
 
@@ -696,17 +715,21 @@ public class Character extends GameObject implements Runnable {
             }
             Timer timer = new Timer();
             TimerTask task = new Unparry(this);
-            timer.schedule(task, 500L);
+            timer.schedule(task, scheduleDelay);
         }
     }
     public void unparry()
     {
         this.isParrying = false;
-        this.parryCountdown = System.currentTimeMillis() + 1000L;
     }
     public boolean IsParrying()
     {
         return this.isParrying;
+    }
+
+    public boolean isAlive()
+    {
+        return (this.HP > 0);
     }
     @Override
     public void run() {

@@ -27,11 +27,11 @@ public class Room implements Runnable {//fill this logic
     private int enemiesPerWave;
     private int currentWave;
     private int ID;
-    private int blocksLeft;
     private int enemyDifficulty;
     private int difficultyScaling;
     private int challengeDifficulty;
     private int challengeDifficultyScaling;
+    private int parryWindow;//send it when pressed (knight challenge)
     private int[][] missesArray = {{10, 7, 5}, {7, 5, 4}, {6, 4, 3}, {5, 3, 2}, {3, 2, 1}};//missesArray[scaling][section]
     private int length;
 
@@ -88,20 +88,22 @@ public class Room implements Runnable {//fill this logic
 
     public void knightChallenge()
     {
+        //only 2 buttons work: direction joystick and parry button
         Character player = new Character(1, 3, 3, 3, "Character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
         Character.setPlayer(player);
         Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.canvasPixelHeight - (GameView.width / 15));
         characters.add(player);
-        blocksLeft = challengeDifficulty * floorNum;
+        parryWindow = 0;
         long timeToHit = 0;
         a.shoot();
         while (misses > 0 && length > 0)
         {
             ArrayList<Projectile> currentProjectiles = null;
-            currentProjectiles = a.getProjectileList(this.ID, characters);//wrong. archer isn't in that list
+            currentProjectiles = a.getProjectileList(this.ID, characters);
             projectiles.addAll(currentProjectiles);
             for (Projectile p:
                  projectiles) {
+                moveProjectile(p);
                 boolean[] hit = hit(player, p);
                 if (hit[0])
                 {
@@ -109,13 +111,16 @@ public class Room implements Runnable {//fill this logic
                     if(hit[1])
                         misses--;
                     else
+                    {
                         length--;
+                        parryWindow++;
+                    }
                 }
             }
             if(timeToHit < System.currentTimeMillis())
             {
                 timeToHit = System.currentTimeMillis() + 2000L;
-                rePositionArcher(a, player);
+                rePositionArcher(a);
             }
             try {
                 roomThread.sleep(33);
@@ -123,6 +128,10 @@ public class Room implements Runnable {//fill this logic
                 e.printStackTrace();
             }
         }
+        if(misses <= 0)
+            failure();
+        else
+            roomEnd();
     }
 
     public void archerChallenge()
@@ -147,20 +156,25 @@ public class Room implements Runnable {//fill this logic
         return hitting;
     }
 
-    public void rePositionArcher(Archer a, Character character)
+    public void rePositionArcher(Archer a)
     {
-        boolean above = (getRandomNumber(1, 2) == 1);
-        boolean right = (getRandomNumber(1, 2) == 1);
-        float newY = above? (character.getYPercentage() - (a.getHeightPercentage() * 2)): character.getYPercentage();
-        float newX = right? (character.getXPercentage() + character.getWidthPercentage() + (a.getWidthPercentage() * 2)): (character.getXPercentage() - (a.getWidthPercentage() * 2));
-        a.setXPercentage(newX);
-        a.setYPercentage(newY);
-        float[] values = a.aimAtPlayer();
-        float horizontalDistance = values[8];
-        float verticalDistance = values[9];
-        float speed = a.getPhysicalSpeed();
-        a.inRange();
-        a.aim(horizontalDistance, verticalDistance, speed);
+        boolean tooClose = true;
+        boolean tooFar = true;
+        while (tooClose || tooFar)
+        {
+            float horizontalEdge = GameView.width - a.getWidthPercentage();
+            float verticalEdge = GameView.canvasPixelHeight - a.getHeightPercentage();
+            float newY = getRandomNumber(0, (int)horizontalEdge);
+            float newX = getRandomNumber(0, (int)verticalEdge);
+            a.setXPercentage(newX);
+            a.setYPercentage(newY);
+            float[] values = a.aimAtPlayer();
+            float horizontalDistance = values[8];
+            float verticalDistance = values[9];
+            float speed = a.getPhysicalSpeed();
+            tooClose = a.inRange();
+            tooFar = !a.aim(horizontalDistance, verticalDistance, speed);
+        }
         a.shoot();
     }
 
@@ -172,11 +186,21 @@ public class Room implements Runnable {//fill this logic
     {
         if(projectile.isMoving())
         {
-            //homing guide:
-            //if projectile instance of arrow and (Arrow) projectile needsToHome.
-            //search for characters. if projectile's creator's character Grade is 5, use the first enemy in the list.
-            //if grade isn't 5, use the player in character.
-            //if it is homing and has a target, use the aiming methods you have
+            boolean homed = false;
+            if(projectile instanceof Arrow)
+            {
+                Arrow arrowProjectile = (Arrow) projectile;
+                if(arrowProjectile.isHoming())
+                {
+                    if(arrowProjectile.needsToHome())
+                    {
+                        arrowProjectile.home(characters);
+                    }
+                    else
+                        homed = arrowProjectile.aimAtTarget();//so we could wait
+                }
+            }
+
             float x = projectile.getXPercentage();
             float y = projectile.getYPercentage();
             float horizontalSpeed = projectile.getHorizontalSpeed();
@@ -192,25 +216,36 @@ public class Room implements Runnable {//fill this logic
                 verticalSpeed *= accelerationNum;//transition from pixels per frame to meters per second
                 verticalSpeed += accelerationDiff;//down is positive, up is negative
                 verticalSpeed /= accelerationNum;//transition from meters per second to pixels per frame
+                projectile.setVerticalSpeed(verticalSpeed);
             }
+            String wallResult = "noHit";
             if(x < 0 || x >= GameView.width)
-                hitWall(projectile, true);
+                wallResult = hitWall(projectile, true);
             if(y < 0 || y >= GameView.canvasPixelHeight)
-                hitWall(projectile, false);
-            //also need homing for arrow
-            //angle change
-        }
+                wallResult = hitWall(projectile, false);
 
+            if(wallResult.equals("changed"))
+            {
+                horizontalSpeed = projectile.getHorizontalSpeed();
+                verticalSpeed = projectile.getVerticalSpeed();
+            }
+
+            if(!(wallResult.equals("removed")))
+            {
+                double newVert = (double) verticalSpeed * (-1);
+                double angle = Math.atan2(newVert, (double) horizontalSpeed);//converts as if radius is 1
+                double degreesAngle = Math.toDegrees(angle);
+                projectile.setAngle(degreesAngle);
+            }
+        }
+        else if(projectile.isTimeUp())
+            projectiles.remove(projectile);
     }
 
-    public void hitWall(Projectile projectile, boolean horizontalWall)
+    public String hitWall(Projectile projectile, boolean horizontalWall)//result code for actions
     {
-        if(projectile.getAilment().equals("fire"))
-        {
-            GroundFire gF = new GroundFire(projectile);
-            projectiles.add(gF);
-        }
-        else if((projectile instanceof Arrow) && (((Arrow) projectile).isRicochet()))
+        String resultCode = "changed";
+        if((projectile instanceof Arrow) && (((Arrow) projectile).isRicochet()))
         {
             if(horizontalWall)
                 projectile.setHorizontalSpeed(projectile.getHorizontalSpeed() * (-1));
@@ -218,7 +253,31 @@ public class Room implements Runnable {//fill this logic
                 projectile.setVerticalSpeed(projectile.getVerticalSpeed() * (-1));
         }
         else
+        {
+            resultCode = "removed";
+            if(projectile.getAilment().equals("fire"))
+            {
+                GroundFire gF = new GroundFire(projectile);
+                projectiles.add(gF);
+            }
             projectiles.remove(projectile);
+        }
+        return resultCode;
+    }
+
+    public void roomEnd()
+    {
+        //reset none moving buttons to nothing
+        //open start button
+        //check for movement, once reached edge, use gameview's next room function
+    }
+
+    public void failure()
+    {
+        //show game over screen
+        //allow two button presses(close/continue?)
+        //check sudden death if you need to change the room you're putting the player in.
+        //find a way to use next room with the same room
     }
 
 

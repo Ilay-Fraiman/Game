@@ -90,6 +90,10 @@ public class Projectile extends GameObject{
             this.alreadyHit.add(chr);
     }
 
+    public void setAngle(double angle) {
+        this.angle = angle;
+    }
+
     public boolean isMoving()
     {
         return this.moving;
