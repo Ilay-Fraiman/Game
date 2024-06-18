@@ -1,6 +1,9 @@
 package com.example.firebasetest;
 
 import android.graphics.Bitmap;
+
+import org.checkerframework.checker.units.qual.K;
+
 import java.util.*;
 
 public class Character extends GameObject implements Runnable {
@@ -8,7 +11,7 @@ public class Character extends GameObject implements Runnable {
     protected double HP;
     protected long attackCooldown = 1150L;
     protected int attackPower;
-    protected Bitmap itemSprite;//draw in gameobject draws the character, this class has override that adds the itemsprite on top with direction.
+    protected String spriteState;//draw in gameobject draws the character, this class has override that adds the itemsprite on top with direction.
     protected float itemWidth;
     protected float itemHeight;
     protected ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
@@ -42,7 +45,7 @@ public class Character extends GameObject implements Runnable {
         super(spriteName, ID, xLocation, yLocation);
         this.moving = false;
         this.legsPos = 1;
-        float myWidth = this.getWidthPercentage();
+        float myWidth = this.getWidth();
         itemWidth = myWidth;
         itemHeight = myWidth;
         movementSpeed = myWidth / 10;//speed is screen within 5 seconds. this is the speed for every frame (1/30 of a second)
@@ -61,6 +64,7 @@ public class Character extends GameObject implements Runnable {
         this.shatter = false;
         this.parryCountdown = System.currentTimeMillis() + 500L;
         this.isParrying = false;
+        this.spriteState = "idle";
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -68,10 +72,6 @@ public class Character extends GameObject implements Runnable {
 
     public int getCharacterGrade() {
         return characterGrade;
-    }
-
-    public void setCharacterGrade(int characterGrade) {
-        this.characterGrade = characterGrade;
     }
 
     protected ArrayList<Projectile> getProjectiles()
@@ -114,12 +114,6 @@ public class Character extends GameObject implements Runnable {
             return emptiedList;
         }
     }
-    public void switchSizes()
-    {
-        float width = this.itemHeight;
-        this.itemHeight = this.itemWidth;
-        this.itemWidth = width;
-    }
 
     public boolean useAbility(String button)
     {
@@ -138,51 +132,33 @@ public class Character extends GameObject implements Runnable {
     public void resetAbility(String button)
     {
         long start = System.currentTimeMillis();
-        switch (button){
-            case "A":
-                resetA = start + 5000L;
-                break;
-            case "B":
-                resetB = start + 10000L;
-                break;
-            case "X":
-                resetX = start + attackCooldown;
-                break;
-            case "Y":
-                resetY = start + 30000L;
-                break;
-        }
+        if(button.equals("A"))
+            resetA = start + 5000L;
+        else if(button.equals("B"))
+            resetB = start + 10000L;
+        else if(button.equals("X"))
+            resetX = start + attackCooldown;
+        else if(button.equals("Y"))
+            resetY = start + 30000L;
     }
     public boolean hit(Projectile p)
     {
         int power = (int)p.getPower();
         this.HP-=power;
+        String ailment = p.getAilment();
 
-        switch (p.getAilment())
-        {
-            case "poison":
-                this.poisoned(power / 10);
-                break;
-            case "freeze":
-                this.freeze();
-                break;
-            case "shock":
-                shock();
-                break;
-            case "life steal":
-                p.getCreator().HP += power;
-                break;
-            case "shatter":
-                shatter();
-                break;
-        }
+        if(ailment.equals("poison"))
+            poisoned(power / 10);
+        else if(ailment.equals("freeze"))
+            freeze();
+        else if(ailment.equals("shock"))
+            shock();
+        else if(ailment.equals("life steal"))
+            p.getCreator().HP += power;
+        else if(ailment.equals("shatter"))
+            shatter();
 
-        if(this.HP <= 0)
-        {
-            this.running = false;
-            return true;//is dead
-        }
-        return false;
+        return true;//hit
     }
 
     private void poisoned(int power)
@@ -255,23 +231,35 @@ public class Character extends GameObject implements Runnable {
 
     public void Attack()
     {
-        if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(itemHeight<itemWidth))//(?)
-            switchSizes();
-
+        this.spriteState = "attacking";
         float xAxis = horizontalDirection * itemWidth;
         float yAxis = verticalDirection *  itemHeight;
-        float locationHor = this.getXPercentage() + xAxis;
-        float locationVert = this.getYPercentage() + yAxis;
+        float locationHor = this.getXLocation() + xAxis;
+        float locationVert = this.getYLocation() + yAxis;
         if (this.horizontalDirection > 0)
-            locationHor += this.getWidthPercentage();
+            locationHor += (this.getWidth() / 2);
+        else
+            locationHor -= (this.getWidth() / 2);
         if (this.verticalDirection > 0)
-            locationVert += this.getHeightPercentage();
+            locationVert += (this.getHeight() / 2);
+        else
+            locationVert -= (this.getHeight() / 2);
 
-        BladeAttack bladeAttack = new BladeAttack(itemSprite, roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
+        BladeAttack bladeAttack = new BladeAttack(roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
         if(this instanceof Sage)
+        {
             bladeAttack.SetAilment("life steal");
+            bladeAttack.setSpriteName("scepter");
+        }
         else if(this instanceof Archer)
+        {
             bladeAttack.setPower(attackPower / 2);
+            bladeAttack.setSpriteName("arrow");
+        }
+        else if(this instanceof Knight)
+            bladeAttack.setSpriteName(((Knight) this).getItemName());
+        else if(this instanceof Berserker)
+            bladeAttack.setSpriteName("fist");
         this.projectiles.add(bladeAttack);
     }
     public static void setPlayer(Character p)
@@ -281,26 +269,26 @@ public class Character extends GameObject implements Runnable {
 
     protected static float getPlayerX()
     {
-        return Character.player.getXPercentage();
+        return Character.player.getXLocation();
     }
     protected static float getPlayerY()
     {
-        return Character.player.getYPercentage();
+        return Character.player.getYLocation();
     }
     protected static float getPlayerWidth()
     {
-        return Character.player.getWidthPercentage();
+        return Character.player.getWidth();
     }
     protected static float getPlayerHeight()
     {
-        return Character.player.getHeightPercentage();
+        return Character.player.getHeight();
     }
 
     protected void move(float x, float y, float tWidth, float tHeight)//height should fit canvas
     {
         if(!shatter)
         {
-            float accelerationNum = GameView.canvasPixelHeight / 100;//transition from centimeters to meters
+            float accelerationNum = GameView.height / 100;//transition from centimeters to meters
             accelerationNum *= 30;//transition from frames to seconds
             float accelerationDiff = 10 / 30;//acceleration in one frame
             float speedToZero = accelerationDiff / accelerationNum;//speed that after acceleration becomes 0
@@ -309,15 +297,15 @@ public class Character extends GameObject implements Runnable {
             if(moving)
             {
                 float xLocation = x + (movementSpeed * horizontalMovement);
-                if(xLocation < 0)
+                if((xLocation - (tWidth / 2)) < 0)
                 {
-                    xLocation = 0;
+                    xLocation = (tWidth / 2);
                     moving = false;
                     legsPos = 1;
                 }
-                else if ((xLocation + tWidth) > GameView.width)
+                else if ((xLocation + (tWidth / 2)) > GameView.width)
                 {
-                    xLocation = GameView.width - tWidth;
+                    xLocation = GameView.width - (tWidth / 2);
                     moving = false;
                     legsPos = 1;
                 }
@@ -327,7 +315,7 @@ public class Character extends GameObject implements Runnable {
                     if (legsPos > 4)
                         legsPos = 1;
                 }
-                setXPercentage(xLocation);
+                setXLocation(xLocation);
             }
             else
             {
@@ -335,20 +323,20 @@ public class Character extends GameObject implements Runnable {
             }
 
             float yLocation = y + verticalMovement;
-            if ((yLocation + tHeight) >= GameView.height)
+            if ((yLocation + (tHeight / 2)) >= GameView.height)
             {
-                yLocation = GameView.height - tHeight;
+                yLocation = GameView.height - (tHeight / 2);
                 verticalMovement = speedToZero;
             }
             else
             {
                 legsPos = 5;
-                if(yLocation < 0) {
-                    yLocation = 0;
+                if((yLocation - (tHeight / 2)) < 0) {
+                    yLocation = (tHeight / 2);
                     verticalMovement = speedToZero;
                 }
             }
-            setYPercentage(yLocation);
+            setYLocation(yLocation);
             verticalMovement *= accelerationNum;//transition from pixels per frame to meters per second
             verticalMovement += accelerationDiff;//down is positive, up is negative
             verticalMovement /= accelerationNum;//transition from meters per second to pixels per frame
@@ -380,33 +368,21 @@ public class Character extends GameObject implements Runnable {
         float[] values = new float[10];
         float playerX = getPlayerX();
         float playerY = getPlayerY();
-        float width = this.getWidthPercentage();
-        float height = this.getHeightPercentage();
+        float width = this.getWidth();
+        float height = this.getHeight();
         float playerWidth = getPlayerWidth();
         float playerHeight = getPlayerHeight();
-        float xLocation = this.getXPercentage();
-        float yLocation = this.getYPercentage();
+        float xLocation = this.getXLocation();
+        float yLocation = this.getYLocation();
         float horizontalDistance = 0;
         float verticalDistance = 0;
 
-        if(playerX < xLocation)
-            this.horizontalDirection = (playerX + playerWidth) - xLocation;
-        else if(playerX > xLocation)
-            this.horizontalDirection = playerX - (xLocation + width);
-        else
-            this.horizontalDirection = 0;
-        if(playerY < yLocation)
-            this.verticalDirection = (playerY + playerHeight) - yLocation;
-        else if(playerY > yLocation)
-            this.verticalDirection = playerY - (yLocation + height);
-        else
-            this.verticalDirection = 0;
+        this.horizontalDirection = (playerX != xLocation)? (playerX - xLocation): 0;
+        this.verticalDirection = (playerY != yLocation)? (playerY - yLocation): 0;
 
         horizontalDistance = horizontalDirection;
         verticalDistance = verticalDirection;
 
-        if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(itemHeight<itemWidth))
-            switchSizes();
         horizontalDirection /= itemWidth;
         verticalDirection /= itemHeight;
 
@@ -469,7 +445,7 @@ public class Character extends GameObject implements Runnable {
         double vertAcc = Math.pow(time, 2);//second half of function
         vertAcc *= 5;//half acceleration
         double maxHeight = vertMove - vertAcc;//height as function of speed and acceleration, docs
-        float location = this.getYPercentage();//current vertical position
+        float location = this.getYLocation();//current vertical position
         float fHeight = (float) maxHeight;
         float maxPixels = fHeight / GameView.pixelHeight;//convert meters to pixels
         float finalPixel = location - maxPixels;//in canvas up is negative
@@ -565,7 +541,7 @@ public class Character extends GameObject implements Runnable {
         boolean jump = false;
         if (otherX < x)
         {
-            if ((x + (width * 2)) >= GameView.width)
+            if ((x + (width * 1.5)) >= GameView.width)
             {
                 horizontalMovement = -1;
                 jump = true;
@@ -573,52 +549,34 @@ public class Character extends GameObject implements Runnable {
         }
         else
         {
-            if ((x - width) <= 0)
+            if ((x - (width * 1.5)) <= 0)
             {
                 horizontalMovement = 1;
                 jump = true;
             }
         }
-        if ((y + height == GameView.canvasPixelHeight) && jump)
+        if ((y + (height / 2) == GameView.height) && jump)
             this.verticalMovement = (-1) * this.movementSpeed;
     }
 
-    public void magicLine(String effect, Bitmap lineSprite)//sprite is temporary
+    public void magicLine(String effect)//sprite is temporary
     {
-        float locationX = this.getXPercentage();
-        float locationY = this.getYPercentage();
-        float xDiffrential = this.getWidthPercentage() * this.horizontalDirection * 5;
-        float yDiffrential = this.getHeightPercentage() * this.verticalDirection / 5;
-        if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(yDiffrential<xDiffrential))
-        {
-            xDiffrential /= 25;
-            yDiffrential *= 25;
-        }
+        float locationX = this.getXLocation();
+        float locationY = this.getYLocation();
+        float xDiffrential = this.getWidth() * this.horizontalDirection * 5;
+        float yDiffrential = this.getHeight() * this.verticalDirection * 5;
 
         if(effect == "laser")
         {
-            if (xDiffrential > yDiffrential)
-            {
-                xDiffrential *= 2;
-                yDiffrential *= 5;
-            }
-            else
-            {
-                xDiffrential *= 5;
-                yDiffrential *= 2;
-            }
+            xDiffrential *= 2;
+            yDiffrential *= 5;
         }
 
-        if(this.horizontalDirection>0)
-            locationX += this.getWidthPercentage();
-        else
-            locationX += xDiffrential;
-        if(this.verticalDirection>0)
-            locationY += this.getHeightPercentage();
-        else
-            locationY += yDiffrential;
+        locationX += (xDiffrential / 2);
+        locationY += (yDiffrential / 2);
+        yDiffrential /= 25;
 
-        LightLine lightLine = new LightLine(lineSprite, roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
+        LightLine lightLine = new LightLine(roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
     }
 
@@ -732,6 +690,42 @@ public class Character extends GameObject implements Runnable {
         legs += legsPos;
         return legs;
     }
+
+    @Override
+    public String getSpriteName() {
+        String name = super.getSpriteName();
+        String sprite = spriteState += name;
+        return sprite;
+    }
+
+    public void idleAgain(String originalState)
+    {
+        class ReIdle extends TimerTask {
+            private Character chr;
+            private String state;
+
+            ReIdle(Character c, String s)
+            {
+                this.chr = c;
+                this.state = s;
+            }
+
+            @Override
+            public void run() {
+                chr.reIdle(state);
+            }
+        }
+        Timer timer = new Timer();
+        TimerTask task = new ReIdle(this, originalState);
+        timer.schedule(task, locked);
+    }
+
+    public void reIdle(String originalState)
+    {
+        if(spriteState.equals(originalState) && locked <= 0)
+            spriteState = "idle";
+    }
+
     @Override
     public void run() {
 

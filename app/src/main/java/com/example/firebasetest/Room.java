@@ -101,7 +101,7 @@ public class Room implements Runnable {//fill this logic
     public void knightChallenge()
     {
         //only 2 buttons work: direction joystick and parry button
-        Character player = new Character(1, 3, 3, 3, "Character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
+        Character player = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
         Character.setPlayer(player);
         Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.canvasPixelHeight - (GameView.width / 15));
         characters.add(player);
@@ -153,7 +153,7 @@ public class Room implements Runnable {//fill this logic
 
     public void mageChallenge()
     {
-        Character player = new Character(1, 3, 3, 3, "Character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
+        Character player = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.canvasPixelHeight - (GameView.width / 15), 5);
         Character.setPlayer(player);
         characters.add(player);
         boxPresses = new ArrayList<>();
@@ -267,7 +267,7 @@ public class Room implements Runnable {//fill this logic
                 Box box = boxes.get(i);
                 float boxX = box.getXPercentage();
                 float boxWidth = box.getWidthPercentage();
-                if((boxX <= (x + width)) && ((boxX +boxWidth) >= x))
+                if((boxX <= (x + width)) && ((boxX + boxWidth) >= x))
                 {
                     toPress = box;
                     boxNum = i + 1;

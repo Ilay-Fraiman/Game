@@ -5,13 +5,13 @@ import android.graphics.Bitmap;
 public class GameObject {
     private String spriteName;
 
-    private float widthPercentage;
+    private float width;
 
-    private float heightPercentage;
+    private float height;
 
-    private float xPercentage;
+    private float xLocation;
 
-    private float yPercentage;
+    private float yLocation;
 
     public String getSpriteName() {
         return spriteName;
@@ -23,66 +23,61 @@ public class GameObject {
 
     protected int roomID;
 
-    public GameObject(String spriteName, int ID, float xLocation, float yLocation, float width, float height){
+    public GameObject(String spriteName, int ID, float x, float y, float w, float h){
         this.spriteName = spriteName;
         this.roomID = ID;
-        this.xPercentage = xLocation;
-        this.yPercentage = yLocation;
-        this.widthPercentage = width;
-        this.heightPercentage = height;
+        this.xLocation = x;
+        this.yLocation = y;
+        this.width = w;
+        this.height = h;
     }
 
-    public GameObject(String spriteName, int ID, float xLocation, float yLocation)//character
+    public GameObject(String spriteName, int ID, float x, float y)//character
     {
         this.spriteName = spriteName;
         this.roomID = ID;
-        this.xPercentage = xLocation;
-        this.yPercentage = yLocation;
-        this.widthPercentage = (GameView.width / 15);
-        this.heightPercentage = this.widthPercentage;
+        this.xLocation = x;
+        this.yLocation = y;
+        this.width = (GameView.width / 15);
+        this.height = this.width;
     }
 
-    public float getWidthPercentage() {
-        return widthPercentage;
+    public float getWidth() {
+        return width;
     }
 
-    public void setWidthPercentage(float widthPercentage) {
-        this.widthPercentage = widthPercentage;
+    public void setWidth(float w) {
+        this.width = w;
     }
 
-    public float getHeightPercentage() {
-        return heightPercentage;
+    public float getHeight() {
+        return height;
     }
 
-    public void setHeightPercentage(float heightPercentage) {
-        this.heightPercentage = heightPercentage;
+    public void setHeight(float h) {
+        this.height = h;
     }
 
-    public float getXPercentage() {
-        return xPercentage;
+    public float getXLocation() {
+        return xLocation;
     }
 
-    public void setXPercentage(float xPercentage) {
-        this.xPercentage = xPercentage;
+    public void setXLocation(float x) {
+        this.xLocation = x;
     }
 
-    public float getYPercentage() {
-        return yPercentage;
+    public float getYLocation() {
+        return yLocation;
     }
 
-    public void setYPercentage(float yPercentage) {
-        this.yPercentage = yPercentage;
+    public void setYLocation(float y) {
+        this.yLocation = y;
     }
 
     public float getDirection()
     {
         float directionAngle = 0;
-        if(this instanceof Character)
-        {
-            double angle = ((Character) this).getDirectionAngle();
-            directionAngle = (float) angle;
-        }
-        else if(this instanceof Projectile)
+        if(this instanceof Projectile)
         {
             double angle = ((Projectile) this).getAngle();
             directionAngle = (float) angle;

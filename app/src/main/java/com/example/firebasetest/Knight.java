@@ -7,8 +7,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Knight extends Character{
-    public String knightSprite;//different sprites actually
-    private boolean shielded;//parry reflects(?), not only shields. shield dosent take damage.
+    private boolean shielded;//parry reflects, not only shields. shield doesn't take damage.
     private boolean parry;
     private double shieldHP;//half knight hp
     private double horseHP;//same hp as knight
@@ -18,10 +17,9 @@ public class Knight extends Character{
     private boolean mounted;
     private boolean shieldHealing;
     private boolean horseHealing;
+    private String bladeType;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation){
         super(level,5,2,3, "knight", ID, xLocation, yLocation, characterGrade);
-        //change stats for character grade
-        //is there thread for enemy?
         this.maxShieldHP = this.HP / 2;
         this.maxHorseHP = this.HP;
         this.shielded = false;
@@ -30,10 +28,12 @@ public class Knight extends Character{
         this.mounted = false;
         this.shieldHealing = false;
         this.horseHealing = false;
-        switch (characterGrade)//temporary. need to add sprites and threads
+        this.bladeType = "sword";
+        switch (characterGrade)
         {
             case 1:
-                this.itemHeight *= 3;
+                this.itemWidth *= 3;
+                this.bladeType = "spear";
                 break;
             case 2:
                 this.attackCooldown /= 2;
@@ -44,6 +44,7 @@ public class Knight extends Character{
                 this.itemWidth *= 2;
                 this.attackPower *= 2;
                 this.attackCooldown *= 2;
+                this.bladeType = "greatSword";
                 break;
             case 4:
                 mount();
@@ -61,12 +62,7 @@ public class Knight extends Character{
         if(useAbility("X") && !shielded)
         {
             Attack();
-
             resetAbility("X");
-        }
-        else
-        {
-            //maybe prompt something, maybe also have ui for cooldown.
         }
     }
 
@@ -86,6 +82,7 @@ public class Knight extends Character{
     public void shieldHeld()
     {
         shielded = true;
+        spriteState = "shielding";
     }
 
     public void shieldReleased()
@@ -410,6 +407,20 @@ public class Knight extends Character{
         if(mounted || characterGrade == 4)
             legs.replace("walking", "riding");
         return legs;
+    }
+
+    public String getItemName()
+    {
+        return this.bladeType;
+    }
+
+    @Override
+    public String getSpriteName() {
+        String name = super.getSpriteName();
+        String sprite = bladeType + name;
+        if(characterGrade == 2)
+            sprite.replace(bladeType, "twoSword");
+        return sprite;
     }
 
     @Override

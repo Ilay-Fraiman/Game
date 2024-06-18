@@ -18,10 +18,13 @@ public class Projectile extends GameObject{
     protected boolean moving;
     public Projectile(String sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
         super(sprite, ID, xLocation, yLocation, width, height);
+        this.creator = creator;
         this.power = power;
         this.angle = direction;
         this.ailment = effect;
         this.isTimed = false;
+        this.horizontalSpeed = hSPD;
+        this.verticalSpeed = vSPD;
         this.TTD = 0;
         alreadyHit = new ArrayList<Character>();
         oneTimeHit = false;

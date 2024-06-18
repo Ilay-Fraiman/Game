@@ -50,7 +50,7 @@ public class Berserker extends Character{ ;//temporary
             float myWidth = this.getWidthPercentage();
             float myHeight = this.getHeightPercentage();
             float xDiffrential = itemWidth * this.horizontalDirection;
-            float yDiffrential = itemHeight * this.verticalDirection;//false. width, height should be of fireball
+            float yDiffrential = itemHeight * this.verticalDirection;
             if (this.horizontalDirection > 0)
                 locationX += myWidth;
             if (this.verticalDirection > 0)

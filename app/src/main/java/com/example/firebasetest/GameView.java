@@ -35,7 +35,6 @@ public class GameView extends SurfaceView implements Runnable
     public static float height = 0;
     public static float pixelWidth = 0;
     public static float pixelHeight = 0;
-    public static float canvasPixelHeight = 0;//how many pixels high is the canvas
     private Thread gameThread;
     private Canvas canvas;
     private Bitmap background;
@@ -52,15 +51,8 @@ public class GameView extends SurfaceView implements Runnable
         ourHolder = getHolder();
         width = this.getResources().getDisplayMetrics().widthPixels;
         pixelWidth = 2106 / width;//in centimeters
-        float pixelRatio = pixelWidth / 16;
-        pixelHeight = pixelRatio * 8.2f;
         height = this.getResources().getDisplayMetrics().heightPixels;
-        float canvasRatio = width / 16;
-        canvasRatio *= 8.2;
-        if(height != canvasRatio)
-        {
-            canvasPixelHeight = 1080 / pixelHeight;
-        }
+        pixelHeight = 1080 / height;
         currentRoom = null;
     }
 
@@ -146,8 +138,8 @@ public class GameView extends SurfaceView implements Runnable
         Bitmap rotatedObject = Bitmap.createBitmap((int) (width * scaleX), (int) (height * scaleY), Bitmap.Config.ARGB_8888);
         Canvas rotatedCanvas = new Canvas(rotatedObject);
 
-        // Rotate the Canvas with pivot point at top-left corner (0, 0)
-        rotatedCanvas.rotate(rotationAngle, 0, 0);
+        // Rotate the Canvas with pivot point at center
+        rotatedCanvas.rotate(rotationAngle);
 
         // Calculate offset based on scaling
         int offsetX = (int) ((bitmapWidth - width) / 2 * scaleX);
