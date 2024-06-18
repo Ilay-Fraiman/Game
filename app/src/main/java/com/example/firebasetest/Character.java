@@ -143,22 +143,27 @@ public class Character extends GameObject implements Runnable {
     }
     public boolean hit(Projectile p)
     {
-        int power = (int)p.getPower();
-        this.HP-=power;
-        String ailment = p.getAilment();
+        if(p.canHit(this))
+        {
+            int power = (int)p.getPower();
+            this.HP-=power;
+            String ailment = p.getAilment();
 
-        if(ailment.equals("poison"))
-            poisoned(power / 10);
-        else if(ailment.equals("freeze"))
-            freeze();
-        else if(ailment.equals("shock"))
-            shock();
-        else if(ailment.equals("life steal"))
-            p.getCreator().HP += power;
-        else if(ailment.equals("shatter"))
-            shatter();
-
-        return true;//hit
+            if(ailment.equals("poison"))
+                poisoned(power / 10);
+            else if(ailment.equals("freeze"))
+                freeze();
+            else if(ailment.equals("shock"))
+                shock();
+            else if(ailment.equals("life steal"))
+                p.getCreator().HP += power;
+            else if(ailment.equals("shatter"))
+                shatter();
+            p.hasHit(this);
+            return true;//hit
+        }
+        else
+            return false;
     }
 
     private void poisoned(int power)
@@ -261,6 +266,7 @@ public class Character extends GameObject implements Runnable {
         else if(this instanceof Berserker)
             bladeAttack.setSpriteName("fist");
         this.projectiles.add(bladeAttack);
+        idleAgain(spriteState);
     }
     public static void setPlayer(Character p)
     {
@@ -578,6 +584,8 @@ public class Character extends GameObject implements Runnable {
 
         LightLine lightLine = new LightLine(roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
+        spriteState = "waving";
+        idleAgain(spriteState);
     }
 
     public void setUpMovement(float x, float y)

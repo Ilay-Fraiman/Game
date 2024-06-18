@@ -201,11 +201,32 @@ public class Room implements Runnable {//fill this logic
     public boolean[] hit(Character c, Projectile p)
     {
         boolean[] hitting = new boolean[2];
+        hitting[0] = false;
+        hitting[1] = false;
+        Character creator = p.getCreator();
+        boolean grade1 = (creator.getCharacterGrade() == 5);
+        boolean grade2 = (c.getCharacterGrade() == 5);
+        boolean knightChallenge = (roomNum == 2 && roomClass.equals("Knight"));
+        boolean ricochet = false;
+        if(p instanceof Arrow)
+            ricochet = ((Arrow) p).isRicochet();
+        if((grade1 ^ grade2) || (knightChallenge || ricochet))
+        {
+            //collision
+        }
         //first one is collision, second one is actual hit
         if(hitting[0])
         {
-            if(floorNum == 2)
+            if(roomNum == 2 && roomClass.equals("Knight"))
                 hitting[1] = c.IsParrying();
+            else
+            {
+                if(c.hit(p))
+                    p.hasHit(c);
+                if(p.isTimeUp())
+                    projectiles.remove(p);//here? maybe use the array
+                hitting[1] = true;
+            }
         }
         return hitting;
     }

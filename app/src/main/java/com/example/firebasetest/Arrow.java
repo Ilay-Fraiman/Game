@@ -10,6 +10,7 @@ public class Arrow extends Projectile{
     private boolean toHome;
     private Character homingOn;
     private long timeToAim;
+    private long readyToRicochet;
     public Arrow(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, boolean isRicochet, boolean isHoming, boolean isPoison, double direction)
     {
         super(sprite, ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height, direction, "none");
@@ -21,10 +22,11 @@ public class Arrow extends Projectile{
         toHome = true;
         homingOn = null;
         timeToAim = 0;
+        this.readyToRicochet = System.currentTimeMillis() + 300L;
     }
 
     public boolean isRicochet() {
-        return ricochet;
+        return (ricochet && (readyToRicochet < System.currentTimeMillis()));
     }
 
     public boolean isHoming() {

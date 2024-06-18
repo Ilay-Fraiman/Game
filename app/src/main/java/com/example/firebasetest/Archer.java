@@ -6,23 +6,21 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class Archer extends Character{
-    public static String archerSprite;
-    private static Bitmap arrowSprite;//temporary
     private boolean homing;
     private boolean ricochet;
     private float arrowSpeed;
     private boolean isPoison;
     private float physicalArrowSpeed;
     public Archer(int level, int characterGrade, int ID, float xLocation, float yLocation){
-        super(level,3,5,2, archerSprite, ID, xLocation, yLocation, characterGrade);
+        super(level,3,5,2, "archer", ID, xLocation, yLocation, characterGrade);
         double geometricalArrowSpeed = Math.sqrt((10.53 * 10));
         physicalArrowSpeed = (float) geometricalArrowSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
         transitionNum *= 30;//transition from frames to seconds
         arrowSpeed = physicalArrowSpeed / transitionNum;//transition from meters per second to pixels per frame
         //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
-        itemHeight /= 2;
-        itemWidth /= 3;
+        itemHeight /= 3;
+        itemWidth /= 2;
         this.homing = false;
         this.ricochet = false;
         this.isPoison = false;
@@ -36,6 +34,10 @@ public class Archer extends Character{
                 float fMultiplication = (float) multiplication;
                 arrowSpeed *= fMultiplication;
                 physicalArrowSpeed *= fMultiplication;
+                float width = this.getWidth();
+                this.setYLocation(this.getYLocation() - (width / 2));
+                this.setWidth(width * 2);
+                this.setHeight(width * 2);
                 break;
             case 3:
                 ricochet = true;
