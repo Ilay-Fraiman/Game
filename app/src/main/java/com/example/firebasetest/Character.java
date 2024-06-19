@@ -146,7 +146,7 @@ public class Character extends GameObject implements Runnable {
         if(p.canHit(this))
         {
             int power = (int)p.getPower();
-            this.HP-=power;
+            this.HP -= power;
             String ailment = p.getAilment();
 
             if(ailment.equals("poison"))
@@ -159,7 +159,6 @@ public class Character extends GameObject implements Runnable {
                 p.getCreator().HP += power;
             else if(ailment.equals("shatter"))
                 shatter();
-            p.hasHit(this);
             return true;//hit
         }
         else
@@ -565,7 +564,7 @@ public class Character extends GameObject implements Runnable {
             this.verticalMovement = (-1) * this.movementSpeed;
     }
 
-    public void magicLine(String effect)//sprite is temporary
+    public void magicLine(String effect)
     {
         float locationX = this.getXLocation();
         float locationY = this.getYLocation();

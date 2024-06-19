@@ -39,6 +39,9 @@ public class Archer extends Character{
                 this.setWidth(width * 2);
                 this.setHeight(width * 2);
                 break;
+            case 2:
+                isPoison = true;
+                break;
             case 3:
                 ricochet = true;
                 break;
@@ -53,30 +56,23 @@ public class Archer extends Character{
     {
         if(useAbility("X"))
         {
-            float locationX = this.getXPercentage();
-            float locationY = this.getYPercentage();
-            if((Math.abs(verticalDirection)<Math.abs(horizontalDirection))^(itemHeight<itemWidth))
-                switchSizes();
-            float xDiffrential = this.itemWidth * this.horizontalDirection;
-            float yDiffrential = this.itemHeight * this.verticalDirection;
-            if (this.horizontalDirection > 0)
-                locationX += this.getWidthPercentage();
-            if (this.verticalDirection > 0)
-                locationY += this.getHeightPercentage();
+            this.spriteState = "shooting";
+            float locationX = this.getXLocation();
+            float locationY = this.getYLocation();
+            float xDiffrential = arrowSpeed * horizontalDirection;
+            float yDiffrential = arrowSpeed * verticalDirection;
 
-            locationX += xDiffrential;
-            locationY += yDiffrential;//by arrow speed
-
-            xDiffrential = arrowSpeed * horizontalDirection;
-            yDiffrential = arrowSpeed * verticalDirection;
-
-            Arrow arrow = new Arrow(arrowSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, ricochet, homing, isPoison, this.directionAngle);
+            Arrow arrow = new Arrow(roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, ricochet, homing, isPoison, this.directionAngle);
             this.projectiles.add(arrow);
 
             if(isPoison && characterGrade!=2)
+            {
+                isPoison = false;
                 resetAbility("B");
+            }
 
             resetAbility("X");
+            idleAgain(spriteState);
         }
     }
 
@@ -141,11 +137,8 @@ public class Archer extends Character{
             {
                 float[] values = aimAtPlayer();
                 float playerX = values[0];
-                float playerY = values[1];
                 float width = values[2];
                 float height = values[3];
-                float playerWidth = values[4];
-                float playerHeight = values[5];
                 float xLocation = values[6];
                 float yLocation = values[7];
                 float horizontalDistance = values[8];
@@ -161,8 +154,8 @@ public class Archer extends Character{
                 {
                     if(useAbility("A") && range)
                     {
-                        stab();
                         locked = 15;
+                        stab();
                     }
                     else if(useAbility("X"))
                     {
@@ -171,13 +164,14 @@ public class Archer extends Character{
                         else
                         {
                             poison();
+                            locked = 10;
                             shoot();
                         }
                     }
                 }
                 float side = (moveBack) ? -1 : 1;
                 this.horizontalMovement = this.horizontalDirection * side;
-                if(yLocation + height == GameView.height)
+                if((yLocation + (height / 2)) == GameView.height)
                     this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
                 if(backed)
                     backedIntoWall(xLocation, yLocation, width, height, playerX);

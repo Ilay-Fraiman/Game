@@ -10,15 +10,14 @@ public class Sage extends Character {
     private float pebbleSpeed;
     private float physicalPebbleSpeed;
     private boolean laser;
-    public Sage(int level, int ID, float xLocation, float yLocation, String sprite)//both pebble and flying fist aren't affected by gravity
+    public Sage(int level, int ID, float xLocation, float yLocation)//both pebble and flying fist aren't affected by gravity
     {
-        super(level,3,3,3, sprite, ID, xLocation, yLocation, 6);
+        super(level,3,3,3, "sage", ID, xLocation, yLocation, 6);
         double geometricalPebbleSpeed = Math.sqrt((10.53 * 10));
         physicalPebbleSpeed = (float) geometricalPebbleSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
         transitionNum *= 30;//transition from frames to seconds
         pebbleSpeed = physicalPebbleSpeed / transitionNum;//transition from meters per second to pixels per frame
-        //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
         this.laser = false;
         if (threadStart)
             thread.start();
@@ -28,28 +27,20 @@ public class Sage extends Character {
     {
         if(useAbility("X") && !laser)
         {
-            float locationX = this.getXPercentage();
-            float locationY = this.getYPercentage();
-            float myWidth = this.getWidthPercentage();
-            float myHeight = this.getHeightPercentage();
-            float pebbleWidth = myWidth / 5;
-            float pebbleHeight = myHeight / 5;
-            float xDiffrential = pebbleWidth * this.horizontalDirection;
-            float yDiffrential = pebbleHeight * this.verticalDirection;//false. width, height should be of fireball
-            if (this.horizontalDirection > 0)
-                locationX += myWidth;
-            if (this.verticalDirection > 0)
-                locationY += myHeight;
+            spriteState = "waving";
+            float locationX = this.getXLocation();
+            float locationY = this.getYLocation();
+            float myWidth = this.getWidth();
+            float myHeight = this.getHeight();
+            float pebbleWidth = myWidth / 3;
+            float pebbleHeight = myHeight / 3;
+            float xDiffrential = pebbleSpeed * horizontalDirection;
+            float yDiffrential = pebbleSpeed * verticalDirection;
 
-            locationX += xDiffrential;
-            locationY += yDiffrential;
-
-            xDiffrential = pebbleSpeed * horizontalDirection;
-            yDiffrential = pebbleSpeed * verticalDirection;
-
-            Pebble pebble = new Pebble(this.itemSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, pebbleWidth, pebbleHeight, directionAngle);
+            Pebble pebble = new Pebble(roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, pebbleWidth, pebbleHeight, directionAngle);
             this.projectiles.add(pebble);
             resetAbility("X");
+            idleAgain(spriteState);
         }
     }
 
@@ -73,18 +64,18 @@ public class Sage extends Character {
             float width = values[2];
             float enemyWidth = values[4];
             float x = values[6];
-            this.setYPercentage(enemyY);
+            this.setYLocation(enemyY);
 
-            float addition = 0;
-            float addition1 = enemyWidth;
-            float addition2 = width * (-1);
+            float addition = (enemyWidth + width) / 2;
+            float multiplication = 1;
 
             if(x < enemyX)
-                addition = ((enemyX + enemyWidth + width) < GameView.width)? addition1 : addition2;
+                multiplication = ((enemyX + (enemyWidth / 2) + width) < GameView.width)? 1 : (-1);
             else
-                addition = ((enemyX - width) > 0)? addition2 : addition1;
+                multiplication = ((enemyX - (enemyWidth / 2) - width) > 0)? (-1) : 1;
 
-            this.setXPercentage(enemyX + addition);
+            addition *= multiplication;
+            this.setXLocation(enemyX + addition);
             resetAbility("B");
             return true;
         }
@@ -93,9 +84,9 @@ public class Sage extends Character {
 
     public void laser()
     {
-        if(useAbility("Y") && (getYPercentage() + getHeightPercentage() == GameView.height))
+        if(useAbility("Y") && ((getYLocation() + (getHeight() / 2)) == GameView.height))
         {
-            magicLine("laser", knightSprite);//sprite is temporary
+            magicLine("laser");
             laser = true;
             resetAbility("Y");
             class Release extends TimerTask {
@@ -166,7 +157,7 @@ public class Sage extends Character {
                 float yLocation = values[7];
                 moveBack = true;
                 boolean backed = false;
-                boolean grounded = (yLocation + height == GameView.height);
+                boolean grounded = ((yLocation + (height / 2)) == GameView.height);
                 boolean laserStart = false;
 
                 boolean range = inRange();
@@ -195,8 +186,8 @@ public class Sage extends Character {
 
                     if (bash)
                     {
-                        scepterBash();
                         locked = 15;
+                        scepterBash();
                     }
                 }
 
@@ -204,11 +195,15 @@ public class Sage extends Character {
                 {
                     if(useAbility("Y") && ((this.distanceVector < width * 10) && grounded))
                     {
+                        locked = 150;
                         laser();
                         laserStart = true;
                     }
                     else if(useAbility("X"))
+                    {
+                        locked = 10;
                         pebble();
+                    }
                 }
 
                 if (!laserStart)

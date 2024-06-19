@@ -1,6 +1,7 @@
 package com.example.firebasetest;
 
 import android.graphics.Bitmap;
+import android.graphics.Path;
 
 public class GameObject {
     private String spriteName;
@@ -12,6 +13,8 @@ public class GameObject {
     private float xLocation;
 
     private float yLocation;
+
+    private Path boundingBox;
 
     public String getSpriteName() {
         return spriteName;
@@ -30,6 +33,7 @@ public class GameObject {
         this.yLocation = y;
         this.width = w;
         this.height = h;
+        this.boundingBox = null;
     }
 
     public GameObject(String spriteName, int ID, float x, float y)//character
@@ -40,6 +44,7 @@ public class GameObject {
         this.yLocation = y;
         this.width = (GameView.width / 15);
         this.height = this.width;
+        this.boundingBox = null;
     }
 
     public float getWidth() {
@@ -88,5 +93,35 @@ public class GameObject {
     public int getRoomID()
     {
         return this.roomID;
+    }
+
+    public Path getBoundingBox()
+    {
+        boundingBox = null;
+        boundingBox = new Path();
+
+        double radius = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2));
+        double currentAngle = getDirection();
+        double toB = Math.toDegrees(Math.atan2(height, width));
+        double BToA = 180 - (toB * 2);
+        double AToD = 2 * toB;
+        //DToC is BToA
+        double[] addAngles = new double[4];
+        addAngles[0] = toB;
+        addAngles[1] = BToA;
+        addAngles[2] = AToD;
+        addAngles[3] = BToA;
+
+        for(int i = 0; i < 4; i++)
+        {
+            currentAngle += addAngles[i];
+            float x = xLocation + ((float) (Math.cos(Math.toRadians(currentAngle)) * radius));
+            float y = yLocation - ((float) (Math.sin(Math.toRadians(currentAngle)) * radius));
+            if(i == 0)
+                boundingBox.moveTo(x, y);
+            else
+                boundingBox.lineTo(x, y);
+        }
+        return boundingBox;
     }
 }

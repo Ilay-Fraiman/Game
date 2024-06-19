@@ -9,25 +9,23 @@ import java.util.TimerTask;
 //block lasts for 5 seconds, negates all damage and lets berserker still use his x, not his a tho
 //should it work like that? what combination of allowing and not allowing movement, aiming and specific moves
 //should we use for block, how similar will it be to laser?
-public class Berserker extends Character{ ;//temporary
+public class Berserker extends Character{
     private float fistSpeed;
     private float physicalFistSpeed;
     private boolean block;
-    public Berserker(int level, int ID, float xLocation, float yLocation, String sprite)//both fist and flying fist aren't affected by gravity
+    public Berserker(int level, int ID, float xLocation, float yLocation)//both fist and flying fist aren't affected by gravity
     {
-        super(level,5,5,5, sprite, ID, xLocation, yLocation, 6);//final boss
+        super(level,5,5,5, "berserker", ID, xLocation, yLocation, 6);//final boss
         double geometricalFistSpeed = Math.sqrt((10.53 * 10));
         physicalFistSpeed = (float) geometricalFistSpeed;
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
         transitionNum *= 30;//transition from frames to seconds
         fistSpeed = physicalFistSpeed / transitionNum;//transition from meters per second to pixels per frame
-        //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
-        setYPercentage(this.getYPercentage() - this.getHeightPercentage());
-        setWidthPercentage(getWidthPercentage() * 2);
-        setHeightPercentage(getHeightPercentage() * 2);
+        setYLocation(this.getYLocation() - (this.getHeight() / 2));
+        setWidth(getWidth() * 2);
+        setHeight(getHeight() * 2);
         this.movementSpeed /= 2;
         this.block = false;
-        //this.itemSprite = fistSprite
         if (threadStart)
             thread.start();
     }
@@ -44,27 +42,17 @@ public class Berserker extends Character{ ;//temporary
     public void flyingFist()
     {
         if(useAbility("A") && !block) {
+            spriteState = "punching";
             String effect = ailment();
-            float locationX = this.getXPercentage();
-            float locationY = this.getYPercentage();
-            float myWidth = this.getWidthPercentage();
-            float myHeight = this.getHeightPercentage();
-            float xDiffrential = itemWidth * this.horizontalDirection;
-            float yDiffrential = itemHeight * this.verticalDirection;
-            if (this.horizontalDirection > 0)
-                locationX += myWidth;
-            if (this.verticalDirection > 0)
-                locationY += myHeight;
+            float locationX = this.getXLocation();
+            float locationY = this.getYLocation();
+            float xDiffrential = fistSpeed * horizontalDirection;
+            float yDiffrential = fistSpeed * verticalDirection;
 
-            locationX += xDiffrential;
-            locationY += yDiffrential;
-
-            xDiffrential = fistSpeed * horizontalDirection;
-            yDiffrential = fistSpeed * verticalDirection;
-
-            Fist fist = new Fist(this.itemSprite, roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, effect, directionAngle);
+            Fist fist = new Fist(roomID, this, attackPower, xDiffrential, yDiffrential, locationX, locationY, itemWidth, itemHeight, effect, directionAngle);
             this.projectiles.add(fist);
             resetAbility("A");
+            idleAgain(spriteState);
         }
     }
 
@@ -109,15 +97,20 @@ public class Berserker extends Character{ ;//temporary
 
     public void earthShatter()
     {
-        if(useAbility("Y") && (!block && (getYPercentage() + getHeightPercentage() == GameView.height)))
+        if(useAbility("Y") && (!block && ((getYLocation() + (getHeight() / 2)) == GameView.height)))
         {
+            spriteState = "smashing";
             double direction = (this.horizontalDirection > 0)? 1 : -1;//only on the x axis
-            float height = this.getHeightPercentage() / 4;//this height is double normal, shatter is half normal
-            float yLocation = GameView.canvasPixelHeight - height;//only on the floor
+            float height = this.getHeight() / 4;//this height is double normal, shatter is half normal
+            float yLocation = GameView.height - (height / 2);//only on the floor
             float width = GameView.width * (3/40);//max width is 3/8 canvas width, starting with is 1/5 of that
-            float xLocation = this.getXPercentage();
-            EarthShatter earthShatter = new EarthShatter(this.itemSprite, roomID, this, attackPower * 2, xLocation, yLocation, width, height, direction);//knight sprite is temporary
+            float xLocation = this.getXLocation();
+            xLocation += ((this.getWidth() / 2) * ((float) direction));
+            xLocation += ((width / 2) * ((float) direction));
+            EarthShatter earthShatter = new EarthShatter(roomID, this, attackPower * 2, xLocation, yLocation, width, height, direction);
             this.projectiles.add(earthShatter);
+            resetAbility("Y");
+            idleAgain(spriteState);
         }
     }
 
@@ -139,27 +132,27 @@ public class Berserker extends Character{ ;//temporary
                 float horizontalDistance = values[8];
                 float verticalDistance = values[9];
                 moveBack = false;
-                boolean grounded = (yLocation + height == GameView.height);
+                boolean grounded = ((yLocation + (height / 2)) == GameView.height);
                 float range = GameView.width * (3/8);
 
                 if(locked <= 0)
                 {
-                    if((useAbility("Y") && !block) && (grounded && ((horizontalDistance <= range) && (verticalDistance == 0))))
+                    if((useAbility("Y") && !block) && (grounded && ((horizontalDistance <= range) && (Math.abs(verticalDistance) == Math.abs(height / 4)))))
                     {
-                        earthShatter();
                         locked = 15;
+                        earthShatter();
                     }
                     else if(useAbility("X") && inRange())
                     {
                         if(useAbility("B"))
                             block();
-                        melee();
                         locked = 15;
+                        melee();
                     }
                     else if(useAbility("A"))
                     {
-                        flyingFist();
                         locked = 15;
+                        flyingFist();
                     }
                 }
 

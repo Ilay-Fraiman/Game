@@ -6,16 +6,17 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class EarthShatter extends Projectile{
-    //is timed, one time = true
     private float add;
-    public EarthShatter(Bitmap sprite, int ID, Character creator, float power, float xLocation, float yLocation, float width, float height, double direction)
+    private double expansionDirection;
+    public EarthShatter(int ID, Character creator, float power, float xLocation, float yLocation, float width, float height, double direction)
     {
-        super(sprite, ID, creator, power, 0, 0, xLocation, yLocation, width, height, direction, "shatter");
+        super("earthShatter", ID, creator, power, 0, 0, xLocation, yLocation, width, height, 0, "shatter");
         //height is half chr, its creator is 2 chr; only moves on x axis and on the floor; max width is 3/8 canvas width, starts at a 1/5 of that and widens
+        this.expansionDirection = direction;
         this.isTimed = true;
         this.oneTimeHit = true;
         this.TTD = 1000L;
-        this.add = this.getWidthPercentage();
+        this.add = this.getWidth();
         this.widen();
     }
 
@@ -51,29 +52,33 @@ public class EarthShatter extends Projectile{
 
     public boolean strech()
     {
-        float width = this.getWidthPercentage();
-        float x = this.getXPercentage();
+        float width = this.getWidth();
+        float x = this.getXLocation();
         boolean advance = true;
-        if(this.angle == 1)
+        float start = x - (width / 2);
+        float end = x + (width / 2);
+        width += (add * expansionDirection);
+        x += ((add * expansionDirection) / 2);
+        if(this.expansionDirection == 1)
         {
-            width += add;
-            if(x + width >= GameView.width)
+            if((x + (width / 2)) >= GameView.width)
             {
                 advance = false;
-                width = GameView.width - x;
+                width = GameView.width - start;
+                x = start + (width / 2);
             }
-            this.setWidthPercentage(width);
         }
         else
         {
-            x -= add;
-            if(x <= 0)
+            if((x - (width / 2)) <= 0)
             {
                 advance = false;
-                x = 0;
+                width = end;
+                x = width / 2;
             }
-            this.setXPercentage(x);
         }
+        this.setXLocation(x);
+        this.setWidth(width);
         return advance;
     }
 }

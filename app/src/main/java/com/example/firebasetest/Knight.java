@@ -448,7 +448,7 @@ public class Knight extends Character{
                 if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
                     mount();
 
-                if((useAbility("B") && (locked <= 0)) && (!shocked))
+                if(useAbility("B") && (locked <= 0))
                 {
                     shieldReleased();
                     locked = 10;

@@ -83,10 +83,10 @@ public class GameView extends SurfaceView implements Runnable
             for (GameObject gameObject: gameObjectArrayList)
             {
                 String sprite = gameObject.getSpriteName();
-                float x = gameObject.getXPercentage();
-                float y = gameObject.getYPercentage();
-                float width = gameObject.getWidthPercentage();
-                float height = gameObject.getHeightPercentage();
+                float x = gameObject.getXLocation();
+                float y = gameObject.getYLocation();
+                float width = gameObject.getWidth();
+                float height = gameObject.getHeight();
                 int desiredWidth = (int) width;
                 int desiredHeight = (int) height;
                 float angle = gameObject.getDirection();
@@ -94,14 +94,14 @@ public class GameView extends SurfaceView implements Runnable
                 {
                     Character object = (Character) gameObject;
                     String legSprite = object.getLegs();
-                    draw(legSprite, x, y + (desiredHeight / 2), desiredWidth, desiredHeight /2, 0);
+                    draw(legSprite, x, y + (desiredHeight / 4), desiredWidth, desiredHeight /2, 0);
                     desiredHeight /= 2;
+                    y -= (desiredHeight / 2);
                     angle = 0;
                 }
                 draw(sprite, x, y, desiredWidth, desiredHeight, angle);
             }
             ourHolder.unlockCanvasAndPost(canvas);
-            //intersections can be done with rectangles. ask gemini
             try {
                 gameThread.sleep(33);
             } catch (InterruptedException e) {

@@ -11,9 +11,9 @@ public class Arrow extends Projectile{
     private Character homingOn;
     private long timeToAim;
     private long readyToRicochet;
-    public Arrow(Bitmap sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, boolean isRicochet, boolean isHoming, boolean isPoison, double direction)
+    public Arrow(int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, boolean isRicochet, boolean isHoming, boolean isPoison, double direction)
     {
-        super(sprite, ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height, direction, "none");
+        super("Arrow", ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height, direction, "none");
         this.ricochet = isRicochet;
         this.homing = isHoming;
         if(isPoison)
@@ -76,26 +76,19 @@ public class Arrow extends Projectile{
         Character target = this.homingOn;
         if(target.isAlive())
         {
-            float myX = this.getXPercentage();
-            float myY = this.getYPercentage();
-            float myWidth = this.getWidthPercentage();
-            float myHeight = this.getHeightPercentage();
-            float targetX = target.getXPercentage();
-            float targetY = target.getYPercentage();
-            float targetWidth = target.getWidthPercentage();
-            float targetHeight = target.getHeightPercentage();
+            float myX = this.getXLocation();
+            float myY = this.getYLocation();
+            float myWidth = this.getWidth();
+            float myHeight = this.getHeight();
+            float targetX = target.getXLocation();
+            float targetY = target.getYLocation();
+            float targetWidth = target.getWidth();
+            float targetHeight = target.getHeight();
             float horizontalDistance = 0;
             float verticalDistance = 0;
 
-            if(targetX < myX)
-                horizontalDistance = (targetX + targetWidth) - myX;
-            else if(targetX > myX)
-                horizontalDistance = targetX - (myX + myWidth);
-
-            if(targetY < myY)
-                verticalDistance = (targetY + targetHeight) - myY;
-            else if(targetY > myY)
-                verticalDistance = targetY - (myY + myHeight);
+            horizontalDistance = (targetX != myX)? (targetX - myX): 0;
+            verticalDistance = (targetY != myY)? (targetY - myY): 0;
 
             double horSpeed = (double) this.getHorizontalSpeed();
             double vertSpeed = (double) this.getVerticalSpeed();
@@ -123,4 +116,22 @@ public class Arrow extends Projectile{
         }
     }
 
+    @Override
+    public String getSpriteName() {
+        String name = super.getSpriteName();
+        String type = "";
+        if(ricochet)
+            type += "ricochet";
+        if(homing)
+            type += "homing";
+        if(this.ailment.equals("poison"))
+            type += "poison";
+        if(type.isEmpty())
+            return name;
+        else
+        {
+            String sprite = type + name;
+            return sprite;
+        }
+    }
 }
