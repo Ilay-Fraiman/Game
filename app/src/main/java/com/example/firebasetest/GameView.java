@@ -73,7 +73,7 @@ public class GameView extends SurfaceView implements Runnable
             //choose tower(needs an activity)
             //start the game
         }
-        this.currentRoom = new Room(playerUser);
+        this.currentRoom = new Room(playerUser, this);
         //seperate function for last room(after)
         while (running)
         {
@@ -116,10 +116,14 @@ public class GameView extends SurfaceView implements Runnable
         gameThread = new Thread(this);
         gameThread.start();
     }
-    public void nextRoom()
+    public void nextRoom(boolean loser)
     {
+        if(loser)
+        {
+            //display gameover
+        }
         this.currentRoom = null;
-        Room nextRoom = new Room(playerUser);
+        Room nextRoom = new Room(playerUser, this);
         this.currentRoom = nextRoom;
     }
 

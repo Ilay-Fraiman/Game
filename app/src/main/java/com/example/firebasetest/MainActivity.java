@@ -20,7 +20,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
     public static boolean signIn = true;
-    public static boolean success = false;
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +45,13 @@ public class MainActivity extends AppCompatActivity {
 
     public void signIn(View view)
     {
+        MainActivity.signIn = true;
         signUpOrIn(view);
     }
 
     private void signUpOrIn(View view) {
         EditText etMail = findViewById(R.id.editTextTextEmailAddress);
-        EditText etPassword =findViewById(R.id.editTextTextPassword);
+        EditText etPassword = findViewById(R.id.editTextTextPassword);
 
         String email = etMail.getText().toString();
         String password = etPassword.getText().toString();
@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
                 {
                     Toast.makeText(MainActivity.this,"register success",Toast.LENGTH_SHORT).show();
                     // can be done only register SUCCESS!!!
-                    MainActivity.this.success = true;
                   //  MainActivity.this.moveToNextActivity();
                     if(!MainActivity.signIn)
                         addUser();

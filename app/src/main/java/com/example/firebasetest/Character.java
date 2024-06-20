@@ -101,6 +101,7 @@ public class Character extends GameObject implements Runnable {
             //character grade 5 is player. sometimes granted special access.
             //character grade 5 is also characters that summon projectiles but shouldn't be drawn.
             //in order to not draw, you leave them out of the characters array of the room
+            listSent = false;
             ArrayList<Projectile> projectilesList = this.getProjectiles();
             this.emptyList();
             return projectilesList;
@@ -723,7 +724,7 @@ public class Character extends GameObject implements Runnable {
         }
         Timer timer = new Timer();
         TimerTask task = new ReIdle(this, originalState);
-        timer.schedule(task, locked);
+        timer.schedule(task, (locked * 33));
     }
 
     public void reIdle(String originalState)

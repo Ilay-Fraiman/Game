@@ -92,6 +92,7 @@ public class Berserker extends Character{
     public void unBlock()
     {
         this.block = false;
+        this.movementSpeed *= 2;
         resetAbility("B");
     }
 

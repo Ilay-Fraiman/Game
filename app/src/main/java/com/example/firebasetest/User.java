@@ -12,8 +12,6 @@ public class User {
     private int difficultyScaling;
     private int challengeDifficulty;
     private int challengeDifficultyScaling;
-    private int doomsdayClock;//int(?)
-    private int suddenDeath;//sudden death type
     private int currentSection;
     private int currentFloor;
     private int currentRoom;
@@ -30,8 +28,6 @@ public class User {
         difficultyScaling = 3;
         challengeDifficulty = 3;
         challengeDifficultyScaling = 3;
-        suddenDeath = 0;//0=off,1-3=type
-        doomsdayClock = 0;//0=off, 1-10(actual slider maybe instead of 4 buttons)=hours
         currentSection = -1;//-1=starting area
         currentFloor = 0;
         currentRoom = 0;
@@ -129,21 +125,6 @@ public class User {
         this.challengeDifficultyScaling = challengeDifficultyScaling;
     }
 
-    public int getDoomsdayClock() {
-        return doomsdayClock;
-    }
-
-    public void setDoomsdayClock(int doomsdayClock) {
-        this.doomsdayClock = doomsdayClock;
-    }
-
-    public int getSuddenDeath() {
-        return suddenDeath;
-    }
-
-    public void setSuddenDeath(int suddenDeath) {
-        this.suddenDeath = suddenDeath;
-    }
 
     public int getCurrentSection() {
         return currentSection;

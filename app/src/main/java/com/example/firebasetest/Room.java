@@ -33,6 +33,7 @@ public class Room implements Runnable {//fill this logic
     private int difficultyScaling;
     private int challengeDifficulty;
     private int challengeDifficultyScaling;
+    private GameView creator;
     private int parryWindow;//send it when pressed (knight challenge)
     private int[][] missesArray = {{10, 7, 5}, {7, 5, 4}, {6, 4, 3}, {5, 3, 2}, {3, 2, 1}};//missesArray[scaling][section]
     private int length;
@@ -42,8 +43,10 @@ public class Room implements Runnable {//fill this logic
     private ArrayList<Integer> buttonPresses;
     private ArrayList<Box> boxes;
     private int currentSimonLength;
+    private boolean roomDone;
+    private boolean running;
 
-    public Room(User user)
+    public Room(User user, GameView gameView)
     {
         sectionNum = user.getCurrentSection();
         roomClass = user.getOrder().get(sectionNum - 1);
@@ -61,6 +64,8 @@ public class Room implements Runnable {//fill this logic
         characters = new ArrayList<>();
         projectiles = new ArrayList<>();
         objects = new ArrayList<>();
+        roomDone = false;
+        creator = gameView;
 
         enemyDifficulty = user.getEnemyDifficulty();
         difficultyScaling = user.getDifficultyScaling();
@@ -483,15 +488,13 @@ public class Room implements Runnable {//fill this logic
     {
         //reset none moving buttons to nothing
         //open start button
-        //check for movement, once reached edge, use gameview's next room function
+        //if a pressed, next room
     }
 
     public void failure()
     {
-        //show game over screen
-        //allow two button presses(close/continue?)
-        //check sudden death if you need to change the room you're putting the player in.
-        //find a way to use next room with the same room
+        running = false;
+        creator.nextRoom(true);
     }
 
     public boolean collision(GameObject character, Projectile projectile)
@@ -506,8 +509,4 @@ public class Room implements Runnable {//fill this logic
         }
         return false;
     }
-
-
-    //also get difficulty in some manner. no need to save it. calculate
-    //different challenge rooms. what do?
 }

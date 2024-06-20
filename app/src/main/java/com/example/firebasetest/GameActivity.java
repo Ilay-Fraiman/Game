@@ -36,11 +36,11 @@ import java.util.ArrayList;
 public class GameActivity extends AppCompatActivity {
     GameView gameView;
     ActivityResultLauncher<Intent> mStartForResult;
-    int difficulty;
-    int enemyDifficulty;
-    int difficultyScaling;
-    int challengeDifficulty;
-    int challengeDifficultyScaling;
+    private int difficulty;
+    private int enemyDifficulty;
+    private int difficultyScaling;
+    private int challengeDifficulty;
+    private int challengeDifficultyScaling;
     private User playerUser;
     private boolean initializingComplete;
     private boolean resumed;
