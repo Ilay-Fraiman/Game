@@ -271,7 +271,6 @@ public class Character extends GameObject implements Runnable {
     {
         Character.player = p;
     }
-
     protected static float getPlayerX()
     {
         return Character.player.getXLocation();

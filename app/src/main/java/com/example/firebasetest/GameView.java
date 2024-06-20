@@ -79,6 +79,7 @@ public class GameView extends SurfaceView implements Runnable
         {
             ArrayList<GameObject> gameObjectArrayList = this.currentRoom.getObjects();
             canvas = ourHolder.lockCanvas();
+            canvas.drawColor(Color.TRANSPARENT);
             //draw background
             for (GameObject gameObject: gameObjectArrayList)
             {
@@ -117,13 +118,14 @@ public class GameView extends SurfaceView implements Runnable
     }
     public void nextRoom()
     {
+        this.currentRoom = null;
         Room nextRoom = new Room(playerUser);
         this.currentRoom = nextRoom;
     }
 
     public void draw(String spriteName, float xLocation, float yLocation, int width, int height, float rotationAngle)
     {
-        canvas.drawColor(Color.TRANSPARENT);
+        //draw background
         int bitmapID = getResources().getIdentifier(spriteName, "drawable", this.context.getPackageName());
         Bitmap bitmapObject = BitmapFactory.decodeResource(getResources(), bitmapID);
         int bitmapWidth = bitmapObject.getWidth();

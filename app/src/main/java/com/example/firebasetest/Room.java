@@ -150,7 +150,75 @@ public class Room implements Runnable {//fill this logic
 
     public void archerChallenge()
     {
+        Archer player = new Archer(1, 5, ID, GameView.width / 2, GameView.height - (GameView.width / 30));
+        Character.setPlayer(player);
+        characters.add(player);
+        ArrayList<Projectile> keptProjectiles = new ArrayList<>();
+        ArrayList<Projectile> temporaryHolder = new ArrayList<>();
+        int left = ((int) (GameView.width / 20));
+        int right = ((int) ((GameView.width / 20) * 19));
+        int bottom = ((int) (GameView.height)) - left;
+        int top = ((int) (GameView.height / 2));
+        Target target = new Target(ID, GameView.width / 2, GameView.height * (19/20), length,0, 0);
+        boolean check = initializeTarget(target, left, right, top, bottom);
+        objects.add(target);
+        while (length > 0 && misses > 0)
+        {
+            temporaryHolder.addAll(player.getProjectileList(ID, characters));
+            projectiles.addAll(temporaryHolder);
+            keptProjectiles.addAll(temporaryHolder);
+            temporaryHolder.clear();
+            target.moveTarget();
+            for (Projectile p:
+                 projectiles) {
+                moveProjectile(p);
+            }
+            for (Projectile p:
+                 keptProjectiles) {
+                if(collision(target, p) && (misses > 0))
+                {
+                    length--;
+                    check = initializeTarget(target, left, right, top, bottom);
+                    projectiles.remove(p);
+                    keptProjectiles.remove(p);
+                }
+                else if((!(projectiles.contains(p))) && (check))
+                {
+                    misses--;
+                    if(misses > 0)
+                        check = initializeTarget(target, left, right, bottom, top);
+                    keptProjectiles.remove(p);
+                }
+            }
+            try {
+                roomThread.sleep(33);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(misses <= 0)
+            failure();
+        else
+            roomEnd();
+    }
 
+    public boolean initializeTarget(Target target, int left, int right, int top, int bottom)
+    {
+        boolean done = false;
+        while (!done)
+        {
+            float x = ((float) getRandomNumber(left, right));
+            float y = ((float) getRandomNumber(top, bottom));
+            target.setXLocation(x);
+            target.setYLocation(y);
+            done = !(target.incorrectRange());
+        }
+        target.setSpeedPerFrame(length);
+        if(floorNum != 2)
+            target.setHorizontalDirection();
+        if(floorNum != 1)
+            target.setVerticalDirection();
+        return (length != 0);
     }
 
     public void mageChallenge()
@@ -426,7 +494,7 @@ public class Room implements Runnable {//fill this logic
         //find a way to use next room with the same room
     }
 
-    public boolean collision(Character character, Projectile projectile)
+    public boolean collision(GameObject character, Projectile projectile)
     {
         Path characterPath = character.getBoundingBox();
         Path projectilePath = projectile.getBoundingBox();
