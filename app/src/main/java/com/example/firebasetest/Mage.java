@@ -3,12 +3,16 @@ package com.example.firebasetest;
 import android.graphics.Bitmap;
 import android.widget.Switch;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 public class Mage extends Character{
     private double maxHealth;
     private float fireBallSpeed;
     private float physicalFireBallSpeed;
     private String effect;
     private Mage clone;
+    private boolean toUpdateStatus;
     public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation)
     {
         super(level,2,3,5, "mage", ID, xLocation, yLocation, characterGrade);
@@ -21,6 +25,8 @@ public class Mage extends Character{
         transitionNum *= 30;//transition from frames to seconds
         fireBallSpeed = physicalFireBallSpeed / transitionNum;
         this.effect = "none";
+        toUpdateStatus = true;
+        this.itemSprite = "wand";
         if (threadStart)
             thread.start();
     }
@@ -87,15 +93,86 @@ public class Mage extends Character{
             if((this.HP + healing) > maxHealth)
                 healing = maxHealth - this.HP;
             this.HP += healing;
+            this.addStatus(7);
             if(characterGrade == 2)
+            {
                 this.clone.HP += healing;
+            }
             resetAbility("Y");
+            this.unHeal();
         }
+    }
+
+    private void unHeal()
+    {
+        class UnHeal extends TimerTask {
+            private Mage mage;
+
+            UnHeal(Mage m)
+            {
+                this.mage = m;
+            }
+
+            @Override
+            public void run() {
+                mage.removeHeal();
+            }
+        }
+        Timer timer = new Timer();
+        TimerTask task = new UnHeal(this);
+        timer.schedule(task, 100L);
+    }
+
+    public void removeHeal()
+    {
+        this.removeStatus(7);
     }
 
     public void setClone(Mage c)
     {
         this.clone = c;
+    }
+    public void updateStatus()
+    {
+        this.toUpdateStatus = !this.toUpdateStatus;
+    }
+
+    @Override
+    public void addStatus(int index) {
+        super.addStatus(index);
+        if(characterGrade == 2)
+        {
+            if(toUpdateStatus)
+            {
+                updateStatus();
+                this.clone.updateStatus();
+                this.clone.addStatus(index);
+            }
+            else
+            {
+                this.updateStatus();
+                this.clone.updateStatus();
+            }
+        }
+    }
+
+    @Override
+    public void removeStatus(int index) {
+        super.removeStatus(index);
+        if(characterGrade == 2)
+        {
+            if(toUpdateStatus)
+            {
+                updateStatus();
+                this.clone.updateStatus();
+                this.clone.removeStatus(index);
+            }
+            else
+            {
+                this.updateStatus();
+                this.clone.updateStatus();
+            }
+        }
     }
 
     @Override

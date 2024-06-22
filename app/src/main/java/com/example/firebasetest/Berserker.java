@@ -26,6 +26,7 @@ public class Berserker extends Character{
         setHeight(getHeight() * 2);
         this.movementSpeed /= 2;
         this.block = false;
+        this.itemSprite = "arm";
         if (threadStart)
             thread.start();
     }

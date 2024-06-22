@@ -438,11 +438,11 @@ public class Room implements Runnable {//fill this logic
                 projectile.setVerticalSpeed(verticalSpeed);
             }
             String wallResult = "noHit";
-            if((projectile.getEdge("left") <= 0) || (projectile.getEdge("right") >= GameView.width))
+            if((projectile.getEdge(0) <= 0) || (projectile.getEdge(1) >= GameView.width))
                 wallResult = hitWall(projectile, true);
-            if((projectile.getEdge("top") <= 0) || (projectile.getEdge("bottom") >= GameView.height))
+            if((projectile.getEdge(2) <= 0) || (projectile.getEdge(3) >= GameView.height))
                 wallResult = hitWall(projectile, false);
-            //fix edge
+
             if(wallResult.equals("changed"))
             {
                 horizontalSpeed = projectile.getHorizontalSpeed();

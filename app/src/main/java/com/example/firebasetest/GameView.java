@@ -99,6 +99,23 @@ public class GameView extends SurfaceView implements Runnable
                     desiredHeight /= 2;
                     y -= (desiredHeight / 2);
                     angle = 0;
+                    boolean[] itemCheck = object.hasItems();
+                    for(int n = 0; n < 2; n++)
+                    {
+                        if(itemCheck[n])
+                        {
+                            GameObject item = object.getItem(n);
+                            gameObjectArrayList.add(item);
+                        }
+                    }
+                    for(int i = 0; i < 8; i++)
+                    {
+                        if(object.isStatus(i))
+                        {
+                            GameObject statusBubble = object.getStatus(i);
+                            gameObjectArrayList.add(statusBubble);
+                        }
+                    }
                 }
                 draw(sprite, x, y, desiredWidth, desiredHeight, angle);
             }

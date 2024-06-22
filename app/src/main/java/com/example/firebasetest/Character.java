@@ -27,7 +27,6 @@ public class Character extends GameObject implements Runnable {
     protected float verticalMovement;//should actually just be like movement speed. not 0.1-1
     protected Thread thread;
     protected int characterGrade;
-    protected int locked;
     protected boolean running;
     protected boolean threadStart = true;
     protected boolean moving;
@@ -40,8 +39,12 @@ public class Character extends GameObject implements Runnable {
     protected boolean shatter;
     private long parryCountdown;
     private boolean isParrying;
+    protected boolean performingAction;
+    protected String itemSprite;
+    protected String secondItemSprite;
+    private int[] statusNum;//[poison, freeze, shock, shatter, parry, buff, shieldFire, heal]
     public Character(int level, int HPD, int ACD, int APD, String spriteName, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
-    {//obviously change all sprites
+    {
         super(spriteName, ID, xLocation, yLocation);
         this.moving = false;
         this.legsPos = 1;
@@ -65,6 +68,12 @@ public class Character extends GameObject implements Runnable {
         this.parryCountdown = System.currentTimeMillis() + 500L;
         this.isParrying = false;
         this.spriteState = "idle";
+        this.statusNum = new int[8];
+        this.itemSprite = "none";
+        this.secondItemSprite = "none";
+        for(int i = 0; i < 5; i++)
+            statusNum[i] = 0;
+        this.performingAction = false;
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -168,6 +177,7 @@ public class Character extends GameObject implements Runnable {
 
     private void poisoned(int power)
     {
+        addStatus(0);
         class Poison extends TimerTask {
             private Character chr;
             private int repeats;
@@ -191,6 +201,8 @@ public class Character extends GameObject implements Runnable {
                     TimerTask task = new Poison(chr, repeats, power);
                     timer.schedule(task, 1000L);
                 }
+                else
+                    this.chr.removeStatus(0);
             }
         }
         Timer timer = new Timer();
@@ -211,6 +223,7 @@ public class Character extends GameObject implements Runnable {
     public void freeze()
     {
         this.movementSpeed /= 2;
+        addStatus(1);
         class UnFreeze extends TimerTask {
             private Character chr;
 
@@ -226,17 +239,19 @@ public class Character extends GameObject implements Runnable {
         }
         Timer timer = new Timer();
         TimerTask task = new UnFreeze(this);
-        timer.schedule(task, 5000L);
+        timer.schedule(task, 2500L);
     }
 
     public void unFreeze()
     {
         this.movementSpeed *=2;
+        removeStatus(1);
     }
 
     public void Attack()
     {
         this.spriteState = "attacking";
+        this.performingAction = true;
         float xAxis = horizontalDirection * itemWidth;
         float yAxis = verticalDirection *  itemHeight;
         float locationHor = this.getXLocation() + xAxis;
@@ -254,17 +269,17 @@ public class Character extends GameObject implements Runnable {
         if(this instanceof Sage)
         {
             bladeAttack.SetAilment("life steal");
-            bladeAttack.setSpriteName("scepter");
+            bladeAttack.setSpriteName("miasma");
         }
         else if(this instanceof Archer)
         {
             bladeAttack.setPower(attackPower / 2);
-            bladeAttack.setSpriteName("arrow");
+            bladeAttack.setSpriteName("stab");
         }
         else if(this instanceof Knight)
             bladeAttack.setSpriteName(((Knight) this).getItemName());
         else if(this instanceof Berserker)
-            bladeAttack.setSpriteName("fist");
+            bladeAttack.setSpriteName("fistHit");
         this.projectiles.add(bladeAttack);
         idleAgain(spriteState);
     }
@@ -508,6 +523,7 @@ public class Character extends GameObject implements Runnable {
         else
         {
             this.shocked = true;
+            addStatus(2);
 
             long now = System.currentTimeMillis();
             resetX = now + 5000L;
@@ -534,6 +550,7 @@ public class Character extends GameObject implements Runnable {
     public void unShock()
     {
         this.shocked = false;
+        removeStatus(2);
         if(toShock > 0)
         {
             toShock--;
@@ -584,22 +601,29 @@ public class Character extends GameObject implements Runnable {
         LightLine lightLine = new LightLine(roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
         spriteState = "waving";
+        performingAction = true;
         idleAgain(spriteState);
     }
 
     public void setUpMovement(float x, float y)
     {
-        //stand in for controller input
+        this.horizontalMovement = x;
+        this.moving = (x != 0);
+        if(((this.getYLocation() + (this.getHeight() / 2)) == GameView.height) && (y < 0))
+            this.verticalMovement = this.movementSpeed * y;
     }
 
     public void setUpDirection(float x, float y)
     {
-        //stand in for controller input
+        this.horizontalDirection = x;
+        this.verticalDirection = y;
+        double angle = Math.atan2(y, x);
+        this.directionAngle = Math.toDegrees(angle);
     }
 
     public String ailment()
     {
-        int endNum = (this instanceof Berserker)? 3 : 4;
+        int endNum = (this instanceof Berserker)? 4 : 3;
         int ailmentNum = getRandomNumber(1, endNum);
         String ailment = "none";
         switch (ailmentNum)
@@ -622,6 +646,8 @@ public class Character extends GameObject implements Runnable {
     public void shatter()
     {
         this.shatter = true;
+        legsPos = 1;
+        addStatus(3);
         class UnShatter extends TimerTask {
             private Character character;
 
@@ -643,6 +669,7 @@ public class Character extends GameObject implements Runnable {
     public void unShatter()
     {
         this.shatter = false;
+        removeStatus(3);
     }
 
     public double getDirectionAngle()
@@ -655,6 +682,7 @@ public class Character extends GameObject implements Runnable {
         if(parryCountdown <= System.currentTimeMillis())
         {
             isParrying = true;
+            addStatus(4);
             this.parryCountdown = System.currentTimeMillis() + 1000L;
             long scheduleDelay = 500L;
             long parryWindow = 20L * parryStage;
@@ -680,6 +708,7 @@ public class Character extends GameObject implements Runnable {
     public void unparry()
     {
         this.isParrying = false;
+        removeStatus(4);
     }
     public boolean IsParrying()
     {
@@ -698,11 +727,56 @@ public class Character extends GameObject implements Runnable {
         return legs;
     }
 
-    @Override
-    public String getSpriteName() {
-        String name = super.getSpriteName();
-        String sprite = spriteState += name;
-        return sprite;
+    public boolean[] hasItems()
+    {
+        boolean[] itemCheck = new boolean[2];
+        itemCheck[0] = ((!(this.itemSprite.equals("none"))) && ((horizontalDirection != 0) && (verticalDirection != 0)));
+        itemCheck[1] = (!(this.secondItemSprite.equals("none")));
+        return itemCheck;
+    }
+
+    public Projectile getItem(int index)
+    {
+        String name = secondItemSprite;
+        float x = this.getXLocation();
+        float y = this.getYLocation();
+        float width = this.getWidth();
+        float height = this.getHeight();
+        double radius = Math.sqrt(Math.pow((width / 2), 2) + Math.pow((height / 2), 2));
+
+        if(!performingAction)
+            radius /= 1.5;
+        width /= 2;
+        height /= 3;
+        float addY = 0;
+        float usedRadius = (float) radius;
+        float addX = usedRadius;
+        double itemDirection = facingAngle();
+        itemDirection = 180 - itemDirection;
+        float cosAxis = (float) Math.cos(Math.toRadians(itemDirection));
+        if(index == 0)
+        {
+            name = itemSprite;
+            cosAxis *= (-1);
+            itemDirection = this.directionAngle;
+            double angle = Math.toRadians(itemDirection);
+            float axisX = (float) Math.cos(angle);
+            addX *= axisX;
+            float axisY = (float) Math.sin(angle);
+            axisY *= (-1);
+            addY = axisY * usedRadius;
+        }
+        addX *= cosAxis;
+        x += addX;
+        y += addY;
+        Projectile item = new Projectile(name, roomID, this, 0, 0, 0, x, y, width, height, itemDirection, "none");
+        return item;
+    }
+
+    public double facingAngle()
+    {
+        double face = (this.horizontalDirection < 0)? 180: 0;
+        return face;
     }
 
     public void idleAgain(String originalState)
@@ -724,13 +798,65 @@ public class Character extends GameObject implements Runnable {
         }
         Timer timer = new Timer();
         TimerTask task = new ReIdle(this, originalState);
-        timer.schedule(task, (locked * 33));
+        timer.schedule(task, 330L);
+    }
+
+    public void addStatus(int index)
+    {
+        statusNum[index]++;
+    }
+    public void removeStatus(int index)
+    {
+        statusNum[index]--;
+    }
+
+    public boolean isStatus(int index)
+    {
+        return (statusNum[index] > 0);
+    }
+
+    public GameObject getStatus(int index)
+    {
+        String statusEffect = "";
+        switch (index)
+        {
+            case 0:
+                statusEffect = "poison";
+                break;
+            case 1:
+                statusEffect = "freeze";
+                break;
+            case 2:
+                statusEffect = "shock";
+                break;
+            case 3:
+                statusEffect = "shatter";
+                break;
+            case 4:
+                statusEffect = "parry";
+                break;
+            case 5:
+                statusEffect = "buff";
+                break;
+            case 6:
+                statusEffect = "shieldFire";
+                break;
+            case 7:
+                statusEffect = "heal";
+                break;
+        }
+        GameObject statusBubble = new GameObject(statusEffect, roomID, this.getXLocation(), this.getYLocation(), this.getWidth(), this.getHeight());
+        return statusBubble;
     }
 
     public void reIdle(String originalState)
     {
-        if(spriteState.equals(originalState) && locked <= 0)
-            spriteState = "idle";
+        if(spriteState.equals(originalState))
+        {
+            performingAction = false;
+            if(!(originalState.equals("shielded")))
+                spriteState = "idle";
+        }
     }
 
     @Override

@@ -19,6 +19,7 @@ public class Sage extends Character {
         transitionNum *= 30;//transition from frames to seconds
         pebbleSpeed = physicalPebbleSpeed / transitionNum;//transition from meters per second to pixels per frame
         this.laser = false;
+        this.itemSprite = "scepter";
         if (threadStart)
             thread.start();
     }

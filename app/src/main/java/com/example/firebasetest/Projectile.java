@@ -101,9 +101,4 @@ public class Projectile extends GameObject{
     {
         return this.moving;
     }
-
-    public float getEdge(String edge)
-    {
-        return this.getXLocation();//temporary. uses points
-    }
 }

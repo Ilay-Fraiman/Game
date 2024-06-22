@@ -15,6 +15,7 @@ public class GameObject {
     private float yLocation;
 
     private Path boundingBox;
+    private float[] edges;//[left, right, top, bottom]
 
     public String getSpriteName() {
         return spriteName;
@@ -33,7 +34,14 @@ public class GameObject {
         this.yLocation = y;
         this.width = w;
         this.height = h;
-        this.boundingBox = null;
+        for(int i = 0; i < 4; i++)
+        {
+            if(i < 2)
+                this.edges[i] = x;
+            else
+                this.edges[i]  = y;
+        }
+        this.boundingBox = this.getBoundingBox();
     }
 
     public GameObject(String spriteName, int ID, float x, float y)//character
@@ -44,7 +52,14 @@ public class GameObject {
         this.yLocation = y;
         this.width = (GameView.width / 15);
         this.height = this.width;
-        this.boundingBox = null;
+        for(int i = 0; i < 4; i++)
+        {
+            if(i < 2)
+                this.edges[i] = x;
+            else
+                this.edges[i]  = y;
+        }
+        this.boundingBox = this.getBoundingBox();
     }
 
     public float getWidth() {
@@ -87,6 +102,11 @@ public class GameObject {
             double angle = ((Projectile) this).getAngle();
             directionAngle = (float) angle;
         }
+        if(this instanceof Character)
+        {
+            double angle = ((Character) this).getDirectionAngle();
+            directionAngle = (float) angle;
+        }
         return directionAngle;
     }
 
@@ -100,7 +120,7 @@ public class GameObject {
         boundingBox = null;
         boundingBox = new Path();
 
-        double radius = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2));
+        double radius = Math.sqrt(Math.pow((width / 2), 2) + Math.pow((height / 2), 2));
         double currentAngle = getDirection();
         double toB = Math.toDegrees(Math.atan2(height, width));
         double BToA = 180 - (toB * 2);
@@ -121,7 +141,21 @@ public class GameObject {
                 boundingBox.moveTo(x, y);
             else
                 boundingBox.lineTo(x, y);
+
+            if(x < edges[0])
+                edges[0] = x;
+            if(x > edges[1])
+                edges[1] = x;
+            if(y < edges[2])
+                edges[2] = y;
+            if(y > edges[3])
+                edges[3] = y;
         }
         return boundingBox;
+    }
+
+    public float getEdge(int num)
+    {
+        return edges[num];
     }
 }

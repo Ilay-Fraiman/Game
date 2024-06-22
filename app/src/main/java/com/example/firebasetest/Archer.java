@@ -24,6 +24,8 @@ public class Archer extends Character{
         this.homing = false;
         this.ricochet = false;
         this.isPoison = false;
+        this.itemSprite = "bow";
+        this.secondItemSprite = "arrow";
         switch(characterGrade)
         {
             case 1:
