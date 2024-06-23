@@ -24,6 +24,8 @@ public class Berserker extends Character{
         setYLocation(this.getYLocation() - (this.getHeight() / 2));
         setWidth(getWidth() * 2);
         setHeight(getHeight() * 2);
+        itemWidth *= 2;
+        itemHeight *= 2;
         this.movementSpeed /= 2;
         this.block = false;
         this.itemSprite = "arm";
@@ -33,7 +35,7 @@ public class Berserker extends Character{
 
     public void melee()
     {
-        if(useAbility("X"))
+        if(useAbility("X") && (!performingAction))
         {
             Attack();
             resetAbility("X");
@@ -42,8 +44,9 @@ public class Berserker extends Character{
 
     public void flyingFist()
     {
-        if(useAbility("A") && !block) {
+        if(useAbility("A") && ((!block) && (!performingAction))) {
             spriteState = "punching";
+            performingAction = true;
             String effect = ailment();
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
@@ -59,7 +62,7 @@ public class Berserker extends Character{
 
     public void block()
     {
-        if(useAbility("B"))
+        if(useAbility("B") && ((!block) && (!performingAction)))
         {
             block = true;
             movementSpeed /= 2;
@@ -85,9 +88,9 @@ public class Berserker extends Character{
 
     @Override
     public boolean hit(Projectile p) {
-        if(!block || p.getAilment().equals("shatter"))
+        if((!block) || p.getAilment().equals("shatter"))
             return super.hit(p);
-        return false;
+        return p.canHit(this);
     }
 
     public void unBlock()
@@ -99,9 +102,10 @@ public class Berserker extends Character{
 
     public void earthShatter()
     {
-        if(useAbility("Y") && (!block && ((getYLocation() + (getHeight() / 2)) == GameView.height)))
+        if(useAbility("Y") && (((!block) && (!performingAction)) && ((getYLocation() + (getHeight() / 2)) == GameView.height)))
         {
             spriteState = "smashing";
+            performingAction = true;
             double direction = (this.horizontalDirection > 0)? 1 : -1;//only on the x axis
             float height = this.getHeight() / 4;//this height is double normal, shatter is half normal
             float yLocation = GameView.height - (height / 2);//only on the floor
@@ -117,12 +121,64 @@ public class Berserker extends Character{
     }
 
     @Override
+    protected void move(float x, float y, float tWidth, float tHeight) {
+        if(!(spriteState.equals("smashing")))
+            super.move(x, y, tWidth, tHeight);
+    }
+
+    @Override
+    public void setUpMovement(float x, float y) {
+        if(!(spriteState.equals("smashing")))
+            super.setUpMovement(x, y);
+    }
+
+    @Override
+    public void setUpDirection(float x, float y) {
+        if(!(spriteState.equals("smashing")))
+            super.setUpDirection(x, y);
+    }
+
+    @Override
+    public boolean[] hasItems() {
+        boolean[] check = super.hasItems();
+        if(spriteState.equals("smashing"))
+        {
+            check[0] = false;
+            check[1] = false;
+        }
+        return check;
+    }
+
+    @Override
+    public String getSpriteName() {
+        String name = super.getSpriteName();
+        String action = "";
+        String sprite = "";
+        if(block)
+            action = "blocking";
+        else if(spriteState.equals("smashing"))
+            action = "smashing";
+        else
+            return name;
+        sprite = action + name;
+        return sprite;
+    }
+
+    @Override
     public void run() {
         while (running)
         {
             if (this.HP <= 0)
             {
                 this.running = false;
+            }
+            else if(spriteState.equals("smashing"))
+            {
+                try {
+                    thread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             else
             {
@@ -136,35 +192,36 @@ public class Berserker extends Character{
                 moveBack = false;
                 boolean grounded = ((yLocation + (height / 2)) == GameView.height);
                 float range = GameView.width * (3/8);
+                boolean doNotMove = false;
 
-                if(locked <= 0)
+                if(!performingAction)
                 {
                     if((useAbility("Y") && !block) && (grounded && ((horizontalDistance <= range) && (Math.abs(verticalDistance) == Math.abs(height / 4)))))
                     {
-                        locked = 15;
                         earthShatter();
+                        doNotMove = true;
                     }
                     else if(useAbility("X") && inRange())
                     {
                         if(useAbility("B"))
                             block();
-                        locked = 15;
                         melee();
                     }
-                    else if(useAbility("A"))
+                    else if(useAbility("A") && (!block))
                     {
-                        locked = 15;
                         flyingFist();
                     }
                 }
 
-                this.horizontalMovement = this.horizontalDirection;
-                if(grounded)
-                    this.verticalMovement = this.verticalDirection * this.movementSpeed;
+                if(!doNotMove)
+                {
+                    this.horizontalMovement = this.horizontalDirection;
+                    if(grounded)
+                        this.verticalMovement = this.verticalDirection * this.movementSpeed;
 
-                moving = true;
-                move(xLocation, yLocation, width, height);
-                locked--;
+                    moving = true;
+                    move(xLocation, yLocation, width, height);
+                }
 
                 try {
                     thread.sleep(33);

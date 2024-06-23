@@ -30,7 +30,7 @@ public class Knight extends Character{
         this.shieldHealing = false;
         this.horseHealing = false;
         this.bladeType = "sword";
-        this.secondItemSprite = "shield";
+        this.shieldType = "shield";
         switch (characterGrade)
         {
             case 1:
@@ -39,7 +39,7 @@ public class Knight extends Character{
                 break;
             case 2:
                 this.attackCooldown /= 2;
-                this.secondItemSprite = "sword";
+                this.shieldType = "sword";
                 break;
             case 3:
                 this.maxShieldHP *= 2;
@@ -47,12 +47,11 @@ public class Knight extends Character{
                 this.itemWidth *= 2;
                 this.attackPower *= 2;
                 this.attackCooldown *= 2;
-                float width = this.getWidth();
-                this.setYLocation(this.getYLocation() - (width / 2));
-                this.setWidth(width * 2);
-                this.setHeight(width * 2);
+                float height = this.getHeight();
+                this.setYLocation(this.getYLocation() - (height / 2));
+                this.setWidth(this.getWidth() * 2);
+                this.setHeight(height * 2);
                 this.bladeType = "greatSword";
-                this.secondItemSprite = "greatShield";
                 this.shieldType = "greatShield";
                 break;
             case 4:
@@ -61,6 +60,7 @@ public class Knight extends Character{
                 break;
         }
         this.itemSprite = this.bladeType;
+        this.secondItemSprite = this.shieldType;
         this.shieldHP=this.maxShieldHP;
         this.horseHP=this.maxHorseHP;
         this.running = true;
@@ -70,27 +70,27 @@ public class Knight extends Character{
 
     public void setItems(int num)//keep changing the items' names (according to newest phone disc)
     {
-        itemSprite = bladeType;
-        secondItemSprite = bladeType;
-        String shield = "shield";
-        switch (characterGrade)
+        this.itemSprite = this.bladeType;
+        this.secondItemSprite = this.bladeType;
+        switch (num)
         {
+            case 1:
+                this.secondItemSprite = this.shieldType;
+                break;
             case 2:
-                shield = bladeType;
+                this.itemSprite = this.shieldType;
                 break;
             case 3:
-                shield = "greatShield";
+                this.itemSprite = "potion";
                 break;
-
         }
     }
 
     public void attack()
     {
-        if(useAbility("X") && !shielded)
+        if((useAbility("X") && (!shielded)) && (!performingAction))
         {
-            itemSprite = bladeType;
-            switch ()
+            setItems(1);
             Attack();
             resetAbility("X");
         }
@@ -98,8 +98,9 @@ public class Knight extends Character{
 
     public boolean shieldOrParry(int num)//1 shield 2 parry
     {
-        if((useAbility("A") && shieldHP > 0) && (!shielded))
+        if((((useAbility("A") && shieldHP > 0) && ((!shielded) && (!parry))) && (characterGrade != 2)) && (!performingAction))
         {
+            setItems(2);
             if(num == 1)
                 shieldHeld();
             else
@@ -113,6 +114,8 @@ public class Knight extends Character{
     {
         shielded = true;
         spriteState = "shielding";
+        performingAction = true;
+        idleAgain(spriteState);
     }
 
     public void shieldReleased()
@@ -120,9 +123,10 @@ public class Knight extends Character{
         if(shielded)
         {
             shielded = false;
+            if(itemSprite.equals(shieldType))
+                setItems(1);
             resetAbility("A");
-            spriteState = "idle";
-            locked = 0;
+            reIdle("releaseShield");
         }
         if (shieldHP <= 0 && !shieldHealing)
         {
@@ -148,6 +152,9 @@ public class Knight extends Character{
     public void parry()
     {
         parry = true;
+        spriteState = "parrying";
+        performingAction = true;
+        idleAgain(spriteState);
         addStatus(4);
         class UnParry extends TimerTask {
             private Knight knight;
@@ -170,53 +177,70 @@ public class Knight extends Character{
     public void unParry()
     {
         this.parry = false;
+        if(itemSprite.equals(shieldType))
+            setItems(1);
         removeStatus(4);
     }
 
     public void buff()
     {
-        if(useAbility("B")) {
+        if(useAbility("B") && ((!shielded) && (!performingAction))) {
             this.attackPower *= 2;
             spriteState = "drinking";
+            setItems(3);
             performingAction = true;
             addStatus(5);
             idleAgain(spriteState);
             class DeBuff extends TimerTask {
                 private Knight knight;
+                private int type;
 
-                DeBuff(Knight k)
+                DeBuff(Knight k, int t)
                 {
                     this.knight = k;
+                    this.type = t;
                 }
 
                 @Override
                 public void run() {
-                    knight.deBuff();
+                    knight.deBuff(type);
                 }
             }
+            Timer timer2 = new Timer();
+            TimerTask task2 = new DeBuff(this, 1);
+            timer2.schedule(task2, 330L);
             Timer timer = new Timer();
-            TimerTask task = new DeBuff(this);
+            TimerTask task = new DeBuff(this, 2);
             timer.schedule(task, 5000L);
             resetAbility("B");
         }
     }
 
-    public void deBuff()
+    public void deBuff(int typeCode)
     {
-        this.attackPower /= 2;
-        removeStatus(5);
-        resetAbility("B");
+        if(typeCode == 1)
+        {
+            if(itemSprite.equals("potion"))
+                setItems(1);
+        }
+        else
+        {
+            this.attackPower /= 2;
+            removeStatus(5);
+            resetAbility("B");
+        }
     }
 
     public void mount()
     {
-        if((characterGrade == 4) || (useAbility("Y") && (!mounted && horseHP>0)))
+        if((characterGrade == 4) || ((useAbility("Y")) && (!mounted && horseHP>0)))
         {
             this.mounted = true;
-            this.setYLocation(this.getYLocation() - this.getHeight());
-            this.setHeight(this.getHeight() * 3);
-            this.setWidth(this.getWidth() * 2);
-            this.movementSpeed *=4;
+            float height = this.getHeight();
+            this.setYLocation(this.getYLocation() - (height / 2));
+            this.setHeight(height * 2);
+            this.setWidth(this.getWidth() * 3);
+            this.movementSpeed *= 3;
             float multiplier = (characterGrade == 4)? 2f: 1.5f;
             this.attackPower *= multiplier;
             this.itemHeight *= multiplier;
@@ -225,6 +249,8 @@ public class Knight extends Character{
             {
                 bladeType = "greatSword";
                 shieldType = "greatShield";
+                maxShieldHP *= 2;
+                this.HP *= 2;
             }
         }
         else if(mounted)
@@ -236,13 +262,14 @@ public class Knight extends Character{
         if(mounted)
         {
             this.mounted=false;
-            this.setHeight(this.getHeight() / 3);
-            this.setWidth(this.getWidth() / 2);
-            float multiplier = (characterGrade == 4)? 2f: 1.5f;
-            this.movementSpeed /=4;
-            this.itemHeight /= multiplier;
-            this.itemWidth /= multiplier;
-            this.attackPower /= multiplier;
+            float height = this.getHeight();
+            this.setYLocation(this.getYLocation() + (height / 4));
+            this.setHeight(height / 2);
+            this.setWidth(this.getWidth() / 3);
+            this.movementSpeed /= 3;
+            this.itemHeight /= 1.5;
+            this.itemWidth /= 1.5;
+            this.attackPower /= 1.5;
             resetAbility("Y");
             if(horseHP<=0 && !horseHealing)
             {
@@ -297,9 +324,34 @@ public class Knight extends Character{
                     return super.hit(p);
             }
             if(shielded){
-                float horizontal = p.getHorizontalSpeed() * horizontalDirection;
-                float vertical = p.getVerticalSpeed() * verticalDirection;
-                if (horizontal < 0 && vertical < 0)
+                float horizontal = horizontalDirection;
+                float vertical = verticalDirection;
+                float pHor = horseDirection;
+                float pVer = verticalDirection;
+                boolean collision = false;
+                if(p.isMoving() || p instanceof LightLine)
+                {
+                    double angle = p.getAngle();
+                    pHor = (float) Math.cos(Math.toDegrees(angle));
+                    pVer = (float) Math.sin(Math.toDegrees(angle));
+                    pVer *= (-1);
+                }
+                else if(p instanceof BladeAttack)
+                {
+                    Character c = p.getCreator();
+                    float x = c.getXLocation();
+                    float y = c.getYLocation();
+                    pHor = x - this.getXLocation();
+                    pVer = y - this.getYLocation();
+                }
+                else if(p instanceof GroundFire || p instanceof Mist)
+                {
+                    GameObject shield = this.getItem(0);
+                    collision = GameObject.collision(shield, p);
+                }
+                horizontal = (pHor == 0)? -1: horizontal * pHor;
+                vertical = (pVer == 0)? -1: vertical * pVer;
+                if (((horizontal < 0) && (vertical < 0)) || (collision))
                 {
                     shieldHP -= damageSustained;
                     if (ailment.equals("fire"))
@@ -313,10 +365,13 @@ public class Knight extends Character{
             }
             if(parry)
             {
-                p.setHorizontalSpeed((p.getHorizontalSpeed() * (-1)));
-                p.setVerticalSpeed((p.getVerticalSpeed() * (-1)));
-                p.setCreator(this);
-                this.projectiles.add(p);
+                if(!((p instanceof  GroundFire || p instanceof Mist) || (p.getAilment().equals("laser"))))
+                {
+                    p.setHorizontalSpeed((p.getHorizontalSpeed() * (-1)));
+                    p.setVerticalSpeed((p.getVerticalSpeed() * (-1)));
+                    p.setCreator(this);
+                    this.projectiles.add(p);
+                }
             }
             else if(shieldBroke || !shielded)
             {
@@ -452,14 +507,6 @@ public class Knight extends Character{
         this.horseHP=this.maxHorseHP;
     }
 
-    @Override
-    public String getLegs() {
-        String legs = super.getLegs();
-        if(mounted || characterGrade == 4)
-            legs.replace("walking", "riding");
-        return legs;
-    }
-
     public String getItemName()
     {
         return (this.bladeType.equals("spear"))? "stab": "slash";
@@ -468,10 +515,9 @@ public class Knight extends Character{
     @Override
     public String getSpriteName() {
         String name = super.getSpriteName();
-        String sprite = bladeType + name;
-        if(characterGrade == 2)
-            sprite.replace(bladeType, "twoSword");
-        return sprite;
+        if(mounted || characterGrade == 4)
+            name.replace("walking", "riding");
+        return name;
     }
 
     @Override
@@ -490,36 +536,39 @@ public class Knight extends Character{
                 moving = false;
                 moveBack = false;
                 boolean range = inRange();
+                boolean acted = performingAction;
 
                 if((characterGrade != 4) && (useAbility("Y") && (!mounted && horseHP>0)))
                     mount();
 
-                if(useAbility("B") && ((locked <= 0) && (!shocked && range)))
+                if(useAbility("B") && ((!acted) && (range)))
                 {
                     shieldReleased();
-                    locked = 10;
+                    if(shielded)
+                        shielded = false;
+                    acted = true;
                     buff();
                 }
 
                 if(range)
                 {
-                    if (locked <= 0)
+                    if (!acted)
                     {
                         if(useAbility("X"))
                         {
                             moveBack = false;
                             shieldReleased();
-                            locked = 15;
+                            if(shielded)
+                                shielded = false;
+                            acted = true;
                             attack();
                         }
                         else
                         {
                             moving = true;
                             moveBack = true;
-                            int previousLock = locked;
-                            locked = 15;
-                            if (!(this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2))))
-                                locked = previousLock;
+                            if (this.characterGrade != 2 && shieldOrParry(this.getRandomNumber(1, 2)))
+                                acted = true;
                         }
                     }
                     else {
@@ -529,12 +578,10 @@ public class Knight extends Character{
                 }
                 else
                 {
-                    if(this.characterGrade != 2)
+                    if((this.characterGrade != 2) && (!acted))
                     {
-                        int previousLock = locked;
-                        locked = 15;
                         if(shieldOrParry(1))
-                            locked = previousLock;
+                            acted = true;
                     }
 
                     if(useAbility("X"))
@@ -557,7 +604,6 @@ public class Knight extends Character{
                     moving = true;
                 }
                 move(xLocation, yLocation, width, height);
-                locked--;
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {

@@ -11,9 +11,10 @@ public class Arrow extends Projectile{
     private Character homingOn;
     private long timeToAim;
     private long readyToRicochet;
+    //sprite = arrow000 / arrow111 (num1 = poison, num2 = ricochet, num3 = homing)
     public Arrow(int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, boolean isRicochet, boolean isHoming, boolean isPoison, double direction)
     {
-        super("Arrow", ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height, direction, "none");
+        super("arrow", ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height, direction, "none");
         this.ricochet = isRicochet;
         this.homing = isHoming;
         if(isPoison)
@@ -120,18 +121,13 @@ public class Arrow extends Projectile{
     public String getSpriteName() {
         String name = super.getSpriteName();
         String type = "";
-        if(ricochet)
-            type += "ricochet";
-        if(homing)
-            type += "homing";
-        if(this.ailment.equals("poison"))
-            type += "poison";
-        if(type.isEmpty())
-            return name;
-        else
-        {
-            String sprite = type + name;
-            return sprite;
-        }
+        int num1 = (this.ailment.equals("poison"))? 1: 0;
+        int num2 = (ricochet)? 1: 0;
+        int num3 = (homing)? 1: 0;
+        type += num1;
+        type += num2;
+        type += num3;
+        String sprite = name + type;
+        return sprite;
     }
 }

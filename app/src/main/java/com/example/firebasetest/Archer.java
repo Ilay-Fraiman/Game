@@ -40,6 +40,7 @@ public class Archer extends Character{
                 this.setYLocation(this.getYLocation() - (width / 2));
                 this.setWidth(width * 2);
                 this.setHeight(width * 2);
+                this.itemSprite = "greatBow";
                 break;
             case 2:
                 isPoison = true;
@@ -56,9 +57,10 @@ public class Archer extends Character{
     }
     public void shoot()
     {
-        if(useAbility("X"))
+        if((useAbility("X")) && (!performingAction))
         {
             this.spriteState = "shooting";
+            performingAction = true;
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
             float xDiffrential = arrowSpeed * horizontalDirection;
@@ -80,11 +82,35 @@ public class Archer extends Character{
 
     public void stab()
     {
-        if(useAbility("A"))
+        if(useAbility("A") && (!performingAction))
         {
             Attack();
+            switchItem();
             resetAbility("A");
+                class ItemSwitch extends TimerTask {
+                private Archer archer;
+
+                ItemSwitch(Archer a)
+                {
+                    this.archer = a;
+                }
+
+                @Override
+                public void run() {
+                    archer.switchItem();
+                }
+            }
+            Timer timer = new Timer();
+            TimerTask task = new ItemSwitch(this);
+            timer.schedule(task, 333L);
         }
+    }
+
+    public void switchItem()
+    {
+        String save1 = itemSprite;
+        itemSprite = secondItemSprite;
+        secondItemSprite = save1;
     }
 
     public void poison()
@@ -124,6 +150,24 @@ public class Archer extends Character{
         resetAbility("Y");
     }
 
+    @Override
+    public Projectile getItem(int index) {
+        String save2 = itemSprite;
+        if(spriteState.equals("shooting") && (index == 1))
+        {
+            itemSprite = secondItemSprite;
+            index = 0;
+        }
+        Projectile p = super.getItem(index);
+        itemSprite = save2;
+        if(p.getSpriteName().equals("arrow"))
+        {
+            Arrow name = new Arrow(roomID, this, 0, 0, 0, 0, 0, 0, 0, ricochet, homing, isPoison, 0);
+            p.setSpriteName(name.getSpriteName());
+        }
+        return p;
+    }
+
     public float getPhysicalSpeed()
     {
         return this.physicalArrowSpeed;
@@ -152,11 +196,10 @@ public class Archer extends Character{
                 if (range)
                     backed = true;
 
-                if(locked<=0)
+                if(!performingAction)
                 {
                     if(useAbility("A") && range)
                     {
-                        locked = 15;
                         stab();
                     }
                     else if(useAbility("X"))
@@ -166,7 +209,6 @@ public class Archer extends Character{
                         else
                         {
                             poison();
-                            locked = 10;
                             shoot();
                         }
                     }
@@ -179,7 +221,6 @@ public class Archer extends Character{
                     backedIntoWall(xLocation, yLocation, width, height, playerX);
                 moving = true;
                 move(xLocation, yLocation, width, height);
-                locked--;
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {

@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
@@ -94,11 +95,6 @@ public class GameView extends SurfaceView implements Runnable
                 if(gameObject instanceof Character)
                 {
                     Character object = (Character) gameObject;
-                    String legSprite = object.getLegs();
-                    draw(legSprite, x, y + (desiredHeight / 4), desiredWidth, desiredHeight /2, 0);
-                    desiredHeight /= 2;
-                    y -= (desiredHeight / 2);
-                    angle = 0;
                     boolean[] itemCheck = object.hasItems();
                     for(int n = 0; n < 2; n++)
                     {
@@ -146,7 +142,6 @@ public class GameView extends SurfaceView implements Runnable
 
     public void draw(String spriteName, float xLocation, float yLocation, int width, int height, float rotationAngle)
     {
-        //draw background
         int bitmapID = getResources().getIdentifier(spriteName, "drawable", this.context.getPackageName());
         Bitmap bitmapObject = BitmapFactory.decodeResource(getResources(), bitmapID);
         int bitmapWidth = bitmapObject.getWidth();
@@ -159,6 +154,15 @@ public class GameView extends SurfaceView implements Runnable
 
         // Create a new Bitmap with the scaled dimensions
         Bitmap rotatedObject = Bitmap.createBitmap((int) (width * scaleX), (int) (height * scaleY), Bitmap.Config.ARGB_8888);
+
+        if(rotationAngle == 180)//rotate on x axis
+        {
+            Matrix matrix = new Matrix();
+            matrix.postScale(-1, 1, xLocation, yLocation);
+            rotatedObject =  Bitmap.createBitmap(rotatedObject, 0, 0, rotatedObject.getWidth(), rotatedObject.getHeight(), matrix, true);
+            rotationAngle = 0;
+        }
+
         Canvas rotatedCanvas = new Canvas(rotatedObject);
 
         // Rotate the Canvas with pivot point at center
@@ -168,7 +172,7 @@ public class GameView extends SurfaceView implements Runnable
         int offsetX = (int) ((bitmapWidth - width) / 2 * scaleX);
         int offsetY = (int) ((bitmapHeight - height) / 2 * scaleY);
 
-        // Draw the original arrow bitmap onto the rotated Canvas with negative offsets
+        // Draw the original object bitmap onto the rotated Canvas with negative offsets
         rotatedCanvas.drawBitmap(bitmapObject, -offsetX, -offsetY, p);
 
         // Draw the rotated Bitmap onto the main Canvas at the desired position

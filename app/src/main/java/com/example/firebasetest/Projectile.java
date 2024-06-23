@@ -29,7 +29,6 @@ public class Projectile extends GameObject{
         alreadyHit = new ArrayList<Character>();
         oneTimeHit = false;
         moving = false;
-        //switch sizes like in character
     }
 
     public float getHorizontalSpeed() {

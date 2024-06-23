@@ -9,13 +9,13 @@ import java.util.*;
 public class Character extends GameObject implements Runnable {
     private static Character player;
     protected double HP;
-    protected long attackCooldown = 1150L;
+    protected long attackCooldown;
     protected int attackPower;
     protected String spriteState;//draw in gameobject draws the character, this class has override that adds the itemsprite on top with direction.
     protected float itemWidth;
     protected float itemHeight;
-    protected ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
-    private boolean listSent = false;
+    protected ArrayList<Projectile> projectiles;
+    private boolean listSent;
     protected float horizontalDirection;
     protected float verticalDirection;
     private long resetX;
@@ -28,7 +28,7 @@ public class Character extends GameObject implements Runnable {
     protected Thread thread;
     protected int characterGrade;
     protected boolean running;
-    protected boolean threadStart = true;
+    protected boolean threadStart;
     protected boolean moving;
     protected int legsPos;
     protected double directionAngle;
@@ -46,7 +46,11 @@ public class Character extends GameObject implements Runnable {
     public Character(int level, int HPD, int ACD, int APD, String spriteName, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
     {
         super(spriteName, ID, xLocation, yLocation);
+        this.projectiles = new ArrayList<Projectile>();
+        this.attackCooldown = 1150L;
         this.moving = false;
+        this.listSent = false;
+        this.threadStart = true;
         this.legsPos = 1;
         float myWidth = this.getWidth();
         itemWidth = myWidth;
@@ -265,21 +269,26 @@ public class Character extends GameObject implements Runnable {
         else
             locationVert -= (this.getHeight() / 2);
 
-        BladeAttack bladeAttack = new BladeAttack(roomID, this, attackPower, locationHor, locationVert, itemWidth, itemHeight);
+        String spriteName = "slash";
+        String ailment = "none";
+        int power = attackPower;
+
         if(this instanceof Sage)
         {
-            bladeAttack.SetAilment("life steal");
-            bladeAttack.setSpriteName("miasma");
+            ailment = "life steal";
+            spriteName = "miasma";
         }
         else if(this instanceof Archer)
         {
-            bladeAttack.setPower(attackPower / 2);
-            bladeAttack.setSpriteName("stab");
+            power /= 2;
+            spriteName = "stab";
         }
         else if(this instanceof Knight)
-            bladeAttack.setSpriteName(((Knight) this).getItemName());
+            spriteName = ((Knight) this).getItemName();
         else if(this instanceof Berserker)
-            bladeAttack.setSpriteName("fistHit");
+            spriteName = "fistHit";
+
+        BladeAttack bladeAttack = new BladeAttack(spriteName, roomID, this, power, locationHor, locationVert, itemWidth, itemHeight, ailment, directionAngle);
         this.projectiles.add(bladeAttack);
         idleAgain(spriteState);
     }
@@ -600,7 +609,7 @@ public class Character extends GameObject implements Runnable {
 
         LightLine lightLine = new LightLine(roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
-        spriteState = "waving";
+        spriteState = (effect.equals("laser"))? "lasering": "waving";
         performingAction = true;
         idleAgain(spriteState);
     }
@@ -672,11 +681,6 @@ public class Character extends GameObject implements Runnable {
         removeStatus(3);
     }
 
-    public double getDirectionAngle()
-    {
-        return this.directionAngle;
-    }
-
     public void parryChallenge(int parryStage)
     {
         if(parryCountdown <= System.currentTimeMillis())
@@ -725,6 +729,13 @@ public class Character extends GameObject implements Runnable {
         String legs = "walking";
         legs += legsPos;
         return legs;
+    }
+
+    @Override
+    public String getSpriteName() {
+        String name = super.getSpriteName();
+        String sprite = name + this.getLegs();
+        return sprite;
     }
 
     public boolean[] hasItems()
@@ -798,7 +809,8 @@ public class Character extends GameObject implements Runnable {
         }
         Timer timer = new Timer();
         TimerTask task = new ReIdle(this, originalState);
-        timer.schedule(task, 330L);
+        long scheduleTime = (originalState.equals("lasering"))? 5000L: 333L;
+        timer.schedule(task, scheduleTime);
     }
 
     public void addStatus(int index)
@@ -851,10 +863,11 @@ public class Character extends GameObject implements Runnable {
 
     public void reIdle(String originalState)
     {
-        if(spriteState.equals(originalState))
+        String fauxShield = (originalState.equals("releaseShield"))? "shielding": originalState;
+        if(spriteState.equals(fauxShield))
         {
             performingAction = false;
-            if(!(originalState.equals("shielded")))
+            if(!(originalState.equals("shielding")))
                 spriteState = "idle";
         }
     }

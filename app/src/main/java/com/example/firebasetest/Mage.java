@@ -27,12 +27,26 @@ public class Mage extends Character{
         this.effect = "none";
         toUpdateStatus = true;
         this.itemSprite = "wand";
+        switch (this.characterGrade)
+        {
+            case 2://clone
+                setSpriteName("clone");//half man half clean skin
+                break;
+            case 3:
+                setSpriteName("necromancer");
+                itemSprite = "skullWand";
+                break;
+            case 4:
+                setSpriteName("cleric");
+                addStatus(7);
+                break;
+        }
         if (threadStart)
             thread.start();
     }
     public void lightLine()
     {
-        if(useAbility("X"))
+        if(useAbility("X") && (!performingAction))
         {
             magicLine(this.effect);
             this.effect = "none";
@@ -41,8 +55,9 @@ public class Mage extends Character{
     }
 
     public void mist() {
-        if (useAbility("A")) {
+        if (useAbility("A") && (!performingAction)) {
             this.spriteState = "waving";
+            performingAction = true;
             float width = this.getWidth();
             float height = this.getHeight();
             float xAxis = horizontalDirection * width;
@@ -66,9 +81,10 @@ public class Mage extends Character{
     }
     public void fireball()
     {
-        if(useAbility("B"))
+        if(useAbility("B") && (!performingAction))
         {
             spriteState = "waving";
+            performingAction = true;
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
             float myWidth = this.getWidth();
@@ -115,17 +131,12 @@ public class Mage extends Character{
 
             @Override
             public void run() {
-                mage.removeHeal();
+                mage.removeStatus(7);
             }
         }
         Timer timer = new Timer();
         TimerTask task = new UnHeal(this);
         timer.schedule(task, 100L);
-    }
-
-    public void removeHeal()
-    {
-        this.removeStatus(7);
     }
 
     public void setClone(Mage c)
@@ -158,7 +169,8 @@ public class Mage extends Character{
 
     @Override
     public void removeStatus(int index) {
-        super.removeStatus(index);
+        if(!((this.characterGrade == 4) && (index == 7)))
+            super.removeStatus(index);
         if(characterGrade == 2)
         {
             if(toUpdateStatus)
@@ -225,29 +237,24 @@ public class Mage extends Character{
                     backed = true;
 
 
-                if(locked<=0)
+                if(!performingAction)
                 {
                     if (useAbility("A") && range)
                     {
-                        locked = 10;
                         mist();
                     }
                     else if(useAbility("X") && (this.distanceVector < (width * 5)))
                     {
                         if(characterGrade == 1)
                             this.effect = ailment();
-                        locked = 10;
                         lightLine();
                     }
                     else if(useAbility("B"))
                     {
-                        if(!aim(horizontalDistance, verticalDistance, physicalFireBallSpeed))
-                            moveBack = false;
-                        else
-                        {
-                            locked = 10;
+                        if(aim(horizontalDistance, verticalDistance, physicalFireBallSpeed))
                             fireball();
-                        }
+                        else
+                            moveBack = false;
                     }
                 }
                 float side = (moveBack) ? -1 : 1;
@@ -258,7 +265,6 @@ public class Mage extends Character{
                     backedIntoWall(xLocation, yLocation, width, height, playerX);
                 moving = true;
                 move(xLocation, yLocation, width, height);
-                locked--;
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {

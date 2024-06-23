@@ -180,7 +180,7 @@ public class Room implements Runnable {//fill this logic
             }
             for (Projectile p:
                  keptProjectiles) {
-                if(collision(target, p) && (misses > 0))
+                if(GameObject.collision(target, p) && (misses > 0))
                 {
                     length--;
                     check = initializeTarget(target, left, right, top, bottom);
@@ -287,7 +287,7 @@ public class Room implements Runnable {//fill this logic
             ricochet = ((Arrow) p).isRicochet();
         if((grade1 ^ grade2) || (knightChallenge || ricochet))
         {
-            hitting[0] = collision(c, p);
+            hitting[0] = GameObject.collision(c, p);
         }
         //first one is collision, second one is actual hit
         if(hitting[0])
@@ -495,18 +495,5 @@ public class Room implements Runnable {//fill this logic
     {
         running = false;
         creator.nextRoom(true);
-    }
-
-    public boolean collision(GameObject character, Projectile projectile)
-    {
-        Path characterPath = character.getBoundingBox();
-        Path projectilePath = projectile.getBoundingBox();
-        Path intersection = new Path();
-
-        if (intersection.op(characterPath, projectilePath, Path.Op.INTERSECT)) {
-            // Intersection path is now stored in the "intersection" object
-            return !intersection.isEmpty();
-        }
-        return false;
     }
 }

@@ -104,7 +104,7 @@ public class GameObject {
         }
         if(this instanceof Character)
         {
-            double angle = ((Character) this).getDirectionAngle();
+            double angle = ((Character) this).facingAngle();
             directionAngle = (float) angle;
         }
         return directionAngle;
@@ -157,5 +157,20 @@ public class GameObject {
     public float getEdge(int num)
     {
         return edges[num];
+    }
+
+    public static boolean collision(GameObject character, GameObject projectile)
+    {
+        if(projectile instanceof Teleport)
+            return false;
+        Path characterPath = character.getBoundingBox();
+        Path projectilePath = projectile.getBoundingBox();
+        Path intersection = new Path();
+
+        if (intersection.op(characterPath, projectilePath, Path.Op.INTERSECT)) {
+            // Intersection path is now stored in the "intersection" object
+            return !intersection.isEmpty();
+        }
+        return false;
     }
 }

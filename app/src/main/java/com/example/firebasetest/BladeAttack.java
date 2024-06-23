@@ -3,9 +3,9 @@ package com.example.firebasetest;
 import android.graphics.Bitmap;
 
 public class BladeAttack extends Projectile{
-    public BladeAttack(int ID, Character creator, float power, float xLocation, float yLocation, float width, float height)
+    public BladeAttack(String name, int ID, Character creator, float power, float xLocation, float yLocation, float width, float height, String effect, double direction)
     {
-        super("blade", ID, creator, power, 0, 0, xLocation, yLocation, width, height, 0, "none");
+        super(name, ID, creator, power, 0, 0, xLocation, yLocation, width, height, direction, effect);
         this.isTimed = true;
         this.oneTimeHit = true;
         this.TTD = System.currentTimeMillis() + 500L;

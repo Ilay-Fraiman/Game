@@ -26,9 +26,10 @@ public class Sage extends Character {
 
     public void pebble()
     {
-        if(useAbility("X") && !laser)
+        if(useAbility("X") && ((!laser) && (!performingAction)))
         {
             spriteState = "waving";
+            performingAction = true;
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
             float myWidth = this.getWidth();
@@ -47,7 +48,7 @@ public class Sage extends Character {
 
     public void scepterBash()
     {
-        if(useAbility("A") && !laser)
+        if(useAbility("A") && ((!laser) && (!performingAction)))
         {
             Attack();
             resetAbility("A");
@@ -56,15 +57,22 @@ public class Sage extends Character {
 
     public boolean teleport()//for ending confirmation
     {
-        if(useAbility("B") && !laser)
+        if(useAbility("B") && ((!laser) && (!performingAction)))
         {
             float values[] = aimAtPlayer();//this works in both boss mode and pvp mode because we use
             //character.setPlayer() when initializing the room in both cases
             float enemyX = values[0];
             float enemyY = values[1];
             float width = values[2];
+            float height = values[3];
             float enemyWidth = values[4];
             float x = values[6];
+            float y = values[7];
+            Teleport tp = new Teleport(roomID, this, x, y, width, height);
+            this.projectiles.add(tp);
+            performingAction = true;
+            spriteState = "teleporting";
+
             this.setYLocation(enemyY);
 
             float addition = (enemyWidth + width) / 2;
@@ -78,6 +86,7 @@ public class Sage extends Character {
             addition *= multiplication;
             this.setXLocation(enemyX + addition);
             resetAbility("B");
+            idleAgain(spriteState);
             return true;
         }
         return false;
@@ -160,12 +169,13 @@ public class Sage extends Character {
                 boolean backed = false;
                 boolean grounded = ((yLocation + (height / 2)) == GameView.height);
                 boolean laserStart = false;
+                boolean acted = performingAction;
 
                 boolean range = inRange();
                 if(range)
                     backed = true;
 
-                if(useAbility("A") && locked <= 0)
+                if(useAbility("A") && (!acted))
                 {
                     boolean bash = false;
                     if(!range)
@@ -187,22 +197,21 @@ public class Sage extends Character {
 
                     if (bash)
                     {
-                        locked = 15;
+                        performingAction = false;
                         scepterBash();
+                        acted = true;
                     }
                 }
 
-                if (locked <= 0)
+                if (!acted)
                 {
-                    if(useAbility("Y") && ((this.distanceVector < width * 10) && grounded))
+                    if(useAbility("Y") && ((this.distanceVector < (width * 10)) && grounded))
                     {
-                        locked = 150;
                         laser();
                         laserStart = true;
                     }
                     else if(useAbility("X"))
                     {
-                        locked = 10;
                         pebble();
                     }
                 }
@@ -217,7 +226,6 @@ public class Sage extends Character {
                         backedIntoWall(xLocation, yLocation, width, height, playerX);
                     moving = true;
                     move(xLocation, yLocation, width, height);
-                    locked--;
                 }
                 try {
                     thread.sleep(33);
