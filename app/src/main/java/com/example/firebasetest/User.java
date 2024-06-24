@@ -151,4 +151,9 @@ public class User {
     public String getEmail() {
         return email;
     }
+
+    public void godMode()
+    {
+        level = 100;
+    }
 }

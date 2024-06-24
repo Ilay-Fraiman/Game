@@ -44,20 +44,22 @@ public class GameActivity extends AppCompatActivity {
     private User playerUser;
     private boolean initializingComplete;
     private boolean resumed;
+    private int konamiIndex;
+    private boolean aHold;
     Dpad dpad;
-    //private int doomsdayClock;int(?) (i dont know if i'm doing this after all)
-    // private int suddenDeath;sudden death type (i dont know if i'm doing this after all)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        konamiIndex = 0;
+        aHold = false;
+
         dpad = new Dpad();
         initializingComplete = false;
         resumed = false;
         gameView = new GameView(this);
         setContentView(gameView);
         ReadDataFromFB();
-        //everything else
         mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>(){
             public void onActivityResult(ActivityResult result) {
                 if (result.getResultCode() == Activity.RESULT_OK) {
@@ -68,9 +70,8 @@ public class GameActivity extends AppCompatActivity {
         });
     }
 
-    public void difficultyScreen()//may need more functions, or to do more stuff in the function
+    public void difficultyScreen()
     {
-        //this should probably do more things. like stop threads and stuff
         Intent intent = new Intent(this, DifficultyActivity.class);
         intent.putExtra("difficulty", difficulty);
         intent.putExtra("enemyDifficulty", enemyDifficulty);
@@ -80,7 +81,7 @@ public class GameActivity extends AppCompatActivity {
         mStartForResult.launch(intent);
     }
 
-    public void difficultyActivityDone(Intent intent)//seperate function to do everything
+    public void difficultyActivityDone(Intent intent)
     {
         difficulty = intent.getIntExtra("difficulty", difficulty);
         enemyDifficulty = intent.getIntExtra("enemyDifficulty", enemyDifficulty);
@@ -94,7 +95,6 @@ public class GameActivity extends AppCompatActivity {
         playerUser.setChallengeDifficulty(challengeDifficulty);
         playerUser.setChallengeDifficultyScaling(challengeDifficultyScaling);
         updateUser();
-        //probably more things to reset
     }
 
     public void updateUser()
@@ -136,7 +136,6 @@ public class GameActivity extends AppCompatActivity {
         difficultyScaling = playerUser.getDifficultyScaling();
         challengeDifficulty = playerUser.getChallengeDifficulty();
         challengeDifficultyScaling = playerUser.getChallengeDifficultyScaling();
-        //difficultyScreen();
         this.initializingComplete = true;
         if(resumed)
             this.onResume();
@@ -148,14 +147,13 @@ public class GameActivity extends AppCompatActivity {
     }
 
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        boolean handled = false;
         if ((event.getSource() & InputDevice.SOURCE_GAMEPAD)
                 == InputDevice.SOURCE_GAMEPAD) {
-            if (event.getRepeatCount() == 0) {//stops the run into here if still pressed
+            if (event.getRepeatCount() == 0) {
                 switch (keyCode)
                 {
                     case KeyEvent.KEYCODE_BUTTON_A:
-                        pressedA();
+                        event.startTracking();
                         break;
                     case KeyEvent.KEYCODE_BUTTON_B:
                         pressedB();
@@ -166,44 +164,114 @@ public class GameActivity extends AppCompatActivity {
                     case KeyEvent.KEYCODE_BUTTON_Y:
                         pressedY();
                         break;
+                    case KeyEvent.KEYCODE_BUTTON_START:
+                        pressedStart();
+                        break;
                 }
-                handled = true;//needs to be for each key code.
             }
-            if (handled) {
-                return true;
-            }
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
-    public void pressedA() {
+    @Override
+    public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+        if ((event.getSource() & InputDevice.SOURCE_GAMEPAD)
+                == InputDevice.SOURCE_GAMEPAD) {
+            if (keyCode == KeyEvent.KEYCODE_BUTTON_A){
+                if(initializingComplete)
+                {
+                    aHold = true;
+                    gameView.longPressedA();
+                }
+            }
+            return true;
+        }
+        return super.onKeyLongPress(keyCode, event);
+    }
 
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if ((event.getSource() & InputDevice.SOURCE_GAMEPAD)
+                == InputDevice.SOURCE_GAMEPAD) {
+            if (event.getRepeatCount() == 0) {
+                if (keyCode == KeyEvent.KEYCODE_BUTTON_A){
+                    if(initializingComplete) {
+                        if(aHold)
+                            gameView.canceledA();
+                        else
+                        {
+                            if(pressedA())
+                                difficultyScreen();
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
+
+    public boolean pressedA()
+    {
+        if(konamiIndex == 9)
+            konamiIndex++;
+        if(initializingComplete)
+            return gameView.pressedA();
+        else
+            return false;
     }
 
     public void pressedB() {
-
+        if(konamiIndex == 8)
+            konamiIndex++;
+        if (initializingComplete)
+            gameView.pressedB();
     }
 
     public void pressedX() {
-
+        if (initializingComplete)
+            gameView.pressedX();
     }
 
     public void pressedY() {
+        if(initializingComplete)
+            gameView.pressedY();
     }
 
     public void pressedLeftOrRight(String direction)
     {
-
+        if(direction.equals("left") && ((konamiIndex == 4) || (konamiIndex == 6)))
+            konamiIndex++;
+        if(direction.equals("right") && ((konamiIndex == 5) || (konamiIndex == 7)))
+            konamiIndex++;
+        if (initializingComplete)
+            gameView.pressedLeftOrRight(direction);
     }
 
     public void pressedUpOrDown(String direction)
     {
+        if(direction.equals("up") && (konamiIndex < 2))
+            konamiIndex++;
+        if(direction.equals("down") && ((konamiIndex > 1) && (konamiIndex < 4)))
+            konamiIndex++;
+        if(initializingComplete)
+            gameView.pressedUpOrDown(direction);
+    }
 
+    public void pressedStart()
+    {
+        if(konamiIndex == 10)
+        {
+            playerUser.godMode();
+            updateUser();
+            konamiIndex = 0;
+        }
+        if(initializingComplete)
+            gameView.pressedStart();
     }
 
     public boolean onGenericMotionEvent(MotionEvent event) {
-
-        // Check that the event came from a game controller
         if (Dpad.isDpadDevice(event)) {
 
             int press = dpad.getDirectionPressed(event);
@@ -222,7 +290,71 @@ public class GameActivity extends AppCompatActivity {
                     return true;
             }
         }
+
+        if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) ==
+                InputDevice.SOURCE_JOYSTICK &&
+                event.getAction() == MotionEvent.ACTION_MOVE) {
+
+            // Process all historical movement samples in the batch
+            final int historySize = event.getHistorySize();
+
+            // Process the movements starting from the
+            // earliest historical position in the batch
+            for (int i = 0; i < historySize; i++) {
+                // Process the event at historical position i
+                processJoystickInput(event, i);
+            }
+
+            // Process the current movement sample in the batch (position -1)
+            processJoystickInput(event, -1);
+            return true;
+        }
         return super.onGenericMotionEvent(event);
+    }
+
+    private static float getCenteredAxis(MotionEvent event,
+                                         InputDevice device, int axis, int historyPos) {
+        final InputDevice.MotionRange range =
+                device.getMotionRange(axis, event.getSource());
+
+        // A joystick at rest does not always report an absolute position of
+        // (0,0). Use the getFlat() method to determine the range of values
+        // bounding the joystick axis center.
+        if (range != null) {
+            final float flat = range.getFlat();
+            final float value =
+                    historyPos < 0 ? event.getAxisValue(axis):
+                            event.getHistoricalAxisValue(axis, historyPos);
+
+            // Ignore axis values that are within the 'flat' region of the
+            // joystick axis center.
+            if (Math.abs(value) > flat) {
+                return value;
+            }
+        }
+        return 0;
+    }
+
+    private void processJoystickInput(MotionEvent event,
+                                      int historyPos) {
+        InputDevice inputDevice = event.getDevice();
+        float left_x = getCenteredAxis(event, inputDevice,
+                MotionEvent.AXIS_X, historyPos);
+
+        float right_x = getCenteredAxis(event, inputDevice,
+                MotionEvent.AXIS_Z, historyPos);
+
+        float left_y = getCenteredAxis(event, inputDevice,
+                MotionEvent.AXIS_Y, historyPos);
+
+        float right_y = getCenteredAxis(event, inputDevice,
+                MotionEvent.AXIS_RZ, historyPos);
+
+        if(initializingComplete)
+        {
+            gameView.processDirection(right_x, right_y);
+            gameView.processMovement(left_x, left_y);
+        }
     }
 
     @Override

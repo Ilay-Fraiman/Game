@@ -38,18 +38,21 @@ public class GameView extends SurfaceView implements Runnable
     public static float pixelHeight = 0;
     private Thread gameThread;
     private Canvas canvas;
-    private Bitmap background;
     private Paint p;
     private Room currentRoom;
     private User playerUser;
     private boolean running;
     private SurfaceHolder ourHolder;
+    private int pictureNum;
+    private boolean holdingA;
     Dpad dpad;
     public GameView(Context context)
     {
         super(context);
         this.context = context;
         ourHolder = getHolder();
+        pictureNum = 0;
+        holdingA = false;
         width = this.getResources().getDisplayMetrics().widthPixels;
         pixelWidth = 2106 / width;//in centimeters
         height = this.getResources().getDisplayMetrics().heightPixels;
@@ -59,8 +62,17 @@ public class GameView extends SurfaceView implements Runnable
 
     @Override
     public void run() {
+        String name = "background";
         if(playerUser.getCurrentSection() == -1)
         {
+            while (pictureNum < 7)//7 is a random number. it should be last pic
+            {
+                canvas = ourHolder.lockCanvas();
+                canvas.drawColor(Color.TRANSPARENT);
+                String sprite = name + pictureNum;
+                draw(sprite, 0, 0, (int)GameView.width, (int)GameView.height, 0);
+                ourHolder.unlockCanvasAndPost(canvas);
+            }
             //these are all still pictures
             //flip your phone
             //this game uses a bluetooth enabled controller
@@ -74,6 +86,8 @@ public class GameView extends SurfaceView implements Runnable
             //choose tower(needs an activity)
             //start the game
         }
+        else
+            pictureNum = 7;
         this.currentRoom = new Room(playerUser, this);
         //seperate function for last room(after)
         while (running)
@@ -177,5 +191,69 @@ public class GameView extends SurfaceView implements Runnable
 
         // Draw the rotated Bitmap onto the main Canvas at the desired position
         canvas.drawBitmap(rotatedObject, xLocation, yLocation, p);
+    }
+
+    public boolean pressedA() {
+        if(pictureNum < 8)
+        {
+            pictureNum++;
+            if(pictureNum == 4)//random num, represents difficulty
+                return true;
+        }
+        return false;
+    }
+
+    public void longPressedA()
+    {
+        if(currentRoom != null)
+        {
+            holdingA = true;
+            currentRoom.pressedBox("A");//fake. substitute for pressedA(long)
+        }
+    }
+
+    public void canceledA()
+    {
+        if(currentRoom != null)
+        {
+            holdingA = false;
+            currentRoom.pressedBox("A");//fake. substitute for CancelpressedA(long)
+        }
+    }
+
+    public void pressedB() {
+
+    }
+
+    public void pressedX() {
+
+    }
+
+    public void pressedY() {
+    }
+
+    public void pressedLeftOrRight(String direction)
+    {
+
+    }
+
+    public void pressedUpOrDown(String direction)
+    {
+
+    }
+
+    public void processMovement(float x, float y)
+    {
+
+    }
+
+    public void processDirection(float x, float y)
+    {
+
+    }
+
+    public void pressedStart()//shows controls
+    {
+
     }
 }

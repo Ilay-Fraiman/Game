@@ -27,7 +27,7 @@ public class Room implements Runnable {//fill this logic
     private ArrayList<GameObject> objects;
     private int misses;
     private int enemiesPerWave;
-    private int currentWave;
+    private int waves;
     private int ID;
     private int enemyDifficulty;
     private int difficultyScaling;
@@ -58,8 +58,8 @@ public class Room implements Runnable {//fill this logic
         floorNum = user.getCurrentFloor();
         roomNum = user.getCurrentRoom();
         finalStage = (sectionNum == 4)? 1: 0;
-        this.misses = 0;
-        this.length = 0;
+        this.misses = this.missesArray[challengeDifficultyScaling - 1][sectionNum - 1];
+        this.length = challengeDifficulty * floorNum;
         this.nextSimon = false;
         this.nextSimonNum = 0;
         boxPresses = null;
@@ -75,8 +75,8 @@ public class Room implements Runnable {//fill this logic
         roomDone = false;
         creator = gameView;
         myPlayer = null;
-        enemiesPerWave = 0;
-        currentWave = 0;
+        enemiesPerWave = floorNum + (enemyDifficulty - 1);
+        waves = sectionNum;
         playerClass = user.getClassName();
         playerLevel = user.getLevel();
 
@@ -116,8 +116,6 @@ public class Room implements Runnable {//fill this logic
                 enemyRoom();
                 break;
             case 2:
-                this.misses = this.missesArray[challengeDifficultyScaling - 1][sectionNum - 1];
-                this.length = challengeDifficulty * floorNum;
                 if(roomClass.equals("Knight"))
                     knightChallenge();
                 else if (roomClass.equals("Archer"))
@@ -156,24 +154,102 @@ public class Room implements Runnable {//fill this logic
         characters.add(myPlayer);
     }
 
-    public void enemyRoom()//1, 3, 4
+    public void enemyRoom()
     {
         initializePlayer(false);
+        int currentWave = 0;
+        int enemiesLeft = 0;
+        boolean playerAlive = true;
 
+        float[] xArray = new float[7];
+        xArray[0] = 1;
+        xArray[1] = 9;
+        xArray[2] = 2;
+        xArray[3] = 8;
+        xArray[4] = 3;
+        xArray[5] = 7;
+        xArray[6] = 4;
+
+        float baseX = GameView.width / 10;
+        float y = GameView.height - (GameView.width / 15);
+
+        while((currentWave < waves) && (playerAlive))
+        {
+            for(int i = 0; i < enemiesPerWave; i++)
+            {
+                float currentX = baseX * xArray[i];
+                Character enemy = summonEnemy(false, currentX, y);
+                characters.add(enemy);
+            }
+            enemiesLeft = enemiesPerWave;
+
+            while ((enemiesLeft > 0) && (playerAlive))
+            {
+                for (Character character:
+                        characters) {
+                    projectiles.addAll(character.getProjectileList(ID, characters));
+                }
+                myPlayer.toMove();
+                for (Projectile projectile:
+                        projectiles) {
+                    moveProjectile(projectile);
+                }
+                for (Projectile projectile:
+                        projectiles) {
+                    for (Character character:
+                            characters) {
+                        hit(character, projectile);
+                    }
+                }
+                for (Character character:
+                        characters) {
+                    if(!character.isAlive())
+                    {
+                        if(addToRemove(character, null))
+                        {
+                            if(character.getCharacterGrade() == 5)
+                                playerAlive = false;
+                            else
+                                enemiesLeft--;
+                        }
+                    }
+                }
+                try {
+                    roomThread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if(enemiesLeft <= 0)
+            {
+                currentWave++;
+            }
+        }
+        if(!playerAlive)
+            failure();
+        else if(currentWave >= waves)
+            roomEnd();
     }
 
-    public void addToRemove(Character removableCharacter, Projectile removableProjectile)//to stop mistakes by polymorphism
+    public boolean addToRemove(Character removableCharacter, Projectile removableProjectile)//to stop mistakes by polymorphism
     {
         if(removableCharacter != null)
         {
             if(!charactersToRemove.contains(removableCharacter))
+            {
                 charactersToRemove.add(removableCharacter);
+                return true;
+            }
         }
         if(removableProjectile != null)
         {
             if(!projectilesToRemove.contains(removableProjectile))
+            {
                 projectilesToRemove.add(removableProjectile);
+                return true;
+            }
         }
+        return false;
     }
 
     public void bossRoom()
@@ -345,10 +421,10 @@ public class Room implements Runnable {//fill this logic
     public void knightChallenge()
     {
         //only 2 buttons work: direction joystick and parry button
-        Character player = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
-        Character.setPlayer(player);
+        myPlayer = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
+        Character.setPlayer(myPlayer);
         Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.height - (GameView.width / 15));
-        characters.add(player);
+        characters.add(myPlayer);
         parryWindow = 0;
         long timeToHit = 0;
         a.shoot();
@@ -360,7 +436,7 @@ public class Room implements Runnable {//fill this logic
             for (Projectile p:
                  projectiles) {
                 moveProjectile(p);
-                boolean[] hit = hit(player, p);
+                boolean[] hit = hit(myPlayer, p);
                 if (hit[0])
                 {
                     addToRemove(null, p);
@@ -392,9 +468,9 @@ public class Room implements Runnable {//fill this logic
 
     public void archerChallenge()
     {
-        Archer player = new Archer(1, 5, ID, GameView.width / 2, GameView.height - (GameView.width / 15));
-        Character.setPlayer(player);
-        characters.add(player);
+        myPlayer = new Archer(1, 5, ID, GameView.width / 2, GameView.height - (GameView.width / 15));
+        Character.setPlayer(myPlayer);
+        characters.add(myPlayer);
         ArrayList<Projectile> keptProjectiles = new ArrayList<>();
         ArrayList<Projectile> temporaryHolder = new ArrayList<>();
         int left = ((int) (GameView.width / 20));
@@ -406,7 +482,7 @@ public class Room implements Runnable {//fill this logic
         objects.add(target);
         while (length > 0 && misses > 0)
         {
-            temporaryHolder.addAll(player.getProjectileList(ID, characters));
+            temporaryHolder.addAll(myPlayer.getProjectileList(ID, characters));
             projectiles.addAll(temporaryHolder);
             keptProjectiles.addAll(temporaryHolder);
             temporaryHolder.clear();
@@ -465,9 +541,9 @@ public class Room implements Runnable {//fill this logic
 
     public void mageChallenge()
     {
-        Character player = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
-        Character.setPlayer(player);
-        characters.add(player);
+        myPlayer = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
+        Character.setPlayer(myPlayer);
+        characters.add(myPlayer);
         boxPresses = new ArrayList<>();
         buttonPresses = new ArrayList<>();
         boxes = new ArrayList<>();
