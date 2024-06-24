@@ -36,10 +36,14 @@ public class Archer extends Character{
                 float fMultiplication = (float) multiplication;
                 arrowSpeed *= fMultiplication;
                 physicalArrowSpeed *= fMultiplication;
-                float width = this.getWidth();
-                this.setYLocation(this.getYLocation() - (width / 2));
-                this.setWidth(width * 2);
-                this.setHeight(width * 2);
+                float height = this.getHeight();
+                float y = this.getYLocation();
+                y += (height / 2);
+                height *= 1.5f;
+                y -= (height / 2);
+                this.setYLocation(y);
+                this.setHeight(height);
+                this.setWidth(this.getWidth() * 1.5f);
                 this.itemSprite = "greatBow";
                 break;
             case 2:
@@ -220,7 +224,7 @@ public class Archer extends Character{
                 if(backed)
                     backedIntoWall(xLocation, yLocation, width, height, playerX);
                 moving = true;
-                move(xLocation, yLocation, width, height);
+                move();
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {

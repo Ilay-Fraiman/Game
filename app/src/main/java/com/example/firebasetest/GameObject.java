@@ -51,7 +51,7 @@ public class GameObject {
         this.xLocation = x;
         this.yLocation = y;
         this.width = (GameView.width / 15);
-        this.height = this.width;
+        this.height = this.width * 2;
         for(int i = 0; i < 4; i++)
         {
             if(i < 2)

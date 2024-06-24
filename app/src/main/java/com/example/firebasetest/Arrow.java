@@ -79,12 +79,8 @@ public class Arrow extends Projectile{
         {
             float myX = this.getXLocation();
             float myY = this.getYLocation();
-            float myWidth = this.getWidth();
-            float myHeight = this.getHeight();
             float targetX = target.getXLocation();
             float targetY = target.getYLocation();
-            float targetWidth = target.getWidth();
-            float targetHeight = target.getHeight();
             float horizontalDistance = 0;
             float verticalDistance = 0;
 

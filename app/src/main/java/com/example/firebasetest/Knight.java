@@ -43,14 +43,18 @@ public class Knight extends Character{
                 break;
             case 3:
                 this.maxShieldHP *= 2;
-                this.itemHeight *= 2;
-                this.itemWidth *= 2;
+                this.itemHeight *= 1.5;
+                this.itemWidth *= 1.5;
                 this.attackPower *= 2;
                 this.attackCooldown *= 2;
                 float height = this.getHeight();
-                this.setYLocation(this.getYLocation() - (height / 2));
-                this.setWidth(this.getWidth() * 2);
-                this.setHeight(height * 2);
+                float y = this.getYLocation();
+                y += (height / 2);
+                height *= 1.5f;
+                y -= (height / 2);
+                this.setYLocation(y);
+                this.setHeight(height);
+                this.setWidth(this.getWidth() * 1.5f);
                 this.bladeType = "greatSword";
                 this.shieldType = "greatShield";
                 break;
@@ -237,11 +241,15 @@ public class Knight extends Character{
         {
             this.mounted = true;
             float height = this.getHeight();
-            this.setYLocation(this.getYLocation() - (height / 2));
-            this.setHeight(height * 2);
-            this.setWidth(this.getWidth() * 3);
             this.movementSpeed *= 3;
-            float multiplier = (characterGrade == 4)? 2f: 1.5f;
+            float multiplier = (characterGrade == 4)? 3f: 1.75f;
+            float y = this.getYLocation();
+            y += (height / 2);
+            height *= multiplier;
+            y -= (height / 2);
+            this.setYLocation(y);
+            this.setHeight(height);
+            this.setWidth(this.getWidth() * multiplier);
             this.attackPower *= multiplier;
             this.itemHeight *= multiplier;
             this.itemWidth *= multiplier;
@@ -263,13 +271,17 @@ public class Knight extends Character{
         {
             this.mounted=false;
             float height = this.getHeight();
-            this.setYLocation(this.getYLocation() + (height / 4));
-            this.setHeight(height / 2);
-            this.setWidth(this.getWidth() / 3);
+            float y = this.getYLocation();
+            y += (height / 2);
+            height /= 1.75f;
+            y -= height / 2;
+            this.setYLocation(y);
+            this.setHeight(height);
+            this.setWidth(this.getWidth() / 1.75f);
             this.movementSpeed /= 3;
-            this.itemHeight /= 1.5;
-            this.itemWidth /= 1.5;
-            this.attackPower /= 1.5;
+            this.itemHeight /= 1.75;
+            this.itemWidth /= 1.75;
+            this.attackPower /= 1.75;
             resetAbility("Y");
             if(horseHP<=0 && !horseHealing)
             {
@@ -603,7 +615,7 @@ public class Knight extends Character{
                     horizontalMovement = horseDirection;
                     moving = true;
                 }
-                move(xLocation, yLocation, width, height);
+                move();
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {

@@ -21,11 +21,16 @@ public class Berserker extends Character{
         float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
         transitionNum *= 30;//transition from frames to seconds
         fistSpeed = physicalFistSpeed / transitionNum;//transition from meters per second to pixels per frame
-        setYLocation(this.getYLocation() - (this.getHeight() / 2));
-        setWidth(getWidth() * 2);
-        setHeight(getHeight() * 2);
-        itemWidth *= 2;
-        itemHeight *= 2;
+        float height = this.getHeight();
+        float y = this.getYLocation();
+        y += (height / 2);
+        height *= 3;
+        y -= (height / 2);
+        this.setYLocation(y);
+        this.setHeight(height);
+        this.setWidth(this.getWidth() * 3f);
+        itemWidth *= 1.5;
+        itemHeight *= 1.5;
         this.movementSpeed /= 2;
         this.block = false;
         this.itemSprite = "arm";
@@ -107,7 +112,7 @@ public class Berserker extends Character{
             spriteState = "smashing";
             performingAction = true;
             double direction = (this.horizontalDirection > 0)? 1 : -1;//only on the x axis
-            float height = this.getHeight() / 4;//this height is double normal, shatter is half normal
+            float height = GameView.height / 15;//this height is double normal, shatter is half normal
             float yLocation = GameView.height - (height / 2);//only on the floor
             float width = GameView.width * (3/40);//max width is 3/8 canvas width, starting with is 1/5 of that
             float xLocation = this.getXLocation();
@@ -121,9 +126,9 @@ public class Berserker extends Character{
     }
 
     @Override
-    protected void move(float x, float y, float tWidth, float tHeight) {
+    protected void move() {
         if(!(spriteState.equals("smashing")))
-            super.move(x, y, tWidth, tHeight);
+            super.move();
     }
 
     @Override
@@ -183,20 +188,22 @@ public class Berserker extends Character{
             else
             {
                 float[] values = aimAtPlayer();
+                float playerY = values[1];
                 float width = values[2];
                 float height = values[3];
+                float playerHeight = values[5];
                 float yLocation = values[7];
                 float xLocation = values[6];
                 float horizontalDistance = values[8];
-                float verticalDistance = values[9];
                 moveBack = false;
                 boolean grounded = ((yLocation + (height / 2)) == GameView.height);
+                boolean enemyGrounded = ((playerY + (playerHeight / 2)) == GameView.height);
                 float range = GameView.width * (3/8);
                 boolean doNotMove = false;
 
                 if(!performingAction)
                 {
-                    if((useAbility("Y") && !block) && (grounded && ((horizontalDistance <= range) && (Math.abs(verticalDistance) == Math.abs(height / 4)))))
+                    if((useAbility("Y") && (!block)) && (grounded && ((horizontalDistance <= range) && (enemyGrounded))))
                     {
                         earthShatter();
                         doNotMove = true;
@@ -220,7 +227,7 @@ public class Berserker extends Character{
                         this.verticalMovement = this.verticalDirection * this.movementSpeed;
 
                     moving = true;
-                    move(xLocation, yLocation, width, height);
+                    move();
                 }
 
                 try {

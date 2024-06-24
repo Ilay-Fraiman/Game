@@ -100,4 +100,9 @@ public class Projectile extends GameObject{
     {
         return this.moving;
     }
+
+    public boolean isTimed()
+    {
+        return this.isTimed;
+    }
 }

@@ -88,9 +88,8 @@ public class Mage extends Character{
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
             float myWidth = this.getWidth();
-            float myHeight = this.getHeight();
             float fireBallWidth = myWidth * 0.75f;
-            float fireBallHeight = myHeight * 0.75f;
+            float fireBallHeight = myWidth * 0.75f;
             float xDiffrential = fireBallSpeed * horizontalDirection;
             float yDiffrential = fireBallSpeed * verticalDirection;
 
@@ -264,7 +263,7 @@ public class Mage extends Character{
                 if(backed)
                     backedIntoWall(xLocation, yLocation, width, height, playerX);
                 moving = true;
-                move(xLocation, yLocation, width, height);
+                move();
                 try {
                     thread.sleep(33);
                 } catch (InterruptedException e) {

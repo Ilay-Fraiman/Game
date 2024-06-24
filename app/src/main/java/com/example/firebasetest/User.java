@@ -40,8 +40,6 @@ public class User {
     public User() {
     }
 
-
-
     public int getDifficulty() {
         return difficulty;
     }
@@ -106,7 +104,7 @@ public class User {
 
     public void setDifficultyScaling(int difficultyScaling) {
         this.difficultyScaling = difficultyScaling;
-        setLevel(difficultyScaling + 3);
+        setLevel(9 - difficultyScaling);
     }
 
     public int getChallengeDifficulty() {

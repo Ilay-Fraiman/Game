@@ -32,10 +32,8 @@ public class Sage extends Character {
             performingAction = true;
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
-            float myWidth = this.getWidth();
-            float myHeight = this.getHeight();
-            float pebbleWidth = myWidth / 3;
-            float pebbleHeight = myHeight / 3;
+            float pebbleWidth = itemWidth / 3;
+            float pebbleHeight = itemHeight / 3;
             float xDiffrential = pebbleSpeed * horizontalDirection;
             float yDiffrential = pebbleSpeed * verticalDirection;
 
@@ -125,9 +123,9 @@ public class Sage extends Character {
     }
 
     @Override
-    protected void move(float x, float y, float tWidth, float tHeight) {
+    protected void move() {
         if(!laser)
-            super.move(x, y, tWidth, tHeight);
+            super.move();
     }
 
     @Override
@@ -225,7 +223,7 @@ public class Sage extends Character {
                     if(backed)
                         backedIntoWall(xLocation, yLocation, width, height, playerX);
                     moving = true;
-                    move(xLocation, yLocation, width, height);
+                    move();
                 }
                 try {
                     thread.sleep(33);

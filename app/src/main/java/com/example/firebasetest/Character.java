@@ -61,7 +61,7 @@ public class Character extends GameObject implements Runnable {
         attackPower = level*APD;
         this.resetX = 0;
         this.resetB = 0;
-        this.resetA = System.currentTimeMillis() + 10000L;
+        this.resetA = System.currentTimeMillis() + 5000L;
         this.resetY = System.currentTimeMillis() + 30000L;
         this.characterGrade = characterGrade;
         this.shocked = false;
@@ -313,10 +313,14 @@ public class Character extends GameObject implements Runnable {
         return Character.player.getHeight();
     }
 
-    protected void move(float x, float y, float tWidth, float tHeight)//height should fit canvas
+    protected void move()
     {
         if(!shatter)
         {
+            float x = this.getXLocation();
+            float y = this.getYLocation();
+            float tWidth = this.getWidth();
+            float tHeight = this.getHeight();
             float accelerationNum = GameView.height / 100;//transition from centimeters to meters
             accelerationNum *= 30;//transition from frames to seconds
             float accelerationDiff = 10 / 30;//acceleration in one frame
@@ -595,17 +599,16 @@ public class Character extends GameObject implements Runnable {
         float locationX = this.getXLocation();
         float locationY = this.getYLocation();
         float xDiffrential = this.getWidth() * this.horizontalDirection * 5;
-        float yDiffrential = this.getHeight() * this.verticalDirection * 5;
+        float yDiffrential = this.getHeight() * this.verticalDirection;
 
         if(effect == "laser")
         {
             xDiffrential *= 2;
-            yDiffrential *= 5;
+            yDiffrential *= 2.5;
         }
 
         locationX += (xDiffrential / 2);
         locationY += (yDiffrential / 2);
-        yDiffrential /= 25;
 
         LightLine lightLine = new LightLine(roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
@@ -618,8 +621,14 @@ public class Character extends GameObject implements Runnable {
     {
         this.horizontalMovement = x;
         this.moving = (x != 0);
-        if(((this.getYLocation() + (this.getHeight() / 2)) == GameView.height) && (y < 0))
+        if(((this.getYLocation() + (this.getHeight() / 2)) == GameView.height) && (y <= 0))
             this.verticalMovement = this.movementSpeed * y;
+    }
+
+    public void toMove()
+    {
+        if((horizontalMovement != 0) || ((verticalMovement != 0) || ((this.getYLocation() + (this.getHeight() / 2)) != GameView.height)))
+            move();
     }
 
     public void setUpDirection(float x, float y)
@@ -741,7 +750,7 @@ public class Character extends GameObject implements Runnable {
     public boolean[] hasItems()
     {
         boolean[] itemCheck = new boolean[2];
-        itemCheck[0] = ((!(this.itemSprite.equals("none"))) && ((horizontalDirection != 0) && (verticalDirection != 0)));
+        itemCheck[0] = ((!(this.itemSprite.equals("none"))) && ((horizontalDirection != 0) || (verticalDirection != 0)));
         itemCheck[1] = (!(this.secondItemSprite.equals("none")));
         return itemCheck;
     }
@@ -758,7 +767,7 @@ public class Character extends GameObject implements Runnable {
         if(!performingAction)
             radius /= 1.5;
         width /= 2;
-        height /= 3;
+        height /= 4;
         float addY = 0;
         float usedRadius = (float) radius;
         float addX = usedRadius;

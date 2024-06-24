@@ -155,7 +155,7 @@ public class GameView extends SurfaceView implements Runnable
         // Create a new Bitmap with the scaled dimensions
         Bitmap rotatedObject = Bitmap.createBitmap((int) (width * scaleX), (int) (height * scaleY), Bitmap.Config.ARGB_8888);
 
-        if(rotationAngle == 180)//rotate on x axis
+        if(rotationAngle == 180 && (!spriteName.equals("groundFire")))//rotate on x axis
         {
             Matrix matrix = new Matrix();
             matrix.postScale(-1, 1, xLocation, yLocation);
