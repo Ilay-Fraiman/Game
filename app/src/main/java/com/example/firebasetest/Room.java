@@ -421,7 +421,9 @@ public class Room implements Runnable {//fill this logic
     public void knightChallenge()
     {
         //only 2 buttons work: direction joystick and parry button
-        myPlayer = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
+        String name = playerClass;
+        name = name.toLowerCase();
+        myPlayer = new Character(1, 3, 3, 3, name, ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
         Character.setPlayer(myPlayer);
         Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.height - (GameView.width / 15));
         characters.add(myPlayer);
@@ -541,7 +543,9 @@ public class Room implements Runnable {//fill this logic
 
     public void mageChallenge()
     {
-        myPlayer = new Character(1, 3, 3, 3, "character", ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
+        String name = playerClass;
+        name = name.toLowerCase();
+        myPlayer = new Character(1, 3, 3, 3, name, ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
         Character.setPlayer(myPlayer);
         characters.add(myPlayer);
         boxPresses = new ArrayList<>();
@@ -811,5 +815,10 @@ public class Room implements Runnable {//fill this logic
     public void failure()
     {
         creator.nextRoom(true);
+    }
+
+    public boolean isRoomDone()
+    {
+        return this.roomDone;
     }
 }

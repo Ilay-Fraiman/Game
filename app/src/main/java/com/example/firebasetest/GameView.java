@@ -46,10 +46,12 @@ public class GameView extends SurfaceView implements Runnable
     private int pictureNum;
     private boolean holdingA;
     Dpad dpad;
+    private int subMenu;
     public GameView(Context context)
     {
         super(context);
         this.context = context;
+        subMenu = 0;
         ourHolder = getHolder();
         pictureNum = 0;
         holdingA = false;
@@ -63,20 +65,54 @@ public class GameView extends SurfaceView implements Runnable
     @Override
     public void run() {
         String name = "background";
-        if(playerUser.getCurrentSection() == -1)
+        if((playerUser.getCurrentSection() == (-1)) || (height > width))
         {
+            int backgroundOpen = 0;
             while (pictureNum < 7)//7 is a random number. it should be last pic
             {
+                if(pictureNum == 0)
+                {
+                    width = this.getResources().getDisplayMetrics().widthPixels;
+                    height = this.getResources().getDisplayMetrics().heightPixels;
+                    if(width > height)
+                    {
+                        pictureNum++;
+                        pixelWidth = 2106 / width;
+                        pixelHeight = 1080 / height;
+                    }
+                }
+                else if(pictureNum == 1)
+                {
+                    ArrayList<Integer> gameControllerIds = GameActivity.getGameControllerIds();
+                    if(!gameControllerIds.isEmpty())
+                        pictureNum++;
+                }
+                else if(playerUser.getCurrentSection() != (-1))
+                    pictureNum = 8;
+                else if((pictureNum > 2) && (pictureNum < 7))
+                {
+                    backgroundOpen++;
+                    if(backgroundOpen >= 10)
+                    {
+                        backgroundOpen = 0;
+                        pictureNum++;
+                    }
+                }
                 canvas = ourHolder.lockCanvas();
                 canvas.drawColor(Color.TRANSPARENT);
                 String sprite = name + pictureNum;
                 draw(sprite, 0, 0, (int)GameView.width, (int)GameView.height, 0);
                 ourHolder.unlockCanvasAndPost(canvas);
+                try {
+                    gameThread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
             //these are all still pictures
-            //flip your phone
-            //this game uses a bluetooth enabled controller
-            //controls
+            //flip your phone = 0
+            //this game uses a bluetooth enabled controller = 1
+            //controls = 2
             //show eyes opening(black back ground, then white in the middle, then full white, then see
             //player character at one end half naked
             //man starts talking
@@ -162,7 +198,7 @@ public class GameView extends SurfaceView implements Runnable
         int bitmapHeight = bitmapObject.getHeight();
         bitmapObject = createScaledBitmap(bitmapObject, width, height, false);
 
-        // Calculate scaling factors to fit the arrow within the desired area
+        // Calculate scaling factors to fit the image within the desired area
         float scaleX = (float) width / bitmapWidth;
         float scaleY = (float) height / bitmapHeight;
 
@@ -194,7 +230,7 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     public boolean pressedA() {
-        if(pictureNum < 8)
+        if((pictureNum > 1) && (pictureNum < 8))//change specific (2 and 7+)
         {
             pictureNum++;
             if(pictureNum == 4)//random num, represents difficulty
