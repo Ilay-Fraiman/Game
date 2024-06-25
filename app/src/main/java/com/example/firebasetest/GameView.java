@@ -54,7 +54,6 @@ public class GameView extends SurfaceView implements Runnable
         super(context);
         this.context = context;
         subMenu = 0;
-        ourHolder = getHolder();
         pictureNum = 0;
         className = "none";
         holdingA = false;
@@ -69,6 +68,7 @@ public class GameView extends SurfaceView implements Runnable
     @Override
     public void run() {
         String name = "background";
+        ourHolder = getHolder();
         if((playerUser.getCurrentSection() == (-1)) || (height > width))
         {
             int backgroundOpen = 0;
@@ -117,13 +117,15 @@ public class GameView extends SurfaceView implements Runnable
                             break;
                     }
                 }
-                canvas = ourHolder.lockCanvas();
-                canvas.drawColor(Color.TRANSPARENT);
-                String sprite = name + pictureNum;
-                if(!className.equals("none"))
-                    sprite += className;
-                draw(sprite, 0, 0, (int)GameView.width, (int)GameView.height, 0);
-                ourHolder.unlockCanvasAndPost(canvas);
+                if(ourHolder.getSurface().isValid())
+                {
+                    canvas = ourHolder.lockCanvas();
+                    String sprite = name + pictureNum;
+                    if(!className.equals("none"))
+                        sprite += className;
+                    draw(sprite, 0, 0, (int)width, (int)height, 0);
+                    ourHolder.unlockCanvasAndPost(canvas);
+                }
                 try {
                     gameThread.sleep(33);
                 } catch (InterruptedException e) {
@@ -145,7 +147,7 @@ public class GameView extends SurfaceView implements Runnable
         }
         else
             pictureNum = 20;
-        this.currentRoom = new Room(playerUser, this);
+        //this.currentRoom = new Room(playerUser, this);
         //seperate function for last room(after)
         while (running)
         {
@@ -234,7 +236,8 @@ public class GameView extends SurfaceView implements Runnable
             rotationAngle = 0;
         }
 
-        Canvas rotatedCanvas = new Canvas(rotatedObject);
+        //Canvas rotatedCanvas = new Canvas(rotatedObject);==original
+        Canvas rotatedCanvas = new Canvas(bitmapObject);//works for background
 
         // Rotate the Canvas with pivot point at center
         rotatedCanvas.rotate(rotationAngle);
@@ -243,11 +246,18 @@ public class GameView extends SurfaceView implements Runnable
         int offsetX = (int) ((bitmapWidth - width) / 2 * scaleX);
         int offsetY = (int) ((bitmapHeight - height) / 2 * scaleY);
 
+        if(spriteName.contains("background"))
+        {
+            offsetX = 0;
+            offsetY = 0;
+        }
+
         // Draw the original object bitmap onto the rotated Canvas with negative offsets
         rotatedCanvas.drawBitmap(bitmapObject, -offsetX, -offsetY, p);
 
         // Draw the rotated Bitmap onto the main Canvas at the desired position
-        canvas.drawBitmap(rotatedObject, xLocation, yLocation, p);
+        //canvas.drawBitmap(rotatedObject, xLocation, yLocation, p);=original
+        canvas.drawBitmap(bitmapObject, xLocation, yLocation, p);//works for background
     }
 
     public boolean pressedA() {
@@ -271,7 +281,7 @@ public class GameView extends SurfaceView implements Runnable
         if(currentRoom != null)
         {
             holdingA = true;
-            currentRoom.pressedBox("A");//fake. substitute for pressedA(long)
+            //currentRoom.pressedBox("A");//fake. substitute for pressedA(long)
         }
     }
 
@@ -280,7 +290,7 @@ public class GameView extends SurfaceView implements Runnable
         if(currentRoom != null)
         {
             holdingA = false;
-            currentRoom.pressedBox("A");//fake. substitute for CancelpressedA(long)
+            //currentRoom.pressedBox("A");//fake. substitute for CancelpressedA(long)
         }
     }
 

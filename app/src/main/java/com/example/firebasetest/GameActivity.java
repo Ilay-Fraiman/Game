@@ -21,6 +21,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -46,19 +47,23 @@ public class GameActivity extends AppCompatActivity {
     private boolean resumed;
     private int konamiIndex;
     private boolean aHold;
+    private FrameLayout frameLayout;
+    private boolean outOfFocus;
+    private boolean addedView;
     Dpad dpad;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+        frameLayout = findViewById(R.id.frmView);
         konamiIndex = 0;
         aHold = false;
-
+        outOfFocus = false;
+        addedView = false;
         dpad = new Dpad();
         initializingComplete = false;
         resumed = false;
         gameView = new GameView(this);
-        setContentView(gameView);
         ReadDataFromFB();
         mStartForResult = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>(){
             public void onActivityResult(ActivityResult result) {
@@ -72,6 +77,9 @@ public class GameActivity extends AppCompatActivity {
 
     public void difficultyScreen()
     {
+        outOfFocus = true;
+        addedView = false;
+        frameLayout.removeView(gameView);
         Intent intent = new Intent(this, DifficultyActivity.class);
         intent.putExtra("difficulty", difficulty);
         intent.putExtra("enemyDifficulty", enemyDifficulty);
@@ -95,6 +103,9 @@ public class GameActivity extends AppCompatActivity {
         playerUser.setChallengeDifficulty(challengeDifficulty);
         playerUser.setChallengeDifficultyScaling(challengeDifficultyScaling);
         updateUser(playerUser);
+        outOfFocus = false;
+        if(!addedView)
+            onWindowFocusChanged(true);
     }
 
     public static void updateUser(User user)
@@ -378,10 +389,39 @@ public class GameActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if((gameView != null) && (((initializingComplete) && (hasFocus)) && ((!addedView) && (!outOfFocus))))
+        {
+            addedView = true;
+            frameLayout.addView(gameView);
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         resumed = true;
         if(initializingComplete)
-            gameView.resume(playerUser, dpad);
+        {
+            if(!addedView)
+            {
+                onWindowFocusChanged(true);
+                boolean inFrame = false;
+                while (!inFrame)
+                {
+                    int childCount = frameLayout.getChildCount();
+                    for (int i = 0; i < childCount; i++) {
+                        View childView = frameLayout.getChildAt(i);
+                        if (childView.equals(gameView)) {
+                            inFrame = true;
+                        }
+                    }
+                }
+                gameView.resume(playerUser, dpad);
+            }
+            else
+                gameView.resume(playerUser, dpad);
+        }
     }
 }

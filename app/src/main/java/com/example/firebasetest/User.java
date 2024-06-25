@@ -32,9 +32,7 @@ public class User {
         currentFloor = 0;
         currentRoom = 0;
         order = new ArrayList<String>();
-        order.add("Knight");
-        order.add("Archer");
-        order.add("Mage");
+        initializeOrder("Knight");
     }
 
     public User() {
@@ -65,10 +63,15 @@ public class User {
     }
 
     public ArrayList<String> getOrder() {
-        return order;
+        return this.order;
     }
 
-    public void setOrder(String firstTower) {
+    public void setOrder(ArrayList<String> newOrder) {
+        this.order = newOrder;
+    }
+
+    public void initializeOrder(String firstTower)
+    {
         this.order.clear();
         switch (firstTower)
         {
