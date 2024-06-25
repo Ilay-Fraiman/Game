@@ -94,15 +94,15 @@ public class GameActivity extends AppCompatActivity {
         playerUser.setDifficultyScaling(difficultyScaling);
         playerUser.setChallengeDifficulty(challengeDifficulty);
         playerUser.setChallengeDifficultyScaling(challengeDifficultyScaling);
-        updateUser();
+        updateUser(playerUser);
     }
 
-    public void updateUser()
+    public static void updateUser(User user)
     {
         FirebaseFirestore fb = FirebaseFirestore.getInstance();
         String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
         DocumentReference ref = fb.collection("Users").document(id);
-        ref.set(playerUser);
+        ref.set(user);
     }
 
     public void ReadDataFromFB()
@@ -264,7 +264,7 @@ public class GameActivity extends AppCompatActivity {
         if(konamiIndex == 10)
         {
             playerUser.godMode();
-            updateUser();
+            updateUser(playerUser);
             konamiIndex = 0;
         }
         if(initializingComplete)

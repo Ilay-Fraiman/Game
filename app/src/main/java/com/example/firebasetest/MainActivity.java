@@ -62,9 +62,7 @@ public class MainActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()) // register success
                 {
-                    Toast.makeText(MainActivity.this,"register success",Toast.LENGTH_SHORT).show();
-                    // can be done only register SUCCESS!!!
-                  //  MainActivity.this.moveToNextActivity();
+                    Toast.makeText(MainActivity.this,"Entry success",Toast.LENGTH_SHORT).show();
                     if(!MainActivity.signIn)
                         addUser();
                     else
@@ -72,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else // register fail
                 {
-                    String failureReason = task.getException().toString();
+                    String failureReason = task.getException().getMessage();
                     Toast.makeText(MainActivity.this,"register failed " + failureReason,Toast.LENGTH_SHORT).show();
                 }
 
@@ -88,8 +86,6 @@ public class MainActivity extends AppCompatActivity {
             mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(authResultOnCompleteListener);
         }
 
-
-        Toast.makeText(this," after ",Toast.LENGTH_SHORT).show();
     }
 
     private void addUser()

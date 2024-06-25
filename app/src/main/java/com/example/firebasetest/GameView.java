@@ -45,8 +45,10 @@ public class GameView extends SurfaceView implements Runnable
     private SurfaceHolder ourHolder;
     private int pictureNum;
     private boolean holdingA;
+    private int classNum;
     Dpad dpad;
     private int subMenu;
+    private String className;
     public GameView(Context context)
     {
         super(context);
@@ -54,7 +56,9 @@ public class GameView extends SurfaceView implements Runnable
         subMenu = 0;
         ourHolder = getHolder();
         pictureNum = 0;
+        className = "none";
         holdingA = false;
+        classNum = 1;
         width = this.getResources().getDisplayMetrics().widthPixels;
         pixelWidth = 2106 / width;//in centimeters
         height = this.getResources().getDisplayMetrics().heightPixels;
@@ -68,7 +72,7 @@ public class GameView extends SurfaceView implements Runnable
         if((playerUser.getCurrentSection() == (-1)) || (height > width))
         {
             int backgroundOpen = 0;
-            while (pictureNum < 7)//7 is a random number. it should be last pic
+            while (pictureNum < 20)
             {
                 if(pictureNum == 0)
                 {
@@ -98,9 +102,26 @@ public class GameView extends SurfaceView implements Runnable
                         pictureNum++;
                     }
                 }
+                else if(pictureNum == 18)
+                {
+                    switch (classNum)
+                    {
+                        case 1:
+                            className = "Knight";
+                            break;
+                        case 2:
+                            className = "Archer";
+                            break;
+                        case 3:
+                            className = "Mage";
+                            break;
+                    }
+                }
                 canvas = ourHolder.lockCanvas();
                 canvas.drawColor(Color.TRANSPARENT);
                 String sprite = name + pictureNum;
+                if(!className.equals("none"))
+                    sprite += className;
                 draw(sprite, 0, 0, (int)GameView.width, (int)GameView.height, 0);
                 ourHolder.unlockCanvasAndPost(canvas);
                 try {
@@ -123,7 +144,7 @@ public class GameView extends SurfaceView implements Runnable
             //start the game
         }
         else
-            pictureNum = 7;
+            pictureNum = 20;
         this.currentRoom = new Room(playerUser, this);
         //seperate function for last room(after)
         while (running)
@@ -230,10 +251,16 @@ public class GameView extends SurfaceView implements Runnable
     }
 
     public boolean pressedA() {
-        if((pictureNum > 1) && (pictureNum < 8))//change specific (2 and 7+)
+        if((pictureNum == 2) || ((pictureNum > 6) && (pictureNum < 20)))
         {
+            if(pictureNum == 18)
+            {
+                playerUser.setClassName(className);
+                GameActivity.updateUser(playerUser);
+            }
+
             pictureNum++;
-            if(pictureNum == 4)//random num, represents difficulty
+            if(pictureNum == 20)
                 return true;
         }
         return false;
