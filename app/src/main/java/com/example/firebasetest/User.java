@@ -70,8 +70,9 @@ public class User {
         this.order = newOrder;
     }
 
-    public void initializeOrder(String firstTower)
+    public boolean initializeOrder(String firstTower)
     {
+        boolean realName = false;
         this.order.clear();
         switch (firstTower)
         {
@@ -79,18 +80,22 @@ public class User {
                 order.add("Knight");
                 order.add("Archer");
                 order.add("Mage");
+                realName = true;
                 break;
             case "Archer":
                 order.add("Archer");
                 order.add("Mage");
                 order.add("Knight");
+                realName = true;
                 break;
             case "Mage":
                 order.add("Mage");
                 order.add("Knight");
                 order.add("Archer");
+                realName = true;
                 break;
         }
+        return realName;
     }
 
     public int getEnemyDifficulty() {

@@ -1,22 +1,13 @@
 package com.example.firebasetest;
 
+import android.app.AlertDialog;
 import android.graphics.Path;
 
 import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 
-public class Room implements Runnable {//fill this logic
-    /*an object of this class is sent 3 parameters in its constructor/has access to them in User:
-        1.current section
-        2.current level
-        3.current room number
-      It uses them in an equation to determine how many enemies and what level they are/level of
-      challenge
-      It also checks with User/gameActivity what section it is.
-
-
-    */
+public class Room implements Runnable {
     private int sectionNum;
     private int floorNum;
     private int roomNum;
@@ -50,6 +41,8 @@ public class Room implements Runnable {//fill this logic
     private int playerLevel;
     private ArrayList<Character> charactersToRemove;
     private ArrayList<Projectile> projectilesToRemove;
+    private boolean failed;
+    private boolean holdingA;
 
     public Room(User user, GameView gameView)
     {
@@ -65,6 +58,7 @@ public class Room implements Runnable {//fill this logic
         boxPresses = null;
         buttonPresses = null;
         boxes = null;
+        holdingA = false;
         currentSimonLength = 0;
         ID = (sectionNum * 100) + (floorNum * 10) + roomNum;
         characters = new ArrayList<>();
@@ -73,6 +67,7 @@ public class Room implements Runnable {//fill this logic
         charactersToRemove = new ArrayList<>();
         projectilesToRemove = new ArrayList<>();
         roomDone = false;
+        failed = false;
         creator = gameView;
         myPlayer = null;
         enemiesPerWave = floorNum + (enemyDifficulty - 1);
@@ -429,7 +424,6 @@ public class Room implements Runnable {//fill this logic
         characters.add(myPlayer);
         parryWindow = 0;
         long timeToHit = 0;
-        a.shoot();
         while (misses > 0 && length > 0)
         {
             ArrayList<Projectile> currentProjectiles = null;
@@ -578,6 +572,7 @@ public class Room implements Runnable {//fill this logic
                 currentSimonLength++;
                 nextSimon = false;
             }
+            myPlayer.toMove();
             try {
                 roomThread.sleep(33);
             } catch (InterruptedException e) {
@@ -672,11 +667,10 @@ public class Room implements Runnable {//fill this logic
 
     public void pressedBox(String button)
     {
-        Character player = Character.getPlayer();
-        if (player.getYLocation() == (GameView.height - (player.getHeight() / 2)))
+        if (myPlayer.getYLocation() == (GameView.height - (myPlayer.getHeight() / 2)))
         {
-            float x = player.getXLocation();
-            float width = player.getWidth();
+            float x = myPlayer.getXLocation();
+            float width = myPlayer.getWidth();
             Box toPress = null;
             int boxNum = 0;
             for(int i = 0; i < 4; i++)
@@ -807,18 +801,177 @@ public class Room implements Runnable {//fill this logic
 
     public void roomEnd()
     {
-        //reset none moving buttons to nothing
-        //open start button
-        //if a pressed, next room
+        roomDone = true;
+        characters.clear();
+        projectiles.clear();
+        objects.clear();
+        creator.twilight();
     }
 
     public void failure()
     {
-        creator.nextRoom(true);
+        failed = true;
+        characters.clear();
+        projectiles.clear();
+        objects.clear();
+        creator.setFailureDialog();
     }
 
-    public boolean isRoomDone()
+    public void pressedA()
     {
-        return this.roomDone;
+        if((!roomDone) && (!failed))
+        {
+            if(roomNum == 2)
+            {
+                if(roomClass.equals("Knight"))
+                    myPlayer.parryChallenge(parryWindow);
+                else if(roomClass.equals("Mage"))
+                    pressedBox("A");
+            }
+            else
+            {
+                if(myPlayer instanceof Knight)
+                {
+                    Knight player = (Knight) myPlayer;
+                    player.shieldOrParry(2);
+                }
+                else if(myPlayer instanceof Archer)
+                {
+                    Archer player = (Archer) myPlayer;
+                    player.stab();
+                }
+                else if(myPlayer instanceof Mage)
+                {
+                    Mage player = (Mage) myPlayer;
+                    player.mist();
+                }
+            }
+        }
+    }
+
+    public void pressedB()
+    {
+        if((!roomDone) && (!failed))
+        {
+            if(roomNum == 2)
+            {
+                if(roomClass.equals("Mage"))
+                    pressedBox("B");
+            }
+            else
+            {
+                if(myPlayer instanceof Knight)
+                {
+                    Knight player = (Knight) myPlayer;
+                    player.buff();
+                }
+                else if(myPlayer instanceof Archer)
+                {
+                    Archer player = (Archer) myPlayer;
+                    player.poison();
+                }
+                else if(myPlayer instanceof Mage)
+                {
+                    Mage player = (Mage) myPlayer;
+                    player.fireball();
+                }
+            }
+        }
+    }
+
+    public void pressedX()
+    {
+        if((!roomDone) && (!failed))
+        {
+            if(roomNum == 2)
+            {
+                if(roomClass.equals("Mage"))
+                    pressedBox("X");
+            }
+            else
+            {
+                if(myPlayer instanceof Knight)
+                {
+                    Knight player = (Knight) myPlayer;
+                    player.attack();
+                }
+                else if(myPlayer instanceof Archer)
+                {
+                    Archer player = (Archer) myPlayer;
+                    player.shoot();
+                }
+                else if(myPlayer instanceof Mage)
+                {
+                    Mage player = (Mage) myPlayer;
+                    player.lightLine();
+                }
+            }
+        }
+    }
+
+    public void pressedY()
+    {
+        if((!roomDone) && (!failed))
+        {
+            if(roomNum == 2)
+            {
+                if(roomClass.equals("Mage"))
+                    pressedBox("Y");
+            }
+            else
+            {
+                if(myPlayer instanceof Knight)
+                {
+                    Knight player = (Knight) myPlayer;
+                    player.mount();
+                }
+                else if(myPlayer instanceof Archer)
+                {
+                    Archer player = (Archer) myPlayer;
+                    player.homing();
+                }
+                else if(myPlayer instanceof Mage)
+                {
+                    Mage player = (Mage) myPlayer;
+                    player.heal();
+                }
+            }
+        }
+    }
+
+    public boolean pressedStart()
+    {
+        return roomDone;
+    }
+
+    public void holdA()
+    {
+        if(((!roomDone) && (!failed)) && ((roomNum != 2) && (myPlayer instanceof Knight)))
+        {
+            Knight player = (Knight) myPlayer;
+            holdingA = player.shieldOrParry(1);
+        }
+    }
+
+    public void releaseA()
+    {
+        if(holdingA)
+        {
+            holdingA = false;
+            Knight player = (Knight) myPlayer;
+            player.shieldReleased();
+        }
+    }
+
+    public void initializeMovement(float x, float y)
+    {
+        if(((!roomDone) && (!failed)) && (!((roomNum == 2) && (roomClass.equals("Mage")))))
+            myPlayer.setUpMovement(x, y);
+    }
+
+    public void initializeDirection(float x, float y)
+    {
+        if((!roomDone) && (!failed))
+            myPlayer.setUpDirection(x, y);
     }
 }

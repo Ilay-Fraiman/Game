@@ -22,6 +22,8 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 import android.app.Activity;
 import android.content.Intent;
@@ -47,16 +49,25 @@ public class GameView extends SurfaceView implements Runnable
     private boolean holdingA;
     private int classNum;
     Dpad dpad;
-    private int subMenu;
+    private int subMenu;//work on this
+    private boolean subMenuOpen;
     private String className;
+    private boolean challengeBackground;
+    private boolean difficultyActivityOn;
+    private boolean controlsMenu;
+    private boolean roomTwilight;
     public GameView(Context context)
     {
         super(context);
         this.context = context;
-        subMenu = 0;
         pictureNum = 0;
         className = "none";
+        difficultyActivityOn = false;
+        subMenuOpen = false;
         holdingA = false;
+        subMenu = 1;
+        controlsMenu = false;
+        roomTwilight = false;
         classNum = 1;
         width = this.getResources().getDisplayMetrics().widthPixels;
         pixelWidth = 2106 / width;//in centimeters
@@ -74,57 +85,60 @@ public class GameView extends SurfaceView implements Runnable
             int backgroundOpen = 0;
             while (pictureNum < 20)
             {
-                if(pictureNum == 0)
+                if(!difficultyActivityOn)
                 {
-                    width = this.getResources().getDisplayMetrics().widthPixels;
-                    height = this.getResources().getDisplayMetrics().heightPixels;
-                    if(width > height)
+                    if(pictureNum == 0)
                     {
-                        pictureNum++;
-                        pixelWidth = 2106 / width;
-                        pixelHeight = 1080 / height;
+                        width = this.getResources().getDisplayMetrics().widthPixels;
+                        height = this.getResources().getDisplayMetrics().heightPixels;
+                        if(width > height)
+                        {
+                            pictureNum++;
+                            pixelWidth = 2106 / width;
+                            pixelHeight = 1080 / height;
+                        }
                     }
-                }
-                else if(pictureNum == 1)
-                {
-                    ArrayList<Integer> gameControllerIds = GameActivity.getGameControllerIds();
-                    if(!gameControllerIds.isEmpty())
-                        pictureNum++;
-                }
-                else if(playerUser.getCurrentSection() != (-1))
-                    pictureNum = 8;
-                else if((pictureNum > 2) && (pictureNum < 7))
-                {
-                    backgroundOpen++;
-                    if(backgroundOpen >= 10)
+                    else if(pictureNum == 1)
                     {
-                        backgroundOpen = 0;
-                        pictureNum++;
+                        ArrayList<Integer> gameControllerIds = GameActivity.getGameControllerIds();
+                        if(!gameControllerIds.isEmpty())
+                            pictureNum++;
                     }
-                }
-                else if(pictureNum == 18)
-                {
-                    switch (classNum)
+                    else if(playerUser.getCurrentSection() != (-1))
+                        pictureNum = 21;
+                    else if((pictureNum > 2) && (pictureNum < 7))
                     {
-                        case 1:
-                            className = "Knight";
-                            break;
-                        case 2:
-                            className = "Archer";
-                            break;
-                        case 3:
-                            className = "Mage";
-                            break;
+                        backgroundOpen++;
+                        if(backgroundOpen >= 10)
+                        {
+                            backgroundOpen = 0;
+                            pictureNum++;
+                        }
                     }
-                }
-                if(ourHolder.getSurface().isValid())
-                {
-                    canvas = ourHolder.lockCanvas();
-                    String sprite = name + pictureNum;
-                    if(!className.equals("none"))
-                        sprite += className;
-                    draw(sprite, 0, 0, (int)width, (int)height, 0);
-                    ourHolder.unlockCanvasAndPost(canvas);
+                    else if(pictureNum == 18)
+                    {
+                        switch (classNum)
+                        {
+                            case 1:
+                                className = "Knight";
+                                break;
+                            case 2:
+                                className = "Archer";
+                                break;
+                            case 3:
+                                className = "Mage";
+                                break;
+                        }
+                    }
+                    if(ourHolder.getSurface().isValid() && ((pictureNum < 20) && (!difficultyActivityOn)))
+                    {
+                        canvas = ourHolder.lockCanvas();
+                        String sprite = name + pictureNum;
+                        if(!className.equals("none"))
+                            sprite += className;
+                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        ourHolder.unlockCanvasAndPost(canvas);
+                    }
                 }
                 try {
                     gameThread.sleep(33);
@@ -132,63 +146,124 @@ public class GameView extends SurfaceView implements Runnable
                     e.printStackTrace();
                 }
             }
-            //these are all still pictures
-            //flip your phone = 0
-            //this game uses a bluetooth enabled controller = 1
-            //controls = 2
-            //show eyes opening(black back ground, then white in the middle, then full white, then see
-            //player character at one end half naked
-            //man starts talking
-            //shows picture of classes
-            //changes value of button presses for a and d pad to choose
-            //send to difficulty activity
-            //choose tower(needs an activity)
-            //start the game
+        }
+        else if(playerUser.getCurrentRoom() == 2)
+        {
+            challengeBackground = true;
+            while (challengeBackground)
+            {
+                if(!difficultyActivityOn)
+                {
+                    if(ourHolder.getSurface().isValid())
+                    {
+                        canvas = ourHolder.lockCanvas();
+                        String sprite = playerUser.getOrder().get(playerUser.getCurrentSection());
+                        sprite += "Challenge";
+                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        ourHolder.unlockCanvasAndPost(canvas);
+                    }
+                }
+                try {
+                    gameThread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else if(subMenuOpen)
+        {
+            while (subMenuOpen)
+            {
+                if(!difficultyActivityOn)
+                {
+                    if(ourHolder.getSurface().isValid())
+                    {
+                        canvas = ourHolder.lockCanvas();
+                        String extra = (controlsMenu)? "2": ("Menu" + subMenu);
+                        String sprite = "background";
+                        sprite += extra;
+                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        ourHolder.unlockCanvasAndPost(canvas);
+                    }
+                }
+                try {
+                    gameThread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        else if(roomTwilight)
+        {
+            while (roomTwilight)
+            {
+                if(!difficultyActivityOn)
+                {
+                    if(ourHolder.getSurface().isValid())
+                    {
+                        canvas = ourHolder.lockCanvas();
+                        String extra = "Twilight";
+                        String sprite = "background";
+                        sprite += extra;
+                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        ourHolder.unlockCanvasAndPost(canvas);
+                    }
+                }
+                try {
+                    gameThread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         else
-            pictureNum = 20;
-        //this.currentRoom = new Room(playerUser, this);
+            pictureNum = 21;
+
+        this.currentRoom = new Room(playerUser, this);
         //seperate function for last room(after)
         while (running)
         {
-            ArrayList<GameObject> gameObjectArrayList = this.currentRoom.getObjects();
-            canvas = ourHolder.lockCanvas();
-            canvas.drawColor(Color.TRANSPARENT);
-            //draw background
-            for (GameObject gameObject: gameObjectArrayList)
+            if(!difficultyActivityOn)
             {
-                String sprite = gameObject.getSpriteName();
-                float x = gameObject.getXLocation();
-                float y = gameObject.getYLocation();
-                float width = gameObject.getWidth();
-                float height = gameObject.getHeight();
-                int desiredWidth = (int) width;
-                int desiredHeight = (int) height;
-                float angle = gameObject.getDirection();
-                if(gameObject instanceof Character)
+                ArrayList<GameObject> gameObjectArrayList = this.currentRoom.getObjects();
+                canvas = ourHolder.lockCanvas();
+                canvas.drawColor(Color.TRANSPARENT);
+                //draw background
+                for (GameObject gameObject: gameObjectArrayList)
                 {
-                    Character object = (Character) gameObject;
-                    boolean[] itemCheck = object.hasItems();
-                    for(int n = 0; n < 2; n++)
+                    String sprite = gameObject.getSpriteName();
+                    float x = gameObject.getXLocation();
+                    float y = gameObject.getYLocation();
+                    float width = gameObject.getWidth();
+                    float height = gameObject.getHeight();
+                    int desiredWidth = (int) width;
+                    int desiredHeight = (int) height;
+                    float angle = gameObject.getDirection();
+                    if(gameObject instanceof Character)
                     {
-                        if(itemCheck[n])
+                        Character object = (Character) gameObject;
+                        boolean[] itemCheck = object.hasItems();
+                        for(int n = 0; n < 2; n++)
                         {
-                            GameObject item = object.getItem(n);
-                            gameObjectArrayList.add(item);
+                            if(itemCheck[n])
+                            {
+                                GameObject item = object.getItem(n);
+                                gameObjectArrayList.add(item);
+                            }
+                        }
+                        for(int i = 0; i < 8; i++)
+                        {
+                            if(object.isStatus(i))
+                            {
+                                GameObject statusBubble = object.getStatus(i);
+                                gameObjectArrayList.add(statusBubble);
+                            }
                         }
                     }
-                    for(int i = 0; i < 8; i++)
-                    {
-                        if(object.isStatus(i))
-                        {
-                            GameObject statusBubble = object.getStatus(i);
-                            gameObjectArrayList.add(statusBubble);
-                        }
-                    }
+                    draw(sprite, x, y, desiredWidth, desiredHeight, angle);
                 }
-                draw(sprite, x, y, desiredWidth, desiredHeight, angle);
+                ourHolder.unlockCanvasAndPost(canvas);
             }
-            ourHolder.unlockCanvasAndPost(canvas);
             try {
                 gameThread.sleep(33);
             } catch (InterruptedException e) {
@@ -204,13 +279,55 @@ public class GameView extends SurfaceView implements Runnable
     }
     public void nextRoom(boolean loser)
     {
-        if(loser)
+        if(!loser)
         {
-            //display gameover
+            int roomNum = playerUser.getCurrentRoom();
+            int floorNum = playerUser.getCurrentFloor();
+            int sectionNum = playerUser.getCurrentSection();
+            roomNum++;
+            if(roomNum > 3)
+            {
+                roomNum = 1;
+                floorNum++;
+            }
+            if(floorNum == 4)
+                roomNum = 4;
+            else if(floorNum == 5)
+            {
+                sectionNum++;
+                floorNum = 1;
+                roomNum = 1;
+            }
+            if(sectionNum == 4)
+            {
+                floorNum = 4;
+                roomNum = 4;
+            }
+            playerUser.setCurrentRoom(roomNum);
+            playerUser.setCurrentFloor(floorNum);
+            playerUser.setCurrentSection(sectionNum);
+            GameActivity.updateUser(playerUser);
         }
         this.currentRoom = null;
         Room nextRoom = new Room(playerUser, this);
         this.currentRoom = nextRoom;
+    }
+
+    public void resetDifficulty(FrameLayout frameLayout)
+    {
+        boolean inFrame = false;
+        while (!inFrame)
+        {
+            int childCount = frameLayout.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                View childView = frameLayout.getChildAt(i);
+                if (childView.equals(this)) {
+                    inFrame = true;
+                }
+            }
+        }
+        if(inFrame)
+            difficultyActivityOn = false;
     }
 
     public void draw(String spriteName, float xLocation, float yLocation, int width, int height, float rotationAngle)
@@ -246,7 +363,7 @@ public class GameView extends SurfaceView implements Runnable
         int offsetX = (int) ((bitmapWidth - width) / 2 * scaleX);
         int offsetY = (int) ((bitmapHeight - height) / 2 * scaleY);
 
-        if(spriteName.contains("background"))
+        if(spriteName.contains("background") || spriteName.contains("challenge"))
         {
             offsetX = 0;
             offsetY = 0;
@@ -270,9 +387,30 @@ public class GameView extends SurfaceView implements Runnable
             }
 
             pictureNum++;
-            if(pictureNum == 20)
-                return true;
+            return false;
         }
+        else if(pictureNum == 20)
+        {
+            difficultyActivityOn = true;
+            pictureNum++;
+            return true;
+        }
+        else if(challengeBackground)
+            challengeBackground = false;
+        else if(subMenuOpen)
+        {
+            if(subMenu == 1)
+                return true;
+            else
+                controlsMenu = !controlsMenu;
+        }
+        else if(roomTwilight)
+        {
+            roomTwilight = false;
+            nextRoom(false);
+        }
+        else if(currentRoom != null)
+            currentRoom.pressedA();
         return false;
     }
 
@@ -281,7 +419,7 @@ public class GameView extends SurfaceView implements Runnable
         if(currentRoom != null)
         {
             holdingA = true;
-            //currentRoom.pressedBox("A");//fake. substitute for pressedA(long)
+            currentRoom.holdA();
         }
     }
 
@@ -290,43 +428,101 @@ public class GameView extends SurfaceView implements Runnable
         if(currentRoom != null)
         {
             holdingA = false;
-            //currentRoom.pressedBox("A");//fake. substitute for CancelpressedA(long)
+            currentRoom.releaseA();
         }
     }
 
     public void pressedB() {
-
+        if(currentRoom != null)
+            currentRoom.pressedB();
     }
 
     public void pressedX() {
-
+        if(currentRoom != null)
+            currentRoom.pressedX();
     }
 
     public void pressedY() {
+        if(currentRoom != null)
+            currentRoom.pressedY();
     }
 
     public void pressedLeftOrRight(String direction)
     {
-
+        if(pictureNum == 18)
+        {
+            if(direction.equals("left") && (classNum != 1))
+                classNum--;
+            else if(direction.equals("right") && (classNum != 3))
+                classNum++;
+        }
+        else if(pictureNum == 19)
+        {
+            String tower = (direction.equals("left"))? "Knight": "Mage";
+            if(playerUser.initializeOrder(tower))
+                pictureNum++;
+        }
     }
 
     public void pressedUpOrDown(String direction)
     {
-
+        if((pictureNum == 19) && direction.equals("up"))
+            if(playerUser.initializeOrder("Archer"))
+                pictureNum++;
     }
 
     public void processMovement(float x, float y)
     {
-
+        if(currentRoom != null)
+            currentRoom.initializeMovement(x, y);
     }
 
     public void processDirection(float x, float y)
     {
-
+        if(currentRoom != null)
+            currentRoom.initializeDirection(x, y);
     }
 
     public void pressedStart()//shows controls
     {
+        if(currentRoom != null)
+        {
+            if(!subMenuOpen)
+            {
+                if(currentRoom.pressedStart())
+                {
+                    roomTwilight = false;
+                    subMenuOpen = true;
+                }
+            }
+            else
+            {
+                controlsMenu = false;
+                subMenu = 1;
+                subMenuOpen = false;
+                roomTwilight = true;
+            }
+        }
+    }
 
+    public void twilight()
+    {
+        roomTwilight = true;
+    }
+
+    public void setFailureDialog()
+    {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        alertDialog.setTitle("GAME OVER");
+        alertDialog.setCancelable(false);
+        alertDialog.setPositiveButton("Main Menu", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                nextRoom(true);
+                dialogInterface.dismiss();
+            }
+        });
+        AlertDialog dialog = alertDialog.create();
+        dialog.show();
     }
 }

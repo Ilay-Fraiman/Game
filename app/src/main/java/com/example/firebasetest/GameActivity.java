@@ -395,6 +395,7 @@ public class GameActivity extends AppCompatActivity {
         {
             addedView = true;
             frameLayout.addView(gameView);
+            gameView.resetDifficulty(frameLayout);
         }
     }
 
