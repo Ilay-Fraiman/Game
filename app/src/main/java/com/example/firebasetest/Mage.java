@@ -29,15 +29,9 @@ public class Mage extends Character{
         this.itemSprite = "wand";
         switch (this.characterGrade)
         {
-            case 2://clone
-                setSpriteName("clone");//half man half clean skin
-                break;
-            case 3:
-                setSpriteName("necromancer");
-                itemSprite = "skullWand";
+            case 2:
                 break;
             case 4:
-                setSpriteName("cleric");
                 addStatus(7);
                 break;
         }

@@ -3,6 +3,8 @@ package com.example.firebasetest;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -56,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
         String email = etMail.getText().toString();
         String password = etPassword.getText().toString();
 
-
         OnCompleteListener<AuthResult> authResultOnCompleteListener = new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -77,15 +78,36 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        if(!MainActivity.signIn)
+        if(email.isEmpty() || password.isEmpty())
         {
-            mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(authResultOnCompleteListener);
+            if(email.isEmpty())
+            {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog.setTitle("Please enter email address");
+                alertDialog.setCancelable(true);
+                AlertDialog dialog = alertDialog.create();
+                dialog.show();
+            }
+            if(password.isEmpty())
+            {
+                AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+                alertDialog.setTitle("Please enter password");
+                alertDialog.setCancelable(true);
+                AlertDialog dialog = alertDialog.create();
+                dialog.show();
+            }
         }
         else
         {
-            mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(authResultOnCompleteListener);
+            if(!MainActivity.signIn)
+            {
+                mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(authResultOnCompleteListener);
+            }
+            else
+            {
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(authResultOnCompleteListener);
+            }
         }
-
     }
 
     private void addUser()

@@ -8,7 +8,7 @@ public class Box extends GameObject{
     private String shine;
     public Box(int ID, float xLocation, float yLocation, float width, float height, int num)
     {
-        super("Box", ID, xLocation, yLocation, width, height);
+        super("box", ID, xLocation, yLocation, width, height);
         this.boxNum = num;
         this.shine = "plain";
     }
@@ -19,7 +19,7 @@ public class Box extends GameObject{
         //THIS hash should be 1 number for each
         if(button.equals("A") || buttonCode == 1)
         {
-            shine = "blue";
+            shine = "green";
             shineNum += 1;
         }
         else if(button.equals("B") || buttonCode == 2)
@@ -29,7 +29,7 @@ public class Box extends GameObject{
         }
         else if(button.equals("X") || buttonCode == 3)
         {
-            shine = "green";
+            shine = "blue";
             shineNum += 3;
         }
         else if(button.equals("Y") || buttonCode == 4)
@@ -69,7 +69,7 @@ public class Box extends GameObject{
     @Override
     public String getSpriteName() {
         String name = shine;
-        name += "Box";
+        name += "box";
         return name;
     }
 }

@@ -61,6 +61,10 @@ public class GameView extends SurfaceView implements Runnable
     {
         super(context);
         this.context = context;
+        width = (float) this.getResources().getDisplayMetrics().widthPixels;
+        pixelWidth = 2106f / width;//in centimeters
+        height = (float) this.getResources().getDisplayMetrics().heightPixels;
+        pixelHeight = 1080f / height;
         pictureNum = 0;
         className = "none";
         difficultyActivityOn = false;
@@ -71,10 +75,6 @@ public class GameView extends SurfaceView implements Runnable
         roomTwilight = false;
         openedDifficulty = false;
         classNum = 1;
-        width = (float) this.getResources().getDisplayMetrics().widthPixels;
-        pixelWidth = 2106f / width;//in centimeters
-        height = (float) this.getResources().getDisplayMetrics().heightPixels;
-        pixelHeight = 1080f / height;
         running = true;
         currentRoom = null;
     }
@@ -138,7 +138,10 @@ public class GameView extends SurfaceView implements Runnable
                         canvas = ourHolder.lockCanvas();
                         String sprite = name + pictureNum;
                         if(!className.equals("none"))
-                            sprite += className;
+                        {
+                            String smallName = className.toLowerCase();
+                            sprite += smallName;
+                        }
                         float x = width / 2f;
                         float y = height / 2f;
                         draw(sprite, x, y, (int)width, (int)height, 0);
@@ -198,8 +201,8 @@ public class GameView extends SurfaceView implements Runnable
                     if(ourHolder.getSurface().isValid())
                     {
                         canvas = ourHolder.lockCanvas();
-                        String sprite = playerUser.getOrder().get(playerUser.getCurrentSection());
-                        sprite += "Challenge";
+                        String sprite = playerUser.getOrder().get(playerUser.getCurrentSection()).toLowerCase();
+                        sprite += "challenge";
                         float x = width / 2f;
                         float y = height / 2f;
                         draw(sprite, x, y, (int)width, (int)height, 0);
@@ -222,7 +225,7 @@ public class GameView extends SurfaceView implements Runnable
                     if(ourHolder.getSurface().isValid())
                     {
                         canvas = ourHolder.lockCanvas();
-                        String extra = (controlsMenu)? "2": ("Menu" + subMenu);
+                        String extra = (controlsMenu)? "2": ("menu" + subMenu);
                         String sprite = "background";
                         sprite += extra;
                         float x = width / 2f;
@@ -247,7 +250,7 @@ public class GameView extends SurfaceView implements Runnable
                     if(ourHolder.getSurface().isValid())
                     {
                         canvas = ourHolder.lockCanvas();
-                        String extra = "Twilight";
+                        String extra = "twilight";
                         String sprite = "background";
                         sprite += extra;
                         float x = width / 2f;
@@ -282,6 +285,15 @@ public class GameView extends SurfaceView implements Runnable
                     float backgroundX = width / 2f;
                     float backgroundY = height / 2f;
                     draw("background", backgroundX, backgroundY, (int)width, (int)height, 0);
+                    p.setColor(Color.BLACK);
+                    canvas.drawRect(0, 0, width, height, p);
+                    Character player = Character.getPlayer();
+                    double maxHealth = player.getMaxHP();
+                    double currentHealth = player.getHP();
+                    double healthBar = currentHealth / maxHealth;
+                    float right = (float) (width * healthBar);
+                    p.setColor(Color.RED);
+                    canvas.drawRect(0, 0, right, height, p);
                     //draw background
                     for (GameObject gameObject: gameObjectArrayList)
                     {
@@ -404,11 +416,11 @@ public class GameView extends SurfaceView implements Runnable
         Bitmap bitmapObject = BitmapFactory.decodeResource(getResources(), bitmapID);
         bitmapObject = createScaledBitmap(bitmapObject, width, height, false);
 
-        if(rotationAngle == 180f && (!spriteName.equals("groundFire")))//rotate on x axis
+        if(rotationAngle == 180f && (!spriteName.equals("groundfire")))//rotate on x axis
         {
             Matrix flip = new Matrix();
             flip.postScale(-1, 1, xLocation, yLocation);
-            bitmapObject =  Bitmap.createBitmap(bitmapObject, 0, 0, bitmapObject.getWidth(), bitmapObject.getHeight(), flip, true);
+            bitmapObject =  Bitmap.createBitmap(bitmapObject, 0, 0, width, height, flip, true);
             rotationAngle = 0;
         }
 
@@ -416,13 +428,13 @@ public class GameView extends SurfaceView implements Runnable
 
         float xRotate = width / 2f;
         float yRotate = height / 2f;
-        rotator.postRotate(rotationAngle, xRotate, yRotate);
+        rotator.postRotate(-rotationAngle, xRotate, yRotate);
 
         float xTranslate = xLocation - xRotate;
         float yTranslate = yLocation - yRotate;
         rotator.postTranslate(xTranslate, yTranslate);
 
-        canvas.drawBitmap(bitmapObject, rotator, p);
+        canvas.drawBitmap(bitmapObject, rotator, null);
     }
 
     public boolean pressedA() {

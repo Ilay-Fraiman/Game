@@ -10,7 +10,7 @@ public class EarthShatter extends Projectile{
     private double expansionDirection;
     public EarthShatter(int ID, Character creator, double power, float xLocation, float yLocation, float width, float height, double direction)
     {
-        super("earthShatter", ID, creator, power, 0, 0, xLocation, yLocation, width, height, 0, "shatter");
+        super("earthshatter", ID, creator, power, 0, 0, xLocation, yLocation, width, height, 0, "shatter");
         //height is half chr, its creator is 2 chr; only moves on x axis and on the floor; max width is 3/8 canvas width, starts at a 1/5 of that and widens
         this.expansionDirection = direction;
         this.isTimed = true;

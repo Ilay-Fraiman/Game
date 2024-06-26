@@ -42,6 +42,7 @@ public class Character extends GameObject implements Runnable {
     protected boolean performingAction;
     protected String itemSprite;
     protected String secondItemSprite;
+    private double maxHP;
     private int[] statusNum;//[poison, freeze, shock, shatter, parry, buff, shieldFire, heal]
     public Character(int level, int HPD, int ACD, int APD, String spriteName, int ID, float xLocation, float yLocation, int characterGrade) //HPD, ACD, APD=2/3/5
     {
@@ -57,10 +58,11 @@ public class Character extends GameObject implements Runnable {
         itemHeight = myWidth;
         movementSpeed = myWidth / 10f;//speed is screen within 5 seconds. this is the speed for every frame (1/30 of a second)
         HP = HPD * 15d * level;
+        this.maxHP = HP;
         attackCooldown -= (level *ACD * 10);
         attackPower = (double) level*APD;
         this.resetX = 0;
-        this.resetB = 0;
+        this.resetB = System.currentTimeMillis() +10000L;
         this.resetA = System.currentTimeMillis() + 5000L;
         this.resetY = System.currentTimeMillis() + 30000L;
         this.characterGrade = characterGrade;
@@ -82,6 +84,14 @@ public class Character extends GameObject implements Runnable {
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
+    }
+
+    public double getMaxHP() {
+        return maxHP;
+    }
+
+    public double getHP() {
+        return HP;
     }
 
     public int getCharacterGrade() {
@@ -282,12 +292,12 @@ public class Character extends GameObject implements Runnable {
         else if(this instanceof Archer)
         {
             power /= 2d;
-            spriteName = "stab";
+            spriteName = "arrow";
         }
         else if(this instanceof Knight)
             spriteName = ((Knight) this).getItemName();
         else if(this instanceof Berserker)
-            spriteName = "fistHit";
+            spriteName = "fisthit";
 
         BladeAttack bladeAttack = new BladeAttack(spriteName, roomID, this, power, locationHor, locationVert, itemWidth, itemHeight, ailment, directionAngle);
         this.projectiles.add(bladeAttack);
@@ -434,14 +444,15 @@ public class Character extends GameObject implements Runnable {
 
     public boolean aim(float xDistance, float yDistance, float physicalSpeed)//aims the arrow and returns if will hit
     {
-        double xDist = (double) xDistance;
-        yDistance *= (-1);//here up is negative, in geometry up is positive
-        double yDist = (double) yDistance;
+        double xDist = (double) (xDistance * (GameView.pixelWidth / 100f));
+        //here up is negative, in geometry up is positive
+        double yDist = (double) (yDistance * (GameView.pixelHeight / 100f));
+        yDist *= (-1d);
         //using physics based formulas(in documentation), we wrote a quadratic formula for tan(theta)
         //and the following calculations are made according to and in order to fit said quadratic formula
         double pSpeed = (double) physicalSpeed;
         double speed = Math.pow(pSpeed, 2d);//speed by meters per second, squared according to docs
-        double a = 5d * xDist;//a in quadratic formula
+        double a = (5d) * xDist;//a in quadratic formula
         a /= speed;
         double ratio = yDist / xDist;//in docs
         double c = a + ratio;//c in quadratic formula
@@ -479,9 +490,9 @@ public class Character extends GameObject implements Runnable {
         double maxHeight = vertMove - vertAcc;//height as function of speed and acceleration, docs
         float location = this.getYLocation();//current vertical position
         float fHeight = (float) maxHeight;
-        float maxPixels = fHeight / GameView.pixelHeight;//convert meters to pixels
+        float maxPixels = fHeight / (GameView.pixelHeight / 100f);//convert meters to pixels
         float finalPixel = location - maxPixels;//in canvas up is negative
-        return (finalPixel <= 0);//is it above or at the ceiling
+        return (finalPixel <= 0f);//is it above or at the ceiling
     }
 
     private boolean faster(double speed, double angle1, double time1, double angle2, double time2)
@@ -634,7 +645,9 @@ public class Character extends GameObject implements Runnable {
     {
         this.horizontalDirection = x;
         this.verticalDirection = y;
-        double angle = Math.atan2(y, x);
+        double tanX = (double) x;
+        double tanY = y * (-1d);
+        double angle = Math.atan2(tanY, tanX);
         this.directionAngle = Math.toDegrees(angle);
     }
 
@@ -859,7 +872,7 @@ public class Character extends GameObject implements Runnable {
                 statusEffect = "buff";
                 break;
             case 6:
-                statusEffect = "shieldFire";
+                statusEffect = "groundfire";
                 break;
             case 7:
                 statusEffect = "heal";

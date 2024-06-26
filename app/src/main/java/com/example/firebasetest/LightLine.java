@@ -5,7 +5,7 @@ import android.graphics.Bitmap;
 public class LightLine extends Projectile{
     public LightLine(int ID, Character creator, double power, float xLocation, float yLocation, float width, float height, String effect, double direction)
     {
-        super("lightLine", ID, creator, power, 0, 0, xLocation, yLocation, width, height, direction, effect);
+        super("lightline", ID, creator, power, 0, 0, xLocation, yLocation, width, height, direction, effect);
         this.TTD = System.currentTimeMillis() + 500L;//currently half a second. maybe a full? maybe 0.75?
         this.isTimed = true;
         this.oneTimeHit = true;
