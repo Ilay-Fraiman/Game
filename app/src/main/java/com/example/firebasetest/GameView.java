@@ -139,8 +139,11 @@ public class GameView extends SurfaceView implements Runnable
                         String sprite = name + pictureNum;
                         if(!className.equals("none"))
                         {
-                            String smallName = className.toLowerCase();
-                            sprite += smallName;
+                            if(pictureNum == 18)
+                            {
+                                String smallName = className.toLowerCase();
+                                sprite += smallName;
+                            }
                         }
                         float x = width / 2f;
                         float y = height / 2f;
