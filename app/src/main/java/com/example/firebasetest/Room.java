@@ -46,6 +46,10 @@ public class Room implements Runnable {
 
     public Room(User user, GameView gameView)
     {
+        enemyDifficulty = user.getEnemyDifficulty();
+        difficultyScaling = user.getDifficultyScaling();
+        challengeDifficulty = user.getChallengeDifficulty();
+        challengeDifficultyScaling = user.getChallengeDifficultyScaling();
         sectionNum = user.getCurrentSection();
         roomClass = (sectionNum == 4)? "Sage": user.getOrder().get(sectionNum - 1);
         floorNum = user.getCurrentFloor();
@@ -74,11 +78,6 @@ public class Room implements Runnable {
         waves = sectionNum;
         playerClass = user.getClassName();
         playerLevel = user.getLevel();
-
-        enemyDifficulty = user.getEnemyDifficulty();
-        difficultyScaling = user.getDifficultyScaling();
-        challengeDifficulty = user.getChallengeDifficulty();
-        challengeDifficultyScaling = user.getChallengeDifficultyScaling();
 
         roomThread = new Thread(this);
         roomThread.start();
@@ -129,7 +128,7 @@ public class Room implements Runnable {
     {
         int quarter = (boss)? 10: 2;
         float x = GameView.width / quarter;
-        float y = GameView.height - (GameView.width / 15);
+        float y = GameView.height - (GameView.width / 15f);
         if(playerClass.equals("Knight"))
         {
             Knight player = new Knight(playerLevel, 5, ID, x, y);
@@ -157,16 +156,16 @@ public class Room implements Runnable {
         boolean playerAlive = true;
 
         float[] xArray = new float[7];
-        xArray[0] = 1;
-        xArray[1] = 9;
-        xArray[2] = 2;
-        xArray[3] = 8;
-        xArray[4] = 3;
-        xArray[5] = 7;
-        xArray[6] = 4;
+        xArray[0] = 1f;
+        xArray[1] = 9f;
+        xArray[2] = 2f;
+        xArray[3] = 8f;
+        xArray[4] = 3f;
+        xArray[5] = 7f;
+        xArray[6] = 4f;
 
-        float baseX = GameView.width / 10;
-        float y = GameView.height - (GameView.width / 15);
+        float baseX = GameView.width / 10f;
+        float y = GameView.height - (GameView.width / 15f);
 
         while((currentWave < waves) && (playerAlive))
         {
@@ -250,9 +249,9 @@ public class Room implements Runnable {
     public void bossRoom()
     {
         initializePlayer(true);
-        float x = GameView.width / 10;
-        x *= 8;
-        float y = GameView.height - (GameView.width / 15);
+        float x = GameView.width / 10f;
+        x *= 8f;
+        float y = GameView.height - (GameView.width / 15f);
         Character boss = summonEnemy(false, x, y);
         characters.add(boss);
         boolean playerDead = false;
@@ -263,8 +262,8 @@ public class Room implements Runnable {
         {
             if(floorNum == 2)
             {
-                x /= 8;
-                x *= 6;
+                x /= 8f;
+                x *= 6f;
                 Mage bossClone = (Mage) summonEnemy(false, x, y);
                 Mage tempBoss = (Mage) boss;
                 tempBoss.setClone(bossClone);
@@ -282,11 +281,11 @@ public class Room implements Runnable {
             {
                 float corpseX = boss.getXLocation();
                 float add = boss.getWidth();
-                float multiplication = (boss.facingAngle() == 0)? 1: (-1);
+                float multiplication = (boss.facingAngle() == 0d)? 1f: (-1f);
                 add *= multiplication;
                 float finalX = corpseX + (add * 1.5f);
-                if(finalX <= 0 || finalX >= GameView.width)
-                    add *= (-1);
+                if(finalX <= 0f || finalX >= GameView.width)
+                    add *= (-1f);
                 corpseX += add;
                 Character corpse = summonEnemy(true, corpseX, y);
                 corpse.setSpriteName("corpse");
@@ -418,9 +417,9 @@ public class Room implements Runnable {
         //only 2 buttons work: direction joystick and parry button
         String name = playerClass;
         name = name.toLowerCase();
-        myPlayer = new Character(1, 3, 3, 3, name, ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
+        myPlayer = new Character(1, 3, 3, 3, name, ID, GameView.width * (1f/4f), GameView.height - (GameView.width / 15f), 5);
         Character.setPlayer(myPlayer);
-        Archer a = new Archer(1, 5, ID, GameView.width * (3/4), GameView.height - (GameView.width / 15));
+        Archer a = new Archer(1, 5, ID, GameView.width * (3f/4f), GameView.height - (GameView.width / 15f));
         characters.add(myPlayer);
         parryWindow = 0;
         long timeToHit = 0;
@@ -464,16 +463,16 @@ public class Room implements Runnable {
 
     public void archerChallenge()
     {
-        myPlayer = new Archer(1, 5, ID, GameView.width / 2, GameView.height - (GameView.width / 15));
+        myPlayer = new Archer(1, 5, ID, GameView.width / 2f, GameView.height - (GameView.width / 15f));
         Character.setPlayer(myPlayer);
         characters.add(myPlayer);
         ArrayList<Projectile> keptProjectiles = new ArrayList<>();
         ArrayList<Projectile> temporaryHolder = new ArrayList<>();
-        int left = ((int) (GameView.width / 20));
-        int right = ((int) ((GameView.width / 20) * 19));
+        int left = ((int) (GameView.width / 20f));
+        int right = ((int) ((GameView.width / 20f) * 19f));
         int bottom = ((int) (GameView.height)) - left;
-        int top = ((int) (GameView.height / 2));
-        Target target = new Target(ID, GameView.width / 2, GameView.height * (19/20), length,0, 0);
+        int top = ((int) (GameView.height / 2f));
+        Target target = new Target(ID, GameView.width / 2f, GameView.height * (19f/20f), length,0, 0);
         boolean check = initializeTarget(target, left, right, top, bottom);
         objects.add(target);
         while (length > 0 && misses > 0)
@@ -539,18 +538,18 @@ public class Room implements Runnable {
     {
         String name = playerClass;
         name = name.toLowerCase();
-        myPlayer = new Character(1, 3, 3, 3, name, ID, GameView.width * (1/4), GameView.height - (GameView.width / 15), 5);
+        myPlayer = new Character(1, 3, 3, 3, name, ID, GameView.width * (1f/4f), GameView.height - (GameView.width / 15f), 5);
         Character.setPlayer(myPlayer);
         characters.add(myPlayer);
         boxPresses = new ArrayList<>();
         buttonPresses = new ArrayList<>();
         boxes = new ArrayList<>();
-        float boxDistance = GameView.width / 5;
+        float boxDistance = GameView.width / 5f;
         for(int i = 1; i < 5; i++)
         {
-            float width = GameView.width / 10;
+            float width = GameView.width / 10f;
             float x = boxDistance * i;
-            float y = GameView.height - (width / 2);
+            float y = GameView.height - (width / 2f);
             Box box = new Box(ID, x, y, width, width, i);
             boxes.add(box);
         }
@@ -628,10 +627,10 @@ public class Room implements Runnable {
         boolean tooFar = true;
         while (tooClose || tooFar)
         {
-            float horizontalEdge = GameView.width - (a.getWidth() / 2);
-            float verticalEdge = GameView.height - (a.getHeight() / 2);
-            float newY = getRandomNumber(0, (int)horizontalEdge);
-            float newX = getRandomNumber(0, (int)verticalEdge);
+            float horizontalEdge = GameView.width - (a.getWidth() / 2f);
+            float verticalEdge = GameView.height - (a.getHeight() / 2f);
+            float newY = (float) getRandomNumber(0, (int)horizontalEdge);
+            float newX = (float) getRandomNumber(0, (int)verticalEdge);
             a.setXLocation(newX);
             a.setYLocation(newY);
             float[] values = a.aimAtPlayer();
@@ -667,7 +666,7 @@ public class Room implements Runnable {
 
     public void pressedBox(String button)
     {
-        if (myPlayer.getYLocation() == (GameView.height - (myPlayer.getHeight() / 2)))
+        if (myPlayer.getYLocation() == (GameView.height - (myPlayer.getHeight() / 2f)))
         {
             float x = myPlayer.getXLocation();
             float width = myPlayer.getWidth();
@@ -678,7 +677,7 @@ public class Room implements Runnable {
                 Box box = boxes.get(i);
                 float boxX = box.getXLocation();
                 float boxWidth = box.getWidth();
-                if(((boxX / (boxWidth / 2)) <= (x + (width / 2))) && ((boxX + (boxWidth / 2)) >= (x - (width / 2))))
+                if(((boxX / (boxWidth / 2f)) <= (x + (width / 2f))) && ((boxX + (boxWidth / 2f)) >= (x - (width / 2f))))
                 {
                     toPress = box;
                     boxNum = i + 1;
@@ -744,18 +743,18 @@ public class Room implements Runnable {
             //now vertical acceleration
             if((!(projectile instanceof Fist) && !(projectile instanceof Pebble)) && (!homed))
             {
-                float accelerationNum = GameView.height / 100;//transition from centimeters to meters
-                accelerationNum *= 30;//transition from frames to seconds
-                float accelerationDiff = 10 / 30;//acceleration in one frame
+                float accelerationNum = GameView.pixelHeight / 100f;//transition from centimeters to meters
+                accelerationNum *= 30f;//transition from frames to seconds
+                float accelerationDiff = 10f / 30f;//acceleration in one frame
                 verticalSpeed *= accelerationNum;//transition from pixels per frame to meters per second
                 verticalSpeed += accelerationDiff;//down is positive, up is negative
                 verticalSpeed /= accelerationNum;//transition from meters per second to pixels per frame
                 projectile.setVerticalSpeed(verticalSpeed);
             }
             String wallResult = "noHit";
-            if((projectile.getEdge(0) <= 0) || (projectile.getEdge(1) >= GameView.width))
+            if((projectile.getEdge(0) <= 0f) || (projectile.getEdge(1) >= GameView.width))
                 wallResult = hitWall(projectile, true);
-            if((projectile.getEdge(2) <= 0) || (projectile.getEdge(3) >= GameView.height))
+            if((projectile.getEdge(2) <= 0f) || (projectile.getEdge(3) >= GameView.height))
                 wallResult = hitWall(projectile, false);
 
             if(wallResult.equals("changed"))
@@ -766,7 +765,7 @@ public class Room implements Runnable {
 
             if(!(wallResult.equals("removed")))
             {
-                double newVert = (double) verticalSpeed * (-1);
+                double newVert = (double) verticalSpeed * (-1d);
                 double angle = Math.atan2(newVert, (double) horizontalSpeed);//converts as if radius is 1
                 double degreesAngle = Math.toDegrees(angle);
                 projectile.setAngle(degreesAngle);
@@ -782,9 +781,9 @@ public class Room implements Runnable {
         if((projectile instanceof Arrow) && (((Arrow) projectile).isRicochet()))
         {
             if(horizontalWall)
-                projectile.setHorizontalSpeed(projectile.getHorizontalSpeed() * (-1));
+                projectile.setHorizontalSpeed(projectile.getHorizontalSpeed() * (-1f));
             else
-                projectile.setVerticalSpeed(projectile.getVerticalSpeed() * (-1));
+                projectile.setVerticalSpeed(projectile.getVerticalSpeed() * (-1f));
         }
         else
         {
@@ -965,7 +964,7 @@ public class Room implements Runnable {
 
     public void initializeMovement(float x, float y)
     {
-        if(((!roomDone) && (!failed)) && (!((roomNum == 2) && (roomClass.equals("Mage")))))
+        if(((!roomDone) && (!failed)) && (!((roomNum == 2) && (!roomClass.equals("Mage")))))
             myPlayer.setUpMovement(x, y);
     }
 

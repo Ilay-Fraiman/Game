@@ -21,11 +21,11 @@ public class Knight extends Character{
     private String shieldType;
     public Knight(int level, int characterGrade, int ID, float xLocation, float yLocation){
         super(level,5,2,3, "knight", ID, xLocation, yLocation, characterGrade);
-        this.maxShieldHP = this.HP / 2;
+        this.maxShieldHP = this.HP / 2d;
         this.maxHorseHP = this.HP;
         this.shielded = false;
         this.parry = false;
-        this.horseDirection = -1;
+        this.horseDirection = -1f;
         this.mounted = false;
         this.shieldHealing = false;
         this.horseHealing = false;
@@ -34,7 +34,7 @@ public class Knight extends Character{
         switch (characterGrade)
         {
             case 1:
-                this.itemWidth *= 3;
+                this.itemWidth *= 3f;
                 this.bladeType = "spear";
                 break;
             case 2:
@@ -42,16 +42,16 @@ public class Knight extends Character{
                 this.shieldType = "sword";
                 break;
             case 3:
-                this.maxShieldHP *= 2;
-                this.itemHeight *= 1.5;
-                this.itemWidth *= 1.5;
-                this.attackPower *= 2;
+                this.maxShieldHP *= 2d;
+                this.itemHeight *= 1.5f;
+                this.itemWidth *= 1.5f;
+                this.attackPower *= 2d;
                 this.attackCooldown *= 2;
                 float height = this.getHeight();
                 float y = this.getYLocation();
-                y += (height / 2);
+                y += (height / 2f);
                 height *= 1.5f;
-                y -= (height / 2);
+                y -= (height / 2f);
                 this.setYLocation(y);
                 this.setHeight(height);
                 this.setWidth(this.getWidth() * 1.5f);
@@ -132,7 +132,7 @@ public class Knight extends Character{
             resetAbility("A");
             reIdle("releaseShield");
         }
-        if (shieldHP <= 0 && !shieldHealing)
+        if (shieldHP <= 0d && !shieldHealing)
         {
             shieldHealing = true;
             class RestoreShield extends TimerTask {
@@ -189,7 +189,7 @@ public class Knight extends Character{
     public void buff()
     {
         if(useAbility("B") && ((!shielded) && (!performingAction))) {
-            this.attackPower *= 2;
+            this.attackPower *= 2d;
             spriteState = "drinking";
             setItems(3);
             performingAction = true;
@@ -229,7 +229,7 @@ public class Knight extends Character{
         }
         else
         {
-            this.attackPower /= 2;
+            this.attackPower /= 2d;
             removeStatus(5);
             resetAbility("B");
         }
@@ -241,12 +241,12 @@ public class Knight extends Character{
         {
             this.mounted = true;
             float height = this.getHeight();
-            this.movementSpeed *= 3;
+            this.movementSpeed *= 3f;
             float multiplier = (characterGrade == 4)? 3f: 1.75f;
             float y = this.getYLocation();
-            y += (height / 2);
+            y += (height / 2f);
             height *= multiplier;
-            y -= (height / 2);
+            y -= (height / 2f);
             this.setYLocation(y);
             this.setHeight(height);
             this.setWidth(this.getWidth() * multiplier);
@@ -257,8 +257,8 @@ public class Knight extends Character{
             {
                 bladeType = "greatSword";
                 shieldType = "greatShield";
-                maxShieldHP *= 2;
-                this.HP *= 2;
+                maxShieldHP *= 2d;
+                this.HP *= 2d;
             }
         }
         else if(mounted)
@@ -272,18 +272,18 @@ public class Knight extends Character{
             this.mounted=false;
             float height = this.getHeight();
             float y = this.getYLocation();
-            y += (height / 2);
+            y += (height / 2f);
             height /= 1.75f;
-            y -= height / 2;
+            y -= height / 2f;
             this.setYLocation(y);
             this.setHeight(height);
             this.setWidth(this.getWidth() / 1.75f);
-            this.movementSpeed /= 3;
-            this.itemHeight /= 1.75;
-            this.itemWidth /= 1.75;
-            this.attackPower /= 1.75;
+            this.movementSpeed /= 3f;
+            this.itemHeight /= 1.75f;
+            this.itemWidth /= 1.75f;
+            this.attackPower /= 1.75d;
             resetAbility("Y");
-            if(horseHP<=0 && !horseHealing)
+            if(horseHP<=0d && !horseHealing)
             {
                 horseHealing = true;
                 class RestoreHorse extends TimerTask {
@@ -311,7 +311,7 @@ public class Knight extends Character{
         if (p.canHit(this))
         {
             boolean shieldBroke = false;
-            float damageSustained = p.getPower();
+            double damageSustained = p.getPower();
             String ailment = p.getAilment();
             boolean hasHit = true;
             if(ailment.equals("shatter"))
@@ -319,9 +319,9 @@ public class Knight extends Character{
                 if(mounted)
                 {
                     this.horseHP -= damageSustained;
-                    if (horseHP <= 0)
+                    if (horseHP <= 0d)
                     {
-                        damageSustained = (float) horseHP * (-1);
+                        damageSustained = horseHP * (-1d);
                         dismount();
                         p.setPower(damageSustained);
                         return super.hit(p);
@@ -338,7 +338,7 @@ public class Knight extends Character{
             if(shielded){
                 float horizontal = horizontalDirection;
                 float vertical = verticalDirection;
-                float pHor = horseDirection;
+                float pHor = horizontalDirection;
                 float pVer = verticalDirection;
                 boolean collision = false;
                 if(p.isMoving() || p instanceof LightLine)
@@ -346,7 +346,7 @@ public class Knight extends Character{
                     double angle = p.getAngle();
                     pHor = (float) Math.cos(Math.toDegrees(angle));
                     pVer = (float) Math.sin(Math.toDegrees(angle));
-                    pVer *= (-1);
+                    pVer *= (-1f);
                 }
                 else if(p instanceof BladeAttack)
                 {
@@ -361,14 +361,14 @@ public class Knight extends Character{
                     GameObject shield = this.getItem(0);
                     collision = GameObject.collision(shield, p);
                 }
-                horizontal = (pHor == 0)? -1: horizontal * pHor;
-                vertical = (pVer == 0)? -1: vertical * pVer;
+                horizontal = (pHor == 0d)? -1f: horizontal * pHor;
+                vertical = (pVer == 0d)? -1f: vertical * pVer;
                 if (((horizontal < 0) && (vertical < 0)) || (collision))
                 {
                     shieldHP -= damageSustained;
                     if (ailment.equals("fire"))
-                        burningShield(damageSustained / 10);
-                    if (shieldHP <= 0)
+                        burningShield(damageSustained / 10d);
+                    if (shieldHP <= 0d)
                     {
                         shieldBroke = true;
                         damageSustained = (float) Math.abs(shieldHP);
@@ -379,8 +379,8 @@ public class Knight extends Character{
             {
                 if(!((p instanceof  GroundFire || p instanceof Mist) || (p.getAilment().equals("laser"))))
                 {
-                    p.setHorizontalSpeed((p.getHorizontalSpeed() * (-1)));
-                    p.setVerticalSpeed((p.getVerticalSpeed() * (-1)));
+                    p.setHorizontalSpeed((p.getHorizontalSpeed() * (-1f)));
+                    p.setVerticalSpeed((p.getVerticalSpeed() * (-1f)));
                     p.setCreator(this);
                     this.projectiles.add(p);
                 }
@@ -392,7 +392,7 @@ public class Knight extends Character{
                 {
                     this.horseHP -= damageSustained;
                     if(ailment.equals("poison"))
-                        poisonedHorse(damageSustained / 10);
+                        poisonedHorse(damageSustained / 10d);
                     else if(ailment.equals("freeze"))
                         freeze();
                     else if(ailment.equals("shock")) {
@@ -400,7 +400,7 @@ public class Knight extends Character{
                         shock();
                     }
 
-                    if(this.horseHP<=0)
+                    if(this.horseHP<=0d)
                         dismount();
                 }
                 else
@@ -455,7 +455,7 @@ public class Knight extends Character{
     public boolean horsePoison(double power)
     {
         this.horseHP -= power;
-        if(horseHP<=0)
+        if(horseHP<=0d)
         {
             dismount();
             return false;
@@ -466,7 +466,7 @@ public class Knight extends Character{
     public boolean shieldBurn(double power)
     {
         this.shieldHP -= power;
-        if(shieldHP<=0)
+        if(shieldHP<=0d)
         {
             shieldReleased();
             return false;
@@ -536,7 +536,7 @@ public class Knight extends Character{
     public void run() {
         while (running)
         {
-            if(this.HP <= 0)
+            if(this.HP <= 0d)
                 this.running = false;
             else
             {
@@ -602,16 +602,16 @@ public class Knight extends Character{
 
                 if(moving)
                 {
-                    float side = (moveBack) ? -1 : 1;
+                    float side = (moveBack) ? -1f : 1f;
                     this.horizontalMovement = this.horizontalDirection * side;
-                    if((yLocation + (height / 2)) == GameView.height)
+                    if((yLocation + (height / 2f)) == GameView.height)
                         this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
                 }
 
                 if(characterGrade == 4)
                 {
-                    if(((xLocation - (width / 2)) <= 0) || ((xLocation + (width / 2)) >= GameView.width))
-                        horseDirection *= -1;
+                    if(((xLocation - (width / 2f)) <= 0f) || ((xLocation + (width / 2f)) >= GameView.width))
+                        horseDirection *= (-1f);
                     horizontalMovement = horseDirection;
                     moving = true;
                 }

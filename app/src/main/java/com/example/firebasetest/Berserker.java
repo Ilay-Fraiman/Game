@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-//block lasts for 5 seconds, negates all damage and lets berserker still use his x, not his a tho
-//should it work like that? what combination of allowing and not allowing movement, aiming and specific moves
-//should we use for block, how similar will it be to laser?
 public class Berserker extends Character{
     private float fistSpeed;
     private float physicalFistSpeed;
@@ -16,22 +13,22 @@ public class Berserker extends Character{
     public Berserker(int level, int ID, float xLocation, float yLocation)//both fist and flying fist aren't affected by gravity
     {
         super(level,5,5,5, "berserker", ID, xLocation, yLocation, 6);//final boss
-        double geometricalFistSpeed = Math.sqrt((10.53 * 10));
+        double geometricalFistSpeed = Math.sqrt((10.53d * 10d));
         physicalFistSpeed = (float) geometricalFistSpeed;
-        float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
-        transitionNum *= 30;//transition from frames to seconds
+        float transitionNum = GameView.pixelHeight / 100f;//transition from centimeters to meters
+        transitionNum *= 30f;//transition from frames to seconds
         fistSpeed = physicalFistSpeed / transitionNum;//transition from meters per second to pixels per frame
         float height = this.getHeight();
         float y = this.getYLocation();
-        y += (height / 2);
-        height *= 3;
-        y -= (height / 2);
+        y += (height / 2f);
+        height *= 3f;
+        y -= (height / 2f);
         this.setYLocation(y);
         this.setHeight(height);
         this.setWidth(this.getWidth() * 3f);
-        itemWidth *= 1.5;
-        itemHeight *= 1.5;
-        this.movementSpeed /= 2;
+        itemWidth *= 1.5f;
+        itemHeight *= 1.5f;
+        this.movementSpeed /= 2f;
         this.block = false;
         this.itemSprite = "arm";
         if (threadStart)
@@ -70,7 +67,7 @@ public class Berserker extends Character{
         if(useAbility("B") && ((!block) && (!performingAction)))
         {
             block = true;
-            movementSpeed /= 2;
+            movementSpeed /= 2f;
             resetAbility("B");
             class UnBlock extends TimerTask {
                 private Berserker berserker;
@@ -101,24 +98,24 @@ public class Berserker extends Character{
     public void unBlock()
     {
         this.block = false;
-        this.movementSpeed *= 2;
+        this.movementSpeed *= 2f;
         resetAbility("B");
     }
 
     public void earthShatter()
     {
-        if(useAbility("Y") && (((!block) && (!performingAction)) && ((getYLocation() + (getHeight() / 2)) == GameView.height)))
+        if(useAbility("Y") && (((!block) && (!performingAction)) && ((getYLocation() + (getHeight() / 2f)) == GameView.height)))
         {
             spriteState = "smashing";
             performingAction = true;
-            double direction = (this.horizontalDirection > 0)? 1 : -1;//only on the x axis
-            float height = GameView.height / 15;//this height is double normal, shatter is half normal
-            float yLocation = GameView.height - (height / 2);//only on the floor
-            float width = GameView.width * (3/40);//max width is 3/8 canvas width, starting with is 1/5 of that
+            double direction = (this.horizontalDirection > 0)? 1d : -1d;//only on the x axis
+            float height = GameView.height / 15f;//this height is double normal, shatter is half normal
+            float yLocation = GameView.height - (height / 2f);//only on the floor
+            float width = GameView.width * (3f/40f);//max width is 3/8 canvas width, starting with is 1/5 of that
             float xLocation = this.getXLocation();
-            xLocation += ((this.getWidth() / 2) * ((float) direction));
+            xLocation += ((this.getWidth() / 2f) * ((float) direction));
             xLocation += ((width / 2) * ((float) direction));
-            EarthShatter earthShatter = new EarthShatter(roomID, this, attackPower * 2, xLocation, yLocation, width, height, direction);
+            EarthShatter earthShatter = new EarthShatter(roomID, this, (attackPower * 2d), xLocation, yLocation, width, height, direction);
             this.projectiles.add(earthShatter);
             resetAbility("Y");
             idleAgain(spriteState);
@@ -173,7 +170,7 @@ public class Berserker extends Character{
     public void run() {
         while (running)
         {
-            if (this.HP <= 0)
+            if (this.HP <= 0d)
             {
                 this.running = false;
             }
@@ -196,9 +193,9 @@ public class Berserker extends Character{
                 float xLocation = values[6];
                 float horizontalDistance = values[8];
                 moveBack = false;
-                boolean grounded = ((yLocation + (height / 2)) == GameView.height);
-                boolean enemyGrounded = ((playerY + (playerHeight / 2)) == GameView.height);
-                float range = GameView.width * (3/8);
+                boolean grounded = ((yLocation + (height / 2f)) == GameView.height);
+                boolean enemyGrounded = ((playerY + (playerHeight / 2f)) == GameView.height);
+                float range = GameView.width * (3f/8f);
                 boolean doNotMove = false;
 
                 if(!performingAction)

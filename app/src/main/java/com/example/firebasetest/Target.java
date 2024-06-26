@@ -8,8 +8,8 @@ public class Target extends GameObject{
     private int verticalDirection;
     public Target(int ID, float x, float y, float length, int xMove, int yMove)//max height == half canvas
     {
-        super("target", ID, x, y, GameView.width / 20, GameView.width / 20);
-        float divider = 75 * length;
+        super("target", ID, x, y, GameView.width / 20f, GameView.width / 20f);
+        float divider = 75f * length;
         speedPerFrame = GameView.width / divider;
         horizontalDirection = xMove;
         verticalDirection = yMove;
@@ -48,11 +48,11 @@ public class Target extends GameObject{
         float height = this.getHeight();
         float newX = formerX + (speedPerFrame * horizontalDirection);
         float newY = formerY + (speedPerFrame * verticalDirection);
-        float horizontalEdge = newX + ((width / 2) * horizontalDirection);
-        float verticalEdge = newY + ((height / 2) * verticalDirection);
+        float horizontalEdge = newX + ((width / 2f) * horizontalDirection);
+        float verticalEdge = newY + ((height / 2f) * verticalDirection);
 
         this.setXLocation(newX);
-        if (incorrectRange() || ((horizontalEdge <= 0) || (horizontalEdge >= GameView.width)))
+        if (incorrectRange() || ((horizontalEdge <= 0f) || (horizontalEdge >= GameView.width)))
         {
             horizontalDirection *= (-1);
             newX = formerX + (speedPerFrame * horizontalDirection);
@@ -60,7 +60,7 @@ public class Target extends GameObject{
         }
 
         this.setYLocation(newY);
-        if (incorrectRange() || ((verticalEdge <= (GameView.height / 2)) || (verticalEdge >= GameView.height)))
+        if (incorrectRange() || ((verticalEdge <= (GameView.height / 2f)) || (verticalEdge >= GameView.height)))
         {
             verticalDirection *= (-1);
             newY = formerY + (speedPerFrame * verticalDirection);
@@ -69,7 +69,7 @@ public class Target extends GameObject{
     }
 
     public void setSpeedPerFrame(int length) {
-        float divider = 75 * length;
+        float divider = 75f * length;
         this.speedPerFrame = GameView.width / divider;
     }
 

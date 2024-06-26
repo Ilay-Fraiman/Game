@@ -34,10 +34,10 @@ public class GameView extends SurfaceView implements Runnable
 {
     Context context;
 
-    public static float width = 0;
-    public static float height = 0;
-    public static float pixelWidth = 0;
-    public static float pixelHeight = 0;
+    public static float width = 0f;
+    public static float height = 0f;
+    public static float pixelWidth = 0f;
+    public static float pixelHeight = 0f;
     private Thread gameThread;
     private Canvas canvas;
     private Paint p;
@@ -56,6 +56,7 @@ public class GameView extends SurfaceView implements Runnable
     private boolean difficultyActivityOn;
     private boolean controlsMenu;
     private boolean roomTwilight;
+    private boolean openedDifficulty;
     public GameView(Context context)
     {
         super(context);
@@ -68,11 +69,13 @@ public class GameView extends SurfaceView implements Runnable
         subMenu = 1;
         controlsMenu = false;
         roomTwilight = false;
+        openedDifficulty = false;
         classNum = 1;
-        width = this.getResources().getDisplayMetrics().widthPixels;
-        pixelWidth = 2106 / width;//in centimeters
-        height = this.getResources().getDisplayMetrics().heightPixels;
-        pixelHeight = 1080 / height;
+        width = (float) this.getResources().getDisplayMetrics().widthPixels;
+        pixelWidth = 2106f / width;//in centimeters
+        height = (float) this.getResources().getDisplayMetrics().heightPixels;
+        pixelHeight = 1080f / height;
+        running = true;
         currentRoom = null;
     }
 
@@ -83,7 +86,7 @@ public class GameView extends SurfaceView implements Runnable
         if((playerUser.getCurrentSection() == (-1)) || (height > width))
         {
             int backgroundOpen = 0;
-            while (pictureNum < 20)
+            while (pictureNum < 20)//do 20. it will be a picture that says "choose difficulty"
             {
                 if(!difficultyActivityOn)
                 {
@@ -94,8 +97,8 @@ public class GameView extends SurfaceView implements Runnable
                         if(width > height)
                         {
                             pictureNum++;
-                            pixelWidth = 2106 / width;
-                            pixelHeight = 1080 / height;
+                            pixelWidth = 2106f / width;
+                            pixelHeight = 1080f / height;
                         }
                     }
                     else if(pictureNum == 1)
@@ -136,7 +139,9 @@ public class GameView extends SurfaceView implements Runnable
                         String sprite = name + pictureNum;
                         if(!className.equals("none"))
                             sprite += className;
-                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        float x = width / 2f;
+                        float y = height / 2f;
+                        draw(sprite, x, y, (int)width, (int)height, 0);
                         ourHolder.unlockCanvasAndPost(canvas);
                     }
                 }
@@ -145,6 +150,42 @@ public class GameView extends SurfaceView implements Runnable
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+            while (pictureNum == 20)
+            {
+                if(!difficultyActivityOn)
+                {
+                    if(!openedDifficulty)
+                    {
+                        if(ourHolder.getSurface().isValid())
+                        {
+                            canvas = ourHolder.lockCanvas();
+                            String sprite = name + pictureNum;
+                            //return draw to basic state. use just the location of the center of the screen
+                            //ask alon how to do fullScreen
+                            float x = width / 2f;
+                            float y = height / 2f;
+                            draw(sprite, x, y, (int)width, (int)height, 0);
+                            ourHolder.unlockCanvasAndPost(canvas);
+                        }
+                    }
+                    else
+                    {
+                        pictureNum++;
+                    }
+                }
+                try {
+                    gameThread.sleep(33);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            if((pictureNum == 21) && (playerUser.getCurrentSection() == (-1)))
+            {
+                playerUser.setCurrentSection(1);
+                playerUser.setCurrentFloor(1);
+                playerUser.setCurrentRoom(1);
+                GameActivity.updateUser(playerUser);
             }
         }
         else if(playerUser.getCurrentRoom() == 2)
@@ -159,7 +200,9 @@ public class GameView extends SurfaceView implements Runnable
                         canvas = ourHolder.lockCanvas();
                         String sprite = playerUser.getOrder().get(playerUser.getCurrentSection());
                         sprite += "Challenge";
-                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        float x = width / 2f;
+                        float y = height / 2f;
+                        draw(sprite, x, y, (int)width, (int)height, 0);
                         ourHolder.unlockCanvasAndPost(canvas);
                     }
                 }
@@ -182,7 +225,9 @@ public class GameView extends SurfaceView implements Runnable
                         String extra = (controlsMenu)? "2": ("Menu" + subMenu);
                         String sprite = "background";
                         sprite += extra;
-                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        float x = width / 2f;
+                        float y = height / 2f;
+                        draw(sprite, x, y, (int)width, (int)height, 0);
                         ourHolder.unlockCanvasAndPost(canvas);
                     }
                 }
@@ -205,7 +250,9 @@ public class GameView extends SurfaceView implements Runnable
                         String extra = "Twilight";
                         String sprite = "background";
                         sprite += extra;
-                        draw(sprite, 0, 0, (int)width, (int)height, 0);
+                        float x = width / 2f;
+                        float y = height / 2f;
+                        draw(sprite, x, y, (int)width, (int)height, 0);
                         ourHolder.unlockCanvasAndPost(canvas);
                     }
                 }
@@ -225,44 +272,64 @@ public class GameView extends SurfaceView implements Runnable
         {
             if(!difficultyActivityOn)
             {
-                ArrayList<GameObject> gameObjectArrayList = this.currentRoom.getObjects();
-                canvas = ourHolder.lockCanvas();
-                canvas.drawColor(Color.TRANSPARENT);
-                //draw background
-                for (GameObject gameObject: gameObjectArrayList)
+                if(ourHolder.getSurface().isValid())
                 {
-                    String sprite = gameObject.getSpriteName();
-                    float x = gameObject.getXLocation();
-                    float y = gameObject.getYLocation();
-                    float width = gameObject.getWidth();
-                    float height = gameObject.getHeight();
-                    int desiredWidth = (int) width;
-                    int desiredHeight = (int) height;
-                    float angle = gameObject.getDirection();
-                    if(gameObject instanceof Character)
+                    ArrayList<GameObject> gameObjectArrayList = new ArrayList<>();
+                    ArrayList<GameObject> roomObjects = this.currentRoom.getObjects();
+                    ArrayList<GameObject> temporaryObjects = new ArrayList<>();
+                    gameObjectArrayList.addAll(roomObjects);
+                    canvas = ourHolder.lockCanvas();
+                    float backgroundX = width / 2f;
+                    float backgroundY = height / 2f;
+                    draw("background", backgroundX, backgroundY, (int)width, (int)height, 0);
+                    //draw background
+                    for (GameObject gameObject: gameObjectArrayList)
                     {
-                        Character object = (Character) gameObject;
-                        boolean[] itemCheck = object.hasItems();
-                        for(int n = 0; n < 2; n++)
+                        String sprite = gameObject.getSpriteName();
+                        float x = gameObject.getXLocation();
+                        float y = gameObject.getYLocation();
+                        float width = gameObject.getWidth();
+                        float height = gameObject.getHeight();
+                        int desiredWidth = (int) width;
+                        int desiredHeight = (int) height;
+                        float angle = gameObject.getDirection();
+                        if(gameObject instanceof Character)
                         {
-                            if(itemCheck[n])
+                            Character object = (Character) gameObject;
+                            boolean[] itemCheck = object.hasItems();
+                            for(int n = 0; n < 2; n++)
                             {
-                                GameObject item = object.getItem(n);
-                                gameObjectArrayList.add(item);
+                                if(itemCheck[n])
+                                {
+                                    GameObject item = object.getItem(n);
+                                    temporaryObjects.add(item);
+                                }
+                            }
+                            for(int i = 0; i < 8; i++)
+                            {
+                                if(object.isStatus(i))
+                                {
+                                    GameObject statusBubble = object.getStatus(i);
+                                    temporaryObjects.add(statusBubble);
+                                }
                             }
                         }
-                        for(int i = 0; i < 8; i++)
-                        {
-                            if(object.isStatus(i))
-                            {
-                                GameObject statusBubble = object.getStatus(i);
-                                gameObjectArrayList.add(statusBubble);
-                            }
-                        }
+                        draw(sprite, x, y, desiredWidth, desiredHeight, angle);
                     }
-                    draw(sprite, x, y, desiredWidth, desiredHeight, angle);
+                    for(GameObject temporaryObject: temporaryObjects)
+                    {
+                        String sprite = temporaryObject.getSpriteName();
+                        float x = temporaryObject.getXLocation();
+                        float y = temporaryObject.getYLocation();
+                        float width = temporaryObject.getWidth();
+                        float height = temporaryObject.getHeight();
+                        int desiredWidth = (int) width;
+                        int desiredHeight = (int) height;
+                        float angle = temporaryObject.getDirection();
+                        draw(sprite, x, y, desiredWidth, desiredHeight, angle);
+                    }
+                    ourHolder.unlockCanvasAndPost(canvas);
                 }
-                ourHolder.unlockCanvasAndPost(canvas);
             }
             try {
                 gameThread.sleep(33);
@@ -308,7 +375,8 @@ public class GameView extends SurfaceView implements Runnable
             playerUser.setCurrentSection(sectionNum);
             GameActivity.updateUser(playerUser);
         }
-        this.currentRoom = null;
+        this.currentRoom = null;//thread might stop
+        //when starting need to check all room/floor/section nums
         Room nextRoom = new Room(playerUser, this);
         this.currentRoom = nextRoom;
     }
@@ -334,51 +402,31 @@ public class GameView extends SurfaceView implements Runnable
     {
         int bitmapID = getResources().getIdentifier(spriteName, "drawable", this.context.getPackageName());
         Bitmap bitmapObject = BitmapFactory.decodeResource(getResources(), bitmapID);
-        int bitmapWidth = bitmapObject.getWidth();
-        int bitmapHeight = bitmapObject.getHeight();
         bitmapObject = createScaledBitmap(bitmapObject, width, height, false);
 
-        // Calculate scaling factors to fit the image within the desired area
-        float scaleX = (float) width / bitmapWidth;
-        float scaleY = (float) height / bitmapHeight;
-
-        // Create a new Bitmap with the scaled dimensions
-        Bitmap rotatedObject = Bitmap.createBitmap((int) (width * scaleX), (int) (height * scaleY), Bitmap.Config.ARGB_8888);
-
-        if(rotationAngle == 180 && (!spriteName.equals("groundFire")))//rotate on x axis
+        if(rotationAngle == 180f && (!spriteName.equals("groundFire")))//rotate on x axis
         {
-            Matrix matrix = new Matrix();
-            matrix.postScale(-1, 1, xLocation, yLocation);
-            rotatedObject =  Bitmap.createBitmap(rotatedObject, 0, 0, rotatedObject.getWidth(), rotatedObject.getHeight(), matrix, true);
+            Matrix flip = new Matrix();
+            flip.postScale(-1, 1, xLocation, yLocation);
+            bitmapObject =  Bitmap.createBitmap(bitmapObject, 0, 0, bitmapObject.getWidth(), bitmapObject.getHeight(), flip, true);
             rotationAngle = 0;
         }
 
-        //Canvas rotatedCanvas = new Canvas(rotatedObject);==original
-        Canvas rotatedCanvas = new Canvas(bitmapObject);//works for background
+        Matrix rotator = new Matrix();
 
-        // Rotate the Canvas with pivot point at center
-        rotatedCanvas.rotate(rotationAngle);
+        float xRotate = width / 2f;
+        float yRotate = height / 2f;
+        rotator.postRotate(rotationAngle, xRotate, yRotate);
 
-        // Calculate offset based on scaling
-        int offsetX = (int) ((bitmapWidth - width) / 2 * scaleX);
-        int offsetY = (int) ((bitmapHeight - height) / 2 * scaleY);
+        float xTranslate = xLocation - xRotate;
+        float yTranslate = yLocation - yRotate;
+        rotator.postTranslate(xTranslate, yTranslate);
 
-        if(spriteName.contains("background") || spriteName.contains("challenge"))
-        {
-            offsetX = 0;
-            offsetY = 0;
-        }
-
-        // Draw the original object bitmap onto the rotated Canvas with negative offsets
-        rotatedCanvas.drawBitmap(bitmapObject, -offsetX, -offsetY, p);
-
-        // Draw the rotated Bitmap onto the main Canvas at the desired position
-        //canvas.drawBitmap(rotatedObject, xLocation, yLocation, p);=original
-        canvas.drawBitmap(bitmapObject, xLocation, yLocation, p);//works for background
+        canvas.drawBitmap(bitmapObject, rotator, p);
     }
 
     public boolean pressedA() {
-        if((pictureNum == 2) || ((pictureNum > 6) && (pictureNum < 20)))
+        if((pictureNum == 2) || ((pictureNum > 6) && (pictureNum < 19)))
         {
             if(pictureNum == 18)
             {
@@ -392,7 +440,7 @@ public class GameView extends SurfaceView implements Runnable
         else if(pictureNum == 20)
         {
             difficultyActivityOn = true;
-            pictureNum++;
+            openedDifficulty = true;
             return true;
         }
         else if(challengeBackground)
@@ -400,7 +448,10 @@ public class GameView extends SurfaceView implements Runnable
         else if(subMenuOpen)
         {
             if(subMenu == 1)
+            {
+                difficultyActivityOn = true;
                 return true;
+            }
             else
                 controlsMenu = !controlsMenu;
         }
@@ -460,7 +511,17 @@ public class GameView extends SurfaceView implements Runnable
         {
             String tower = (direction.equals("left"))? "Knight": "Mage";
             if(playerUser.initializeOrder(tower))
+            {
+                GameActivity.updateUser(playerUser);
                 pictureNum++;
+            }
+        }
+        else if(subMenuOpen && (!controlsMenu))
+        {
+            if(direction.equals("left") && (subMenu == 2))
+                subMenu--;
+            else if(direction.equals("right") && (subMenu == 1))
+                subMenu++;
         }
     }
 
@@ -468,7 +529,10 @@ public class GameView extends SurfaceView implements Runnable
     {
         if((pictureNum == 19) && direction.equals("up"))
             if(playerUser.initializeOrder("Archer"))
+            {
+                GameActivity.updateUser(playerUser);
                 pictureNum++;
+            }
     }
 
     public void processMovement(float x, float y)

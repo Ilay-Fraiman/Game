@@ -12,7 +12,7 @@ public class Arrow extends Projectile{
     private long timeToAim;
     private long readyToRicochet;
     //sprite = arrow000 / arrow111 (num1 = poison, num2 = ricochet, num3 = homing)
-    public Arrow(int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, boolean isRicochet, boolean isHoming, boolean isPoison, double direction)
+    public Arrow(int ID, Character creator, double power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, boolean isRicochet, boolean isHoming, boolean isPoison, double direction)
     {
         super("arrow", ID, creator, power, hSPD, vSPD, xLocation, yLocation, width, height, direction, "none");
         this.ricochet = isRicochet;
@@ -84,14 +84,14 @@ public class Arrow extends Projectile{
             float horizontalDistance = 0;
             float verticalDistance = 0;
 
-            horizontalDistance = (targetX != myX)? (targetX - myX): 0;
-            verticalDistance = (targetY != myY)? (targetY - myY): 0;
+            horizontalDistance = (targetX != myX)? (targetX - myX): 0f;
+            verticalDistance = (targetY != myY)? (targetY - myY): 0f;
 
             double horSpeed = (double) this.getHorizontalSpeed();
             double vertSpeed = (double) this.getVerticalSpeed();
-            double speedVector = Math.sqrt(Math.pow(horSpeed, 2) + Math.pow(vertSpeed, 2));
+            double speedVector = Math.sqrt(Math.pow(horSpeed, 2d) + Math.pow(vertSpeed, 2d));
 
-            double newVert = (double) verticalDistance * (-1);
+            double newVert = (double) verticalDistance * (-1d);
             double aimingAngle = Math.atan2(newVert, (double) horizontalDistance);//angle for aiming(complex numbers)
             this.setAngle(Math.toDegrees(aimingAngle));
             horSpeed = Math.cos(angle) * speedVector;

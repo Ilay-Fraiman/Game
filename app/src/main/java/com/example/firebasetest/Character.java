@@ -10,7 +10,7 @@ public class Character extends GameObject implements Runnable {
     private static Character player;
     protected double HP;
     protected long attackCooldown;
-    protected int attackPower;
+    protected double attackPower;
     protected String spriteState;//draw in gameobject draws the character, this class has override that adds the itemsprite on top with direction.
     protected float itemWidth;
     protected float itemHeight;
@@ -55,10 +55,10 @@ public class Character extends GameObject implements Runnable {
         float myWidth = this.getWidth();
         itemWidth = myWidth;
         itemHeight = myWidth;
-        movementSpeed = myWidth / 10;//speed is screen within 5 seconds. this is the speed for every frame (1/30 of a second)
-        HP = HPD * 15 * level;
+        movementSpeed = myWidth / 10f;//speed is screen within 5 seconds. this is the speed for every frame (1/30 of a second)
+        HP = HPD * 15d * level;
         attackCooldown -= (level *ACD * 10);
-        attackPower = level*APD;
+        attackPower = (double) level*APD;
         this.resetX = 0;
         this.resetB = 0;
         this.resetA = System.currentTimeMillis() + 5000L;
@@ -67,7 +67,7 @@ public class Character extends GameObject implements Runnable {
         this.shocked = false;
         this.toShock = 0;
         this.moveBack = true;
-        this.distanceVector = 0;
+        this.distanceVector = 0d;
         this.shatter = false;
         this.parryCountdown = System.currentTimeMillis() + 500L;
         this.isParrying = false;
@@ -78,6 +78,7 @@ public class Character extends GameObject implements Runnable {
         for(int i = 0; i < 5; i++)
             statusNum[i] = 0;
         this.performingAction = false;
+        running = true;
         if (characterGrade == 5)
             threadStart = false;
         thread = new Thread(this);
@@ -131,7 +132,7 @@ public class Character extends GameObject implements Runnable {
 
     public boolean useAbility(String button)
     {
-        long resetTime = 0;
+        long resetTime = 0L;
         if(button.equals("A"))
             resetTime = resetA;
         else if(button.equals("B"))
@@ -159,12 +160,12 @@ public class Character extends GameObject implements Runnable {
     {
         if(p.canHit(this))
         {
-            int power = (int)p.getPower();
+            double power = p.getPower();
             this.HP -= power;
             String ailment = p.getAilment();
 
             if(ailment.equals("poison"))
-                poisoned(power / 10);
+                poisoned(power / 10d);
             else if(ailment.equals("freeze"))
                 freeze();
             else if(ailment.equals("shock"))
@@ -179,15 +180,15 @@ public class Character extends GameObject implements Runnable {
             return false;
     }
 
-    private void poisoned(int power)
+    private void poisoned(double power)
     {
         addStatus(0);
         class Poison extends TimerTask {
             private Character chr;
             private int repeats;
-            private int power;
+            private double power;
 
-            Poison(Character c, int r, int p)
+            Poison(Character c, int r, double p)
             {
                 this.chr = c;
                 this.repeats = r;
@@ -213,10 +214,10 @@ public class Character extends GameObject implements Runnable {
         TimerTask task = new Poison(this, 10, power);
         timer.schedule(task, 1000L);
     }
-    public boolean poison(int power)
+    public boolean poison(double power)
     {
         this.HP -= power;
-        if(this.HP <= 0)
+        if(this.HP <= 0d)
         {
             this.running = false;
             return false;
@@ -226,7 +227,7 @@ public class Character extends GameObject implements Runnable {
 
     public void freeze()
     {
-        this.movementSpeed /= 2;
+        this.movementSpeed /= 2f;
         addStatus(1);
         class UnFreeze extends TimerTask {
             private Character chr;
@@ -248,7 +249,7 @@ public class Character extends GameObject implements Runnable {
 
     public void unFreeze()
     {
-        this.movementSpeed *=2;
+        this.movementSpeed *= 2f;
         removeStatus(1);
     }
 
@@ -260,18 +261,18 @@ public class Character extends GameObject implements Runnable {
         float yAxis = verticalDirection *  itemHeight;
         float locationHor = this.getXLocation() + xAxis;
         float locationVert = this.getYLocation() + yAxis;
-        if (this.horizontalDirection > 0)
-            locationHor += (this.getWidth() / 2);
+        if (this.horizontalDirection > 0f)
+            locationHor += (this.getWidth() / 2f);
         else
-            locationHor -= (this.getWidth() / 2);
-        if (this.verticalDirection > 0)
-            locationVert += (this.getHeight() / 2);
+            locationHor -= (this.getWidth() / 2f);
+        if (this.verticalDirection > 0f)
+            locationVert += (this.getHeight() / 2f);
         else
-            locationVert -= (this.getHeight() / 2);
+            locationVert -= (this.getHeight() / 2f);
 
         String spriteName = "slash";
         String ailment = "none";
-        int power = attackPower;
+        double power = attackPower;
 
         if(this instanceof Sage)
         {
@@ -280,7 +281,7 @@ public class Character extends GameObject implements Runnable {
         }
         else if(this instanceof Archer)
         {
-            power /= 2;
+            power /= 2d;
             spriteName = "stab";
         }
         else if(this instanceof Knight)
@@ -321,24 +322,24 @@ public class Character extends GameObject implements Runnable {
             float y = this.getYLocation();
             float tWidth = this.getWidth();
             float tHeight = this.getHeight();
-            float accelerationNum = GameView.height / 100;//transition from centimeters to meters
-            accelerationNum *= 30;//transition from frames to seconds
-            float accelerationDiff = 10 / 30;//acceleration in one frame
+            float accelerationNum = GameView.pixelHeight / 100f;//transition from centimeters to meters
+            accelerationNum *= 30f;//transition from frames to seconds
+            float accelerationDiff = 10f / 30f;//acceleration in one frame
             float speedToZero = accelerationDiff / accelerationNum;//speed that after acceleration becomes 0
-            speedToZero *= (-1);//it has to be negative
+            speedToZero *= (float) (-1);//it has to be negative
 
             if(moving)
             {
                 float xLocation = x + (movementSpeed * horizontalMovement);
-                if((xLocation - (tWidth / 2)) < 0)
+                if((xLocation - (tWidth / 2f)) < 0f)
                 {
-                    xLocation = (tWidth / 2);
+                    xLocation = (tWidth / 2f);
                     moving = false;
                     legsPos = 1;
                 }
-                else if ((xLocation + (tWidth / 2)) > GameView.width)
+                else if ((xLocation + (tWidth / 2f)) > GameView.width)
                 {
-                    xLocation = GameView.width - (tWidth / 2);
+                    xLocation = GameView.width - (tWidth / 2f);
                     moving = false;
                     legsPos = 1;
                 }
@@ -356,16 +357,16 @@ public class Character extends GameObject implements Runnable {
             }
 
             float yLocation = y + verticalMovement;
-            if ((yLocation + (tHeight / 2)) >= GameView.height)
+            if ((yLocation + (tHeight / 2f)) >= GameView.height)
             {
-                yLocation = GameView.height - (tHeight / 2);
+                yLocation = GameView.height - (tHeight / 2f);
                 verticalMovement = speedToZero;
             }
             else
             {
                 legsPos = 5;
-                if((yLocation - (tHeight / 2)) < 0) {
-                    yLocation = (tHeight / 2);
+                if((yLocation - (tHeight / 2f)) < 0) {
+                    yLocation = (tHeight / 2f);
                     verticalMovement = speedToZero;
                 }
             }
@@ -382,16 +383,16 @@ public class Character extends GameObject implements Runnable {
 
     public boolean inRange()//is the player in range of attack
     {
-        double radius = Math.sqrt(Math.pow((double) horizontalDirection, 2) + Math.pow((double) verticalDirection, 2));//is rad 1
+        double radius = Math.sqrt(Math.pow((double) horizontalDirection, 2d) + Math.pow((double) verticalDirection, 2d));//is rad 1
         this.distanceVector = radius;
-        if (radius <= 1)
+        if (radius <= 1d)
             return true;
 
-        double newVert = (double) verticalDirection * (-1);
+        double newVert = (double) verticalDirection * (-1d);
         double angle = Math.atan2(newVert, (double) horizontalDirection);//converts as if radius is 1
         this.directionAngle = Math.toDegrees(angle);
         horizontalDirection = (float) Math.cos(angle);
-        verticalDirection = (float) Math.sin(angle) * (-1);//complex numbers are in the gauss plane.
+        verticalDirection = (float) Math.sin(angle) * (-1f);//complex numbers are in the gauss plane.
         //the results work for positive right and up. in here, positive is right and down
         return false;
     }
@@ -407,14 +408,12 @@ public class Character extends GameObject implements Runnable {
         float playerHeight = getPlayerHeight();
         float xLocation = this.getXLocation();
         float yLocation = this.getYLocation();
-        float horizontalDistance = 0;
-        float verticalDistance = 0;
 
-        this.horizontalDirection = (playerX != xLocation)? (playerX - xLocation): 0;
-        this.verticalDirection = (playerY != yLocation)? (playerY - yLocation): 0;
+        this.horizontalDirection = (playerX != xLocation)? (playerX - xLocation): 0f;
+        this.verticalDirection = (playerY != yLocation)? (playerY - yLocation): 0f;
 
-        horizontalDistance = horizontalDirection;
-        verticalDistance = verticalDirection;
+        float horizontalDistance = horizontalDirection;
+        float verticalDistance = verticalDirection;
 
         horizontalDirection /= itemWidth;
         verticalDirection /= itemHeight;
@@ -441,26 +440,26 @@ public class Character extends GameObject implements Runnable {
         //using physics based formulas(in documentation), we wrote a quadratic formula for tan(theta)
         //and the following calculations are made according to and in order to fit said quadratic formula
         double pSpeed = (double) physicalSpeed;
-        double speed = Math.pow(pSpeed, 2);//speed by meters per second, squared according to docs
-        double a = 5 * xDist;//a in quadratic formula
+        double speed = Math.pow(pSpeed, 2d);//speed by meters per second, squared according to docs
+        double a = 5d * xDist;//a in quadratic formula
         a /= speed;
         double ratio = yDist / xDist;//in docs
         double c = a + ratio;//c in quadratic formula
         double disc = a * c;//discriminanta (value below the root)
-        disc *= 4;//in quadratic formula (b^2-4ac)
-        double toRoot = 1 - disc;//in documentation, b = -1
-        double bottom = 2 * a;//divider in quadratic formula
+        disc *= 4d;//in quadratic formula (b^2-4ac)
+        double toRoot = 1d - disc;//in documentation, b = -1
+        double bottom = 2d * a;//divider in quadratic formula
         if(toRoot < 0)//no value under the root, no solution=too far
             return false;
-        else if(toRoot == 0)
+        else if(toRoot == 0d)
         {
-            double[] angledTime = arcTan((1/bottom), xDist, pSpeed);
+            double[] angledTime = arcTan((1d/bottom), xDist, pSpeed);
             return faster(pSpeed, angledTime[0], angledTime[1], angledTime[0], angledTime[1]);
         }
         double rooted = Math.sqrt(toRoot);
-        double f = 1 + rooted;//quadratic formula has 2 solutions (+-)
+        double f = 1d + rooted;//quadratic formula has 2 solutions (+-)
         f /= bottom;//division in quadratic formula
-        double g = 1 - rooted;
+        double g = 1d - rooted;
         g /= bottom;
         double[] angledTime1 = arcTan(f, xDist, pSpeed);
         double[] angledTime2 = arcTan(g, xDist, pSpeed);
@@ -473,10 +472,10 @@ public class Character extends GameObject implements Runnable {
         if (direction < 0)//meaning the vertical direction is down
             return false;//thus, it cannot touch the ceiling
         double vector = speed * direction;
-        double time = vector / 10;//speed as a function of acceleration, gravity, documentation
+        double time = vector / 10d;//speed as a function of acceleration, gravity, documentation
         double vertMove = vector * time;//first half of function
-        double vertAcc = Math.pow(time, 2);//second half of function
-        vertAcc *= 5;//half acceleration
+        double vertAcc = Math.pow(time, 2d);//second half of function
+        vertAcc *= 5d;//half acceleration
         double maxHeight = vertMove - vertAcc;//height as function of speed and acceleration, docs
         float location = this.getYLocation();//current vertical position
         float fHeight = (float) maxHeight;
@@ -492,7 +491,7 @@ public class Character extends GameObject implements Runnable {
         double trueAngle = 0;
         if(ceiling1 && ceiling2)
             return false;
-        if(ceiling1 || angle1 == angle2)
+        if(ceiling1 || (angle1 == angle2))
             trueAngle = angle2;
         else if(ceiling2)
             trueAngle = angle1;
@@ -503,7 +502,7 @@ public class Character extends GameObject implements Runnable {
         horizontalDirection = (float) horAngle;
         double vertAngle = Math.sin(trueAngle);
         verticalDirection = (float) vertAngle;
-        verticalDirection *= (-1);//up is negative
+        verticalDirection *= (-1f);//up is negative
         return true;
     }
 
@@ -514,7 +513,7 @@ public class Character extends GameObject implements Runnable {
         if(xDist < 0)//if enemy is on the left
         {
             double deg = Math.toDegrees(angle);
-            deg += 180;//explained in docs
+            deg += 180d;//explained in docs
             angle = Math.toRadians(deg);
         }
         angledTime[0] = angle;
@@ -576,39 +575,39 @@ public class Character extends GameObject implements Runnable {
         boolean jump = false;
         if (otherX < x)
         {
-            if ((x + (width * 1.5)) >= GameView.width)
+            if ((x + (width * 1.5f)) >= GameView.width)
             {
-                horizontalMovement = -1;
+                horizontalMovement = -1f;
                 jump = true;
             }
         }
         else
         {
-            if ((x - (width * 1.5)) <= 0)
+            if ((x - (width * 1.5f)) <= 0f)
             {
-                horizontalMovement = 1;
+                horizontalMovement = 1f;
                 jump = true;
             }
         }
-        if ((y + (height / 2) == GameView.height) && jump)
-            this.verticalMovement = (-1) * this.movementSpeed;
+        if ((y + (height / 2f) == GameView.height) && jump)
+            this.verticalMovement = (-1f) * this.movementSpeed;
     }
 
     public void magicLine(String effect)
     {
         float locationX = this.getXLocation();
         float locationY = this.getYLocation();
-        float xDiffrential = this.getWidth() * this.horizontalDirection * 5;
+        float xDiffrential = this.getWidth() * this.horizontalDirection * 5f;
         float yDiffrential = this.getHeight() * this.verticalDirection;
 
-        if(effect == "laser")
+        if(effect.equals("laser"))
         {
-            xDiffrential *= 2;
-            yDiffrential *= 2.5;
+            xDiffrential *= 2f;
+            yDiffrential *= 2.5f;
         }
 
-        locationX += (xDiffrential / 2);
-        locationY += (yDiffrential / 2);
+        locationX += (xDiffrential / 2f);
+        locationY += (yDiffrential / 2f);
 
         LightLine lightLine = new LightLine(roomID, this, attackPower, locationX, locationY, xDiffrential, yDiffrential, effect, this.directionAngle);
         this.projectiles.add(lightLine);
@@ -620,14 +619,14 @@ public class Character extends GameObject implements Runnable {
     public void setUpMovement(float x, float y)
     {
         this.horizontalMovement = x;
-        this.moving = (x != 0);
-        if(((this.getYLocation() + (this.getHeight() / 2)) == GameView.height) && (y <= 0))
+        this.moving = (x != 0f);
+        if(((this.getYLocation() + (this.getHeight() / 2f)) == GameView.height) && (y <= 0f))
             this.verticalMovement = this.movementSpeed * y;
     }
 
     public void toMove()
     {
-        if((horizontalMovement != 0) || ((verticalMovement != 0) || ((this.getYLocation() + (this.getHeight() / 2)) != GameView.height)))
+        if((horizontalMovement != 0f) || ((verticalMovement != 0f) || ((this.getYLocation() + (this.getHeight() / 2f)) != GameView.height)))
             move();
     }
 
@@ -750,7 +749,7 @@ public class Character extends GameObject implements Runnable {
     public boolean[] hasItems()
     {
         boolean[] itemCheck = new boolean[2];
-        itemCheck[0] = ((!(this.itemSprite.equals("none"))) && ((horizontalDirection != 0) || (verticalDirection != 0)));
+        itemCheck[0] = ((!(this.itemSprite.equals("none"))) && ((horizontalDirection != 0f) || (verticalDirection != 0f)));
         itemCheck[1] = (!(this.secondItemSprite.equals("none")));
         return itemCheck;
     }
@@ -762,28 +761,28 @@ public class Character extends GameObject implements Runnable {
         float y = this.getYLocation();
         float width = this.getWidth();
         float height = this.getHeight();
-        double radius = Math.sqrt(Math.pow((width / 2), 2) + Math.pow((height / 2), 2));
+        double radius = Math.sqrt(Math.pow((width / 2d), 2d) + Math.pow((height / 2d), 2d));
 
         if(!performingAction)
-            radius /= 1.5;
-        width /= 2;
-        height /= 4;
+            radius /= 1.5d;
+        width /= 2f;
+        height /= 4f;
         float addY = 0;
         float usedRadius = (float) radius;
         float addX = usedRadius;
         double itemDirection = facingAngle();
-        itemDirection = 180 - itemDirection;
+        itemDirection = 180d - itemDirection;
         float cosAxis = (float) Math.cos(Math.toRadians(itemDirection));
         if(index == 0)
         {
             name = itemSprite;
-            cosAxis *= (-1);
+            cosAxis *= (-1f);
             itemDirection = this.directionAngle;
             double angle = Math.toRadians(itemDirection);
             float axisX = (float) Math.cos(angle);
             addX *= axisX;
             float axisY = (float) Math.sin(angle);
-            axisY *= (-1);
+            axisY *= (-1f);
             addY = axisY * usedRadius;
         }
         addX *= cosAxis;
@@ -795,7 +794,7 @@ public class Character extends GameObject implements Runnable {
 
     public double facingAngle()
     {
-        double face = (this.horizontalDirection < 0)? 180: 0;
+        double face = (this.horizontalDirection < 0f)? 180d: 0d;
         return face;
     }
 

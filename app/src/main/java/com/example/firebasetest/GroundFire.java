@@ -9,25 +9,25 @@ public class GroundFire extends Projectile{//only if hit wall
         this.isTimed = true;
         this.power /= 30;
         this.TTD = System.currentTimeMillis() + 2500L;
-        if(p.getEdge(0) <= 0)
+        if(p.getEdge(0) <= 0f)
         {
-            setXLocation(p.getHeight() / 2);
-            setAngle(270);
+            setXLocation(p.getHeight() / 2f);
+            setAngle(270d);
         }
         else if(p.getEdge(1) >= GameView.width)
         {
-            setXLocation(GameView.width - (p.getHeight() / 2));
-            setAngle(90);
+            setXLocation(GameView.width - (p.getHeight() / 2f));
+            setAngle(90d);
         }
-        else if(p.getEdge(2) <= 0)
+        else if(p.getEdge(2) <= 0f)
         {
-            setYLocation(p.getHeight() / 2);
-            setAngle(180);
+            setYLocation(p.getHeight() / 2f);
+            setAngle(180d);
         }
         else if(p.getEdge(3) >= GameView.height)
         {
-            setYLocation(GameView.height - (p.getHeight() / 2));
-            setAngle(0);
+            setYLocation(GameView.height - (p.getHeight() / 2f));
+            setAngle(0d);
         }
     }
 }

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class Projectile extends GameObject{
     protected float horizontalSpeed;
     protected float verticalSpeed;
-    protected float power;
+    protected double power;
     protected Character creator; // is it protected?
     protected double angle;
     protected String ailment;//poison, freeze, shock, fire
@@ -16,7 +16,7 @@ public class Projectile extends GameObject{
     private ArrayList<Character> alreadyHit;
     protected boolean oneTimeHit;
     protected boolean moving;
-    public Projectile(String sprite, int ID, Character creator, float power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
+    public Projectile(String sprite, int ID, Character creator, double power, float hSPD, float vSPD, float xLocation, float yLocation, float width, float height, double direction, String effect){
         super(sprite, ID, xLocation, yLocation, width, height);
         this.creator = creator;
         this.power = power;
@@ -47,11 +47,11 @@ public class Projectile extends GameObject{
         this.verticalSpeed = verticalSpeed;
     }
 
-    public float getPower() {
+    public double getPower() {
         return power;
     }
 
-    public void setPower(float power) {
+    public void setPower(double power) {
         this.power = power;
     }
 

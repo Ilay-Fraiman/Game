@@ -16,13 +16,13 @@ public class Mage extends Character{
     public Mage(int level, int characterGrade, int ID, float xLocation, float yLocation)
     {
         super(level,2,3,5, "mage", ID, xLocation, yLocation, characterGrade);
-        this.maxHealth=this.HP;
-        double multiplicationNum = 21.06 / 8;
-        multiplicationNum *= 5;//middle between 3/4(long arrow) and 1/2(arrow)
-        double geometricalFireBallSpeed = Math.sqrt((multiplicationNum * 10));
+        this.maxHealth = this.HP;
+        double multiplicationNum = 21.06d / 8d;
+        multiplicationNum *= 5d;//middle between 3/4(long arrow) and 1/2(arrow)
+        double geometricalFireBallSpeed = Math.sqrt((multiplicationNum * 10d));
         physicalFireBallSpeed = (float) geometricalFireBallSpeed;
-        float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
-        transitionNum *= 30;//transition from frames to seconds
+        float transitionNum = GameView.pixelHeight / 100f;//transition from centimeters to meters
+        transitionNum *= 30f;//transition from frames to seconds
         fireBallSpeed = physicalFireBallSpeed / transitionNum;
         this.effect = "none";
         toUpdateStatus = true;
@@ -65,15 +65,15 @@ public class Mage extends Character{
             float locationHor = this.getXLocation() + xAxis;
             float locationVert = this.getYLocation() + yAxis;
             if (this.horizontalDirection > 0)
-                locationHor += (width / 2);
+                locationHor += (width / 2f);
             else
-                locationHor -= (width / 2);
+                locationHor -= (width / 2f);
             if (this.verticalDirection > 0)
-                locationVert += (height / 2);
+                locationVert += (height / 2f);
             else
-                locationVert -= (height / 2);
+                locationVert -= (height / 2f);
 
-            Mist mist = new Mist(roomID, this, attackPower/2, locationHor, locationVert, width, height);
+            Mist mist = new Mist(roomID, this, (attackPower / 2d), locationHor, locationVert, width, height);
             this.projectiles.add(mist);
             resetAbility("A");
             idleAgain(spriteState);
@@ -93,7 +93,7 @@ public class Mage extends Character{
             float xDiffrential = fireBallSpeed * horizontalDirection;
             float yDiffrential = fireBallSpeed * verticalDirection;
 
-            FireBall fireBall = new FireBall(roomID, this, attackPower*2, xDiffrential, yDiffrential, locationX, locationY, fireBallWidth, fireBallHeight, directionAngle);
+            FireBall fireBall = new FireBall(roomID, this, (attackPower * 2d), xDiffrential, yDiffrential, locationX, locationY, fireBallWidth, fireBallHeight, directionAngle);
             this.projectiles.add(fireBall);
             resetAbility("B");
             idleAgain(spriteState);
@@ -104,7 +104,7 @@ public class Mage extends Character{
     {
         if(useAbility("Y"))
         {
-            double healing = this.maxHealth / 2;
+            double healing = this.maxHealth / 2d;
             if((this.HP + healing) > maxHealth)
                 healing = maxHealth - this.HP;
             this.HP += healing;
@@ -191,18 +191,17 @@ public class Mage extends Character{
         boolean hit = super.hit(p);
         if((characterGrade == 2) && hit)
         {
-            double power = (double) p.getPower();
+            double power = p.getPower();
             this.clone.HP -= power;
         }
         return hit;
     }
 
     @Override
-    public boolean poison(int power) {
+    public boolean poison(double power) {
         if(characterGrade == 2)
         {
-            double damage = (double) power;
-            this.clone.HP -= damage;
+            this.clone.HP -= power;
         }
         return super.poison(power);
     }
@@ -211,7 +210,7 @@ public class Mage extends Character{
     public void run() {
         while (running)
         {
-            if(this.HP <= 0)
+            if(this.HP <= 0d)
                 this.running = false;
             else
             {
@@ -226,7 +225,7 @@ public class Mage extends Character{
                 moveBack = true;
                 boolean backed = false;
                 if(characterGrade == 4)
-                    this.HP += this.maxHealth / 900;
+                    this.HP += this.maxHealth / 900d;
 
                 if(useAbility("Y"))
                     heal();
@@ -242,7 +241,7 @@ public class Mage extends Character{
                     {
                         mist();
                     }
-                    else if(useAbility("X") && (this.distanceVector < (width * 5)))
+                    else if(useAbility("X") && ((float) this.distanceVector < (width * 5f)))
                     {
                         if(characterGrade == 1)
                             this.effect = ailment();
@@ -256,9 +255,9 @@ public class Mage extends Character{
                             moveBack = false;
                     }
                 }
-                float side = (moveBack) ? -1 : 1;
+                float side = (moveBack) ? -1f : 1f;
                 this.horizontalMovement = this.horizontalDirection * side;
-                if((yLocation + (height / 2)) == GameView.height)
+                if((yLocation + (height / 2f)) == GameView.height)
                     this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
                 if(backed)
                     backedIntoWall(xLocation, yLocation, width, height, playerX);

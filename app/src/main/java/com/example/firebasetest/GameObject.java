@@ -34,12 +34,13 @@ public class GameObject {
         this.yLocation = y;
         this.width = w;
         this.height = h;
+        this.edges = new float[4];
         for(int i = 0; i < 4; i++)
         {
             if(i < 2)
                 this.edges[i] = x;
             else
-                this.edges[i]  = y;
+                this.edges[i] = y;
         }
         this.boundingBox = this.getBoundingBox();
     }
@@ -50,8 +51,9 @@ public class GameObject {
         this.roomID = ID;
         this.xLocation = x;
         this.yLocation = y;
-        this.width = (GameView.width / 15);
-        this.height = this.width * 2;
+        this.width = (GameView.width / 15f);
+        this.height = this.width * 2f;
+        this.edges = new float[4];
         for(int i = 0; i < 4; i++)
         {
             if(i < 2)
@@ -120,11 +122,11 @@ public class GameObject {
         boundingBox = null;
         boundingBox = new Path();
 
-        double radius = Math.sqrt(Math.pow((width / 2), 2) + Math.pow((height / 2), 2));
+        double radius = Math.sqrt(Math.pow((width / 2d), 2d) + Math.pow((height / 2d), 2d));
         double currentAngle = getDirection();
         double toB = Math.toDegrees(Math.atan2(height, width));
-        double BToA = 180 - (toB * 2);
-        double AToD = 2 * toB;
+        double BToA = 180d - (toB * 2d);
+        double AToD = 2d * toB;
         //DToC is BToA
         double[] addAngles = new double[4];
         addAngles[0] = toB;

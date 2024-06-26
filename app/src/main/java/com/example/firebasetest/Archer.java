@@ -13,14 +13,14 @@ public class Archer extends Character{
     private float physicalArrowSpeed;
     public Archer(int level, int characterGrade, int ID, float xLocation, float yLocation){
         super(level,3,5,2, "archer", ID, xLocation, yLocation, characterGrade);
-        double geometricalArrowSpeed = Math.sqrt((10.53 * 10));
+        double geometricalArrowSpeed = Math.sqrt((10.53d * 10d));
         physicalArrowSpeed = (float) geometricalArrowSpeed;
-        float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
-        transitionNum *= 30;//transition from frames to seconds
+        float transitionNum = GameView.pixelHeight / 100f;//transition from centimeters to meters
+        transitionNum *= 30f;//transition from frames to seconds
         arrowSpeed = physicalArrowSpeed / transitionNum;//transition from meters per second to pixels per frame
         //this is a speed at which the arrow's max horizontal distance (at a 45 degree angle) is half of the screen
-        itemHeight /= 3;
-        itemWidth /= 2;
+        itemHeight /= 3f;
+        itemWidth /= 2f;
         this.homing = false;
         this.ricochet = false;
         this.isPoison = false;
@@ -29,18 +29,18 @@ public class Archer extends Character{
         switch(characterGrade)
         {
             case 1:
-                movementSpeed /= 1.5;
+                movementSpeed /= 1.5f;
                 attackCooldown *= 1.5;
-                attackPower *= 2;
-                double multiplication = Math.sqrt(1.5); //docs
+                attackPower *= 2d;
+                double multiplication = Math.sqrt(1.5d); //docs
                 float fMultiplication = (float) multiplication;
                 arrowSpeed *= fMultiplication;
                 physicalArrowSpeed *= fMultiplication;
                 float height = this.getHeight();
                 float y = this.getYLocation();
-                y += (height / 2);
+                y += (height / 2f);
                 height *= 1.5f;
-                y -= (height / 2);
+                y -= (height / 2f);
                 this.setYLocation(y);
                 this.setHeight(height);
                 this.setWidth(this.getWidth() * 1.5f);
@@ -181,7 +181,7 @@ public class Archer extends Character{
     public void run() {
         while (running)
         {
-            if(this.HP <= 0)
+            if(this.HP <= 0d)
                 this.running = false;
             else
             {
@@ -217,9 +217,9 @@ public class Archer extends Character{
                         }
                     }
                 }
-                float side = (moveBack) ? -1 : 1;
+                float side = (moveBack) ? -1f : 1f;
                 this.horizontalMovement = this.horizontalDirection * side;
-                if((yLocation + (height / 2)) == GameView.height)
+                if((yLocation + (height / 2f)) == GameView.height)
                     this.verticalMovement = this.verticalDirection * side * this.movementSpeed;
                 if(backed)
                     backedIntoWall(xLocation, yLocation, width, height, playerX);

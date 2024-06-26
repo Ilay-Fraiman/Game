@@ -13,10 +13,10 @@ public class Sage extends Character {
     public Sage(int level, int ID, float xLocation, float yLocation)//both pebble and flying fist aren't affected by gravity
     {
         super(level,3,3,3, "sage", ID, xLocation, yLocation, 6);
-        double geometricalPebbleSpeed = Math.sqrt((10.53 * 10));
+        double geometricalPebbleSpeed = Math.sqrt((10.53d * 10d));
         physicalPebbleSpeed = (float) geometricalPebbleSpeed;
-        float transitionNum = GameView.pixelWidth / 100;//transition from centimeters to meters
-        transitionNum *= 30;//transition from frames to seconds
+        float transitionNum = GameView.pixelHeight / 100f;//transition from centimeters to meters
+        transitionNum *= 30f;//transition from frames to seconds
         pebbleSpeed = physicalPebbleSpeed / transitionNum;//transition from meters per second to pixels per frame
         this.laser = false;
         this.itemSprite = "scepter";
@@ -32,8 +32,8 @@ public class Sage extends Character {
             performingAction = true;
             float locationX = this.getXLocation();
             float locationY = this.getYLocation();
-            float pebbleWidth = itemWidth / 3;
-            float pebbleHeight = itemHeight / 3;
+            float pebbleWidth = itemWidth / 3f;
+            float pebbleHeight = itemHeight / 3f;
             float xDiffrential = pebbleSpeed * horizontalDirection;
             float yDiffrential = pebbleSpeed * verticalDirection;
 
@@ -73,13 +73,13 @@ public class Sage extends Character {
 
             this.setYLocation(enemyY);
 
-            float addition = (enemyWidth + width) / 2;
-            float multiplication = 1;
+            float addition = (enemyWidth + width) / 2f;
+            float multiplication = 1f;
 
             if(x < enemyX)
-                multiplication = ((enemyX + (enemyWidth / 2) + width) < GameView.width)? 1 : (-1);
+                multiplication = ((enemyX + (enemyWidth / 2f) + width) < GameView.width)? 1f : (-1f);
             else
-                multiplication = ((enemyX - (enemyWidth / 2) - width) > 0)? (-1) : 1;
+                multiplication = ((enemyX - (enemyWidth / 2f) - width) > 0)? (-1f) : 1f;
 
             addition *= multiplication;
             this.setXLocation(enemyX + addition);
@@ -92,7 +92,7 @@ public class Sage extends Character {
 
     public void laser()
     {
-        if(useAbility("Y") && ((getYLocation() + (getHeight() / 2)) == GameView.height))
+        if(useAbility("Y") && ((getYLocation() + (getHeight() / 2f)) == GameView.height))
         {
             magicLine("laser");
             laser = true;
@@ -143,7 +143,7 @@ public class Sage extends Character {
     @Override
     public void run() {
         while (running) {
-            if (this.HP <= 0)
+            if (this.HP <= 0d)
             {
                 this.running = false;
                 //show transformation to berserker king animation
@@ -165,7 +165,7 @@ public class Sage extends Character {
                 float yLocation = values[7];
                 moveBack = true;
                 boolean backed = false;
-                boolean grounded = ((yLocation + (height / 2)) == GameView.height);
+                boolean grounded = ((yLocation + (height / 2f)) == GameView.height);
                 boolean laserStart = false;
                 boolean acted = performingAction;
 
@@ -203,7 +203,7 @@ public class Sage extends Character {
 
                 if (!acted)
                 {
-                    if(useAbility("Y") && ((this.distanceVector < (width * 10)) && grounded))
+                    if(useAbility("Y") && (((float) this.distanceVector < (width * 10d)) && grounded))
                     {
                         laser();
                         laserStart = true;
@@ -216,7 +216,7 @@ public class Sage extends Character {
 
                 if (!laserStart)
                 {
-                    float side = (moveBack) ? -1 : 1;
+                    float side = (moveBack) ? -1f : 1f;
                     this.horizontalMovement = this.horizontalDirection * side;
                     if(grounded)
                         this.verticalMovement = this.verticalDirection * side * this.movementSpeed;

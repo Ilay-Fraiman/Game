@@ -8,7 +8,7 @@ import java.util.TimerTask;
 public class EarthShatter extends Projectile{
     private float add;
     private double expansionDirection;
-    public EarthShatter(int ID, Character creator, float power, float xLocation, float yLocation, float width, float height, double direction)
+    public EarthShatter(int ID, Character creator, double power, float xLocation, float yLocation, float width, float height, double direction)
     {
         super("earthShatter", ID, creator, power, 0, 0, xLocation, yLocation, width, height, 0, "shatter");
         //height is half chr, its creator is 2 chr; only moves on x axis and on the floor; max width is 3/8 canvas width, starts at a 1/5 of that and widens
@@ -55,26 +55,26 @@ public class EarthShatter extends Projectile{
         float width = this.getWidth();
         float x = this.getXLocation();
         boolean advance = true;
-        float start = x - (width / 2);
-        float end = x + (width / 2);
+        float start = x - (width / 2f);
+        float end = x + (width / 2f);
         width += (add * expansionDirection);
-        x += ((add * expansionDirection) / 2);
-        if(this.expansionDirection == 1)
+        x += ((add * expansionDirection) / 2f);
+        if(this.expansionDirection == 1d)
         {
-            if((x + (width / 2)) >= GameView.width)
+            if((x + (width / 2f)) >= GameView.width)
             {
                 advance = false;
                 width = GameView.width - start;
-                x = start + (width / 2);
+                x = start + (width / 2f);
             }
         }
         else
         {
-            if((x - (width / 2)) <= 0)
+            if((x - (width / 2f)) <= 0f)
             {
                 advance = false;
                 width = end;
-                x = width / 2;
+                x = width / 2f;
             }
         }
         this.setXLocation(x);
